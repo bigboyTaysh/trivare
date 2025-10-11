@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { api } from '../services/api';
+import { useState, useEffect } from "react";
+import { api } from "../services/api";
 
 interface ApiResponse {
   message: string;
@@ -12,7 +12,8 @@ export default function DataFetcher() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.getData()
+    api
+      .getData()
       .then((response: unknown) => {
         const result = response as ApiResponse;
         setData(result);
@@ -37,9 +38,7 @@ export default function DataFetcher() {
     <div className="p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-4">Data from .NET Backend</h2>
       <p className="text-gray-700">{data?.message}</p>
-      <p className="text-sm text-gray-500 mt-2">
-        Timestamp: {new Date(data?.timestamp || '').toLocaleString()}
-      </p>
+      <p className="text-sm text-gray-500 mt-2">Timestamp: {new Date(data?.timestamp || "").toLocaleString()}</p>
     </div>
   );
 }
