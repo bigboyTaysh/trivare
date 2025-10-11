@@ -9,7 +9,8 @@
     "astro": "astro",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "prepare": "husky"
   },
   "dependencies": {
     "@astrojs/node": "^9.4.6",
@@ -44,7 +45,7 @@
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-compiler": "19.1.0-rc.2",
     "eslint-plugin-react-hooks": "7.0.0",
-    "husky": "9.1.7",
+    "husky": "^9.1.7",
     "lint-staged": "16.2.4",
     "prettier-plugin-astro": "0.14.1",
     "typescript-eslint": "8.46.0"
