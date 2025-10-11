@@ -1,6 +1,0 @@
-@Trivare.Api_HostAddress = http://localhost:5242
-
-GET {{Trivare.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
