@@ -19,7 +19,7 @@ export async function fetchData<T>(endpoint: string, options?: RequestInit): Pro
 export const api = {
   getData: () => fetchData("/data"),
   getDataById: (id: number) => fetchData(`/data/${id}`),
-  postData: (data: any) =>
+  postData: (data: unknown) =>
     fetchData("/data", {
       method: "POST",
       body: JSON.stringify(data),
