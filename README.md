@@ -74,19 +74,45 @@ git clone https://github.com/bigboyTaysh/trivare.git
 
 #### Backend (Server)
 
-1.  Navigate to the `Server/Api` directory:
+1.  **Start SQL Server with Docker**
+
+    This project uses Docker to run a local SQL Server instance. Make sure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+
+    From the root of the repository, run:
+    ```sh
+    docker-compose up -d
+    ```
+    This will start a SQL Server container. The default password is set in `docker-compose.yml`.
+
+2.  **Configure Connection String**
+
+    The backend needs a connection string to connect to the database.
+    
+    a. In the `Server/Api` directory, create a copy of `appsettings.Development.json.template` and rename it to `appsettings.Development.json`.
+
+    b. The template file is already configured to connect to the local Docker container, so no changes are needed.
+
+3.  **Apply Database Migrations**
+
+    To set up the database schema, you'll need the .NET Entity Framework Core tools.
+
+    a. Install `dotnet-ef` as a global tool (if you haven't already):
+    ```sh
+    dotnet tool install --global dotnet-ef
+    ```
+
+    b. Navigate to the `Server/Api` directory and apply the migrations:
     ```sh
     cd Server/Api
+    dotnet ef database update
     ```
-2.  Restore dependencies:
-    ```sh
-    dotnet restore
-    ```
-3.  Run the API:
+
+4.  **Run the API**
+
+    Once the database is set up, you can run the backend.
     ```sh
     dotnet run
     ```
-    *Note: You may need to configure your `appsettings.Development.json` with the necessary API keys and database connection strings.*
 
 ## Available Scripts
 
