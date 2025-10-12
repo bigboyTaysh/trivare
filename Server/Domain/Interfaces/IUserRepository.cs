@@ -16,6 +16,14 @@ public interface IUserRepository
     Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets a user by ID, including their roles
+    /// </summary>
+    /// <param name="id">The user ID to search for</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The user if found, null otherwise</returns>
+    Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Checks if an email address is already registered
     /// </summary>
     /// <param name="email">The email address to check</param>
