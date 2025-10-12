@@ -114,3 +114,6 @@ logs
 *.exe
 *.pdb
 *.cache
+
+# Local development settings
+Server/Api/appsettings.Development.json
