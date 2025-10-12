@@ -15,4 +15,14 @@ public interface IAuthService
     /// <returns>Registration response with user information</returns>
     /// <exception cref="Exceptions.EmailAlreadyExistsException">Thrown when email is already registered</exception>
     Task<RegisterResponse> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Authenticates a user with email and password credentials
+    /// Returns JWT access and refresh tokens upon successful authentication
+    /// </summary>
+    /// <param name="request">Login credentials (email and password)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Login response with JWT tokens and user information</returns>
+    /// <exception cref="UnauthorizedAccessException">Thrown when credentials are invalid</exception>
+    Task<LoginResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default);
 }

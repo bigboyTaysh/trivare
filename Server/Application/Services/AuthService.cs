@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Trivare.Application.DTOs.Auth;
+using Trivare.Application.DTOs.Users;
 using Trivare.Application.Exceptions;
 using Trivare.Application.Interfaces;
 using Trivare.Domain.Entities;
@@ -17,6 +18,7 @@ public class AuthService : IAuthService
     private readonly IRoleRepository _roleRepository;
     private readonly IAuditLogRepository _auditLogRepository;
     private readonly IPasswordHashingService _passwordHashingService;
+    private readonly IJwtTokenService _jwtTokenService;
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(
@@ -24,12 +26,14 @@ public class AuthService : IAuthService
         IRoleRepository roleRepository,
         IAuditLogRepository auditLogRepository,
         IPasswordHashingService passwordHashingService,
+        IJwtTokenService jwtTokenService,
         ILogger<AuthService> logger)
     {
         _userRepository = userRepository;
         _roleRepository = roleRepository;
         _auditLogRepository = auditLogRepository;
         _passwordHashingService = passwordHashingService;
+        _jwtTokenService = jwtTokenService;
         _logger = logger;
     }
 
@@ -123,6 +127,100 @@ public class AuthService : IAuthService
             Email = user.Email,
             CreatedAt = user.CreatedAt
         };
+    }
+
+    /// <summary>
+    /// Authenticates a user with email and password
+    /// </summary>
+    public async Task<LoginResponse> LoginAsync(
+        LoginRequest request, 
+        CancellationToken cancellationToken = default)
+    {
+        // Normalize email to lowercase and trim whitespace
+        var email = request.Email.Trim().ToLowerInvariant();
+
+        try
+        {
+            // Fetch user with roles
+            var user = await _userRepository.GetByEmailAsync(email, cancellationToken);
+            
+            if (user == null)
+            {
+                _logger.LogWarning("Login failed - user not found: {Email}", email);
+                
+                // Log failed attempt
+                await LogAuditAsync(null, "LoginFailed", new
+                {
+                    Email = email,
+                    Reason = "UserNotFound"
+                }, cancellationToken);
+
+                throw new UnauthorizedAccessException("Invalid credentials");
+            }
+
+            // Verify password
+            if (!_passwordHashingService.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
+            {
+                _logger.LogWarning("Login failed - invalid password: {Email}, UserId: {UserId}", 
+                    email, user.Id);
+                
+                // Log failed attempt with user ID
+                await LogAuditAsync(user.Id, "LoginFailed", new
+                {
+                    Email = email,
+                    Reason = "InvalidPassword"
+                }, cancellationToken);
+
+                throw new UnauthorizedAccessException("Invalid credentials");
+            }
+
+            // Generate JWT tokens
+            var accessToken = _jwtTokenService.GenerateAccessToken(user);
+            var refreshToken = _jwtTokenService.GenerateRefreshToken(user.Id);
+
+            _logger.LogInformation("User logged in successfully: {Email}, UserId: {UserId}", 
+                user.Email, user.Id);
+
+            // Log successful login
+            await LogAuditAsync(user.Id, "LoginSuccessful", new
+            {
+                Email = user.Email
+            }, cancellationToken);
+
+            // Map to UserDto
+            var userDto = new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                CreatedAt = user.CreatedAt,
+                Roles = user.UserRoles.Select(ur => ur.Role?.Name ?? "Unknown").ToList()
+            };
+
+            return new LoginResponse
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                ExpiresIn = _jwtTokenService.AccessTokenExpiresIn,
+                User = userDto
+            };
+        }
+        catch (UnauthorizedAccessException)
+        {
+            throw; // Re-throw authentication errors
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error during login for email: {Email}", email);
+            
+            // Log error
+            await LogAuditAsync(null, "LoginError", new
+            {
+                Email = email,
+                ErrorMessage = ex.Message
+            }, cancellationToken);
+
+            throw;
+        }
     }
 
     /// <summary>

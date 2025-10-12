@@ -99,4 +99,67 @@ public class AuthController : ControllerBase
             });
         }
     }
+
+    /// <summary>
+    /// Authenticate user and receive JWT tokens
+    /// </summary>
+    /// <param name="request">Login credentials (email and password)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>JWT tokens and user information</returns>
+    /// <response code="200">Login successful</response>
+    /// <response code="400">Invalid input data or validation errors</response>
+    /// <response code="401">Invalid credentials</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("login")]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<LoginResponse>> Login(
+        [FromBody] LoginRequest request,
+        CancellationToken cancellationToken)
+    {
+        // Validate model state
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
+                );
+
+            return BadRequest(new ErrorResponse
+            {
+                Error = "ValidationError",
+                Message = "One or more validation errors occurred",
+                Errors = errors
+            });
+        }
+
+        try
+        {
+            var response = await _authService.LoginAsync(request, cancellationToken);
+            return Ok(response);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // User not found or invalid password - same message for security
+            return Unauthorized(new ErrorResponse
+            {
+                Error = "InvalidCredentials",
+                Message = "Invalid email or password"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error during login for email: {Email}", request.Email);
+            
+            return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse
+            {
+                Error = "InternalError",
+                Message = "An error occurred during login. Please try again later."
+            });
+        }
+    }
 }

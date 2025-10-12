@@ -18,6 +18,7 @@ public static class DependencyInjection
     {
         // Register services
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddSingleton<IPasswordHashingService, PasswordHashingService>();
 
         return services;

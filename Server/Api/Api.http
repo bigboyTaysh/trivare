@@ -1,6 +1,69 @@
 @Api_HostAddress = http://localhost:5015
 
-GET {{Api_HostAddress}}/api/data
-Accept: application/json
+### Auth Controller Endpoints
+
+### Register - Successful Registration
+POST {{Api_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Register - Email Already Exists
+POST {{Api_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "existing@example.com",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Register - Validation Error
+POST {{Api_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "invalid-email",
+  "password": ""
+}
+
+###
+
+### Login - Successful
+POST {{Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Login - Invalid Credentials
+POST {{Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@example.com",
+  "password": "wrongpassword"
+}
+
+###
+
+### Login - Validation Error
+POST {{Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "invalid-email",
+  "password": ""
+}
 
 ###
