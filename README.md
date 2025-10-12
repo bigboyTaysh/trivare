@@ -74,7 +74,15 @@ git clone https://github.com/bigboyTaysh/trivare.git
 
 #### Backend (Server)
 
-1.  **Start SQL Server with Docker**
+1.  **Setup Environment Variables**
+
+    Copy the environment template and configure your local settings:
+    ```sh
+    cp .env.template .env
+    ```
+    Edit `.env` to set a secure `SA_PASSWORD` for the database.
+
+2.  **Start SQL Server with Docker**
 
     This project uses Docker to run a local SQL Server instance. Make sure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 
@@ -82,17 +90,18 @@ git clone https://github.com/bigboyTaysh/trivare.git
     ```sh
     docker-compose up -d
     ```
-    This will start a SQL Server container. The default password is set in `docker-compose.yml`.
+        This will start a SQL Server container. The database password is configured via the `SA_PASSWORD` environment variable in the `.env` file.
 
-2.  **Configure Connection String**
+3.  **Configure Connection String**
 
-    The backend needs a connection string to connect to the database.
-    
-    a. In the `Server/Api` directory, create a copy of `appsettings.Development.json.template` and rename it to `appsettings.Development.json`.
+    Copy the appsettings template and configure your local settings:
+    ```sh
+    cp appsettings.Development.json.template appsettings.Development.json
+    ```
 
-    b. The template file is already configured to connect to the local Docker container, so no changes are needed.
+    b. Update the `Password` in the connection string to match the `SA_PASSWORD` you set in `.env`.
 
-3.  **Apply Database Migrations**
+4.  **Apply Database Migrations**
 
     To set up the database schema, you'll need the .NET Entity Framework Core tools.
 
@@ -107,7 +116,7 @@ git clone https://github.com/bigboyTaysh/trivare.git
     dotnet ef database update
     ```
 
-4.  **Run the API**
+5.  **Run the API**
 
     Once the database is set up, you can run the backend.
     ```sh
