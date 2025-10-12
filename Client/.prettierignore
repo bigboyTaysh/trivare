@@ -1,0 +1,10 @@
+# Build outputs
+.astro/
+dist/
+node_modules/
+
+# Cache
+.cache/
+
+# Generated files
+*.generated.*
