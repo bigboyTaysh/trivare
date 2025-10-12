@@ -16,7 +16,7 @@ public record ErrorResponse
     public required string Message { get; init; }
 
     /// <summary>
-    /// Additional error details (optional)
+    /// Validation errors grouped by field name (optional)
     /// </summary>
-    public object? Details { get; init; }
+    public Dictionary<string, string[]>? Errors { get; init; }
 }

@@ -92,14 +92,19 @@ git clone https://github.com/bigboyTaysh/trivare.git
     ```
         This will start a SQL Server container. The database password is configured via the `SA_PASSWORD` environment variable in the `.env` file.
 
-3.  **Configure Connection String**
+3.  **Configure Connection String and Launch Settings**
 
-    Copy the appsettings template and configure your local settings:
+    a. Copy the appsettings template and configure your local settings:
     ```sh
-    cp appsettings.Development.json.template appsettings.Development.json
+    cp Server/Api/appsettings.Development.json.template Server/Api/appsettings.Development.json
     ```
 
-    b. Update the `Password` in the connection string to match the `SA_PASSWORD` you set in `.env`.
+    b. Copy the launch settings template:
+    ```sh
+    cp Server/Api/Properties/launchSettings.json.template Server/Api/Properties/launchSettings.json
+    ```
+
+    c. Update the `Password` in `appsettings.Development.json` to match the `SA_PASSWORD` you set in `.env`.
 
 4.  **Apply Database Migrations**
 

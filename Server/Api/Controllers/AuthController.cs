@@ -1,0 +1,102 @@
+using Microsoft.AspNetCore.Mvc;
+using Trivare.Application.DTOs.Auth;
+using Trivare.Application.DTOs.Common;
+using Trivare.Application.Exceptions;
+using Trivare.Application.Interfaces;
+
+namespace Trivare.Api.Controllers;
+
+/// <summary>
+/// Controller for authentication operations
+/// </summary>
+[ApiController]
+[Route("api/auth")]
+[Produces("application/json")]
+public class AuthController : ControllerBase
+{
+    private readonly IAuthService _authService;
+    private readonly ILogger<AuthController> _logger;
+
+    public AuthController(IAuthService authService, ILogger<AuthController> logger)
+    {
+        _authService = authService;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Register a new user account
+    /// </summary>
+    /// <param name="request">Registration details including email and password</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Created user information</returns>
+    /// <response code="201">User successfully registered</response>
+    /// <response code="400">Invalid input data or validation errors</response>
+    /// <response code="409">Email already exists</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("register")]
+    [ProducesResponseType(typeof(RegisterResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<RegisterResponse>> Register(
+        [FromBody] RegisterRequest request,
+        CancellationToken cancellationToken)
+    {
+        // Validate model state
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
+                );
+
+            return BadRequest(new ErrorResponse
+            {
+                Error = "ValidationError",
+                Message = "One or more validation errors occurred",
+                Errors = errors
+            });
+        }
+
+        try
+        {
+            var response = await _authService.RegisterAsync(request, cancellationToken);
+            
+            // Return 201 Created with Location header
+            return CreatedAtAction(
+                actionName: nameof(Register),
+                routeValues: new { id = response.Id },
+                value: response
+            );
+        }
+        catch (EmailAlreadyExistsException ex)
+        {
+            _logger.LogWarning(ex, "Registration failed - email already exists");
+            return Conflict(new ErrorResponse
+            {
+                Error = "EmailAlreadyExists",
+                Message = ex.Message
+            });
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("Role"))
+        {
+            _logger.LogCritical(ex, "Default 'User' role not found in database");
+            return StatusCode(500, new ErrorResponse
+            {
+                Error = "InternalServerError",
+                Message = "An error occurred while processing your request. Please try again later."
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error during user registration");
+            return StatusCode(500, new ErrorResponse
+            {
+                Error = "InternalServerError",
+                Message = "An error occurred while processing your request. Please try again later."
+            });
+        }
+    }
+}
