@@ -21,8 +21,6 @@ This endpoint allows users to reset their password using a reset token received 
 - **Request DTO:** `ResetPasswordRequestDto` (Application/DTOs/Auth/)
   - Properties: `Token` (string), `NewPassword` (string)
   - Validation: Token required, not empty; NewPassword required, min length 8, contains uppercase, lowercase, digit, special char.
-- **Command Model:** `ResetPasswordCommand` (Application layer)
-  - Properties: `Token`, `NewPassword`, `UserId` (set after token validation)
 - **Response DTO:** Simple object with `Message` property (or use IActionResult with message).
 
 ## 4. Response Details
@@ -40,7 +38,7 @@ This endpoint allows users to reset their password using a reset token received 
 ## 5. Data Flow
 1. Controller receives request, binds to `ResetPasswordRequestDto`.
 2. Validate DTO (FluentValidation).
-3. Call `IAuthService.ResetPasswordAsync(command)`.
+3. Call `IAuthService.ResetPasswordAsync(requestDto)`.
 4. Service: Query `Users` table by `PasswordResetToken`, check expiry.
 5. If valid, hash new password, update user (clear token/expiry), save via `IUserRepository`.
 6. Log success/failure to `AuditLog` via repository.
@@ -69,12 +67,11 @@ This endpoint allows users to reset their password using a reset token received 
 
 ## 9. Implementation Steps
 1. Create `ResetPasswordRequestDto` in Application/DTOs/Auth/ with validation.
-2. Add `ResetPasswordCommand` in Application layer.
-3. Update `IAuthService` to include `ResetPasswordAsync(ResetPasswordCommand)`.
-4. Implement method in `AuthService`: validate token, hash password, update user, log audit.
-5. Add endpoint in `AuthController`: POST /reset-password, call service.
-6. Update `IUserRepository` if needed for token-based lookup.
-7. Add audit logging in service for success/failure.
-8. Test: Valid reset, invalid token, expired token, weak password, DB errors.
-9. Add rate limiting middleware if not present.
-10. Update Swagger documentation.
+2. Update `IAuthService` to include `ResetPasswordAsync(ResetPasswordRequestDto requestDto)`.
+3. Implement method in `AuthService`: validate token, hash password, update user, log audit.
+4. Add endpoint in `AuthController`: POST /reset-password, call service.
+5. Update `IUserRepository` if needed for token-based lookup.
+6. Add audit logging in service for success/failure.
+7. Test: Valid reset, invalid token, expired token, weak password, DB errors.
+8. Add rate limiting middleware if not present.
+9. Update Swagger documentation.

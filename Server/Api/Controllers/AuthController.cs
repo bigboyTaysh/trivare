@@ -183,12 +183,12 @@ public class AuthController : ControllerBase
     /// <response code="401">Invalid refresh token</response>
     /// <response code="500">Internal server error</response>
     [HttpPost("logout")]
-    [ProducesResponseType(typeof(LogoutResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(LogoutResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<LogoutResponseDto>> Logout(
-        [FromBody] LogoutRequestDto request,
+    public async Task<ActionResult<LogoutResponse>> Logout(
+        [FromBody] LogoutRequest request,
         CancellationToken cancellationToken)
     {
         try

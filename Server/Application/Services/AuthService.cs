@@ -240,8 +240,8 @@ public class AuthService : IAuthService
     /// <summary>
     /// Logs out a user by invalidating their refresh token
     /// </summary>
-    public async Task<LogoutResponseDto> LogoutAsync(
-        LogoutRequestDto request, 
+    public async Task<LogoutResponse> LogoutAsync(
+        LogoutRequest request, 
         CancellationToken cancellationToken = default)
     {
         try
@@ -277,7 +277,7 @@ public class AuthService : IAuthService
             
             await _userRepository.UpdateAsync(user, cancellationToken);
             
-            return new LogoutResponseDto
+            return new LogoutResponse
             {
                 Message = "Logged out successfully"
             };

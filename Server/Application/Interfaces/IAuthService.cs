@@ -44,7 +44,7 @@ public interface IAuthService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Logout response with success message</returns>
     /// <exception cref="UnauthorizedAccessException">Thrown when refresh token is invalid or expired</exception>
-    Task<LogoutResponseDto> LogoutAsync(LogoutRequestDto request, CancellationToken cancellationToken = default);
+    Task<LogoutResponse> LogoutAsync(LogoutRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Resets a user's password using a reset token

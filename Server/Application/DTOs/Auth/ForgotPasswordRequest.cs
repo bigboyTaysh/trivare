@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Trivare.Application.DTOs.Auth;
 
 /// <summary>
@@ -9,5 +11,7 @@ public record ForgotPasswordRequest
     /// <summary>
     /// Email address of the account to reset
     /// </summary>
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "Invalid email format")]
     public required string Email { get; init; }
 }

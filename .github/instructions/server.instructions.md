@@ -13,6 +13,7 @@ applyTo: 'Server/**'
 - Use interfaces (ports) and implementations (adapters) to isolate external dependencies
 - Create use cases that orchestrate entity interactions for specific business operations
 - Implement mappers to transform data between layers to maintain separation of concerns
+- Do not use CQRS or Command-Query Separation pattern unless there is a clear benefit for complexity management
 
 ### Guidelines for DOCUMENTATION
 

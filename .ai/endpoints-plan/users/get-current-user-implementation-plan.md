@@ -16,7 +16,6 @@ This endpoint allows authenticated users to retrieve their own profile informati
 - **Response DTO:** `UserDto` (existing in `Server/Application/DTOs/Users/`)
   - Properties: `Id` (Guid), `Email` (string), `CreatedAt` (DateTime), `Roles` (List<string>)
 - **Domain Entities:** `User`, `Role`, `UserRole` (existing in `Server/Domain/Entities/`)
-- **Command Models:** None (read-only endpoint)
 
 ## 4. Response Details
 - **Success Response (200 OK):**

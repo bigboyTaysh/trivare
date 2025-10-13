@@ -5,7 +5,7 @@ namespace Trivare.Application.DTOs.Auth;
 /// <summary>
 /// Request DTO for logout operation
 /// </summary>
-public class LogoutRequestDto
+public class LogoutRequest
 {
     /// <summary>
     /// JWT refresh token to invalidate

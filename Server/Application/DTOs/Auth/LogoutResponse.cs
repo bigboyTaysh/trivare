@@ -3,7 +3,7 @@ namespace Trivare.Application.DTOs.Auth;
 /// <summary>
 /// Response DTO for logout operation
 /// </summary>
-public class LogoutResponseDto
+public class LogoutResponse
 {
     /// <summary>
     /// Success message

@@ -20,7 +20,6 @@ The Refresh Token endpoint allows authenticated users to obtain a new access tok
 ## 3. Used Types
 - **Request DTO:** `RefreshTokenRequest` (Application/DTOs/Auth/RefreshTokenRequest.cs) - Contains `RefreshToken` property with validation attributes.
 - **Response DTO:** `RefreshTokenResponse` (Application/DTOs/Auth/RefreshTokenResponse.cs) - Contains `AccessToken`, `RefreshToken`, and `ExpiresIn` properties.
-- **Command Model:** `RefreshTokenCommand` (Application/RefreshTokenCommand.cs) - Encapsulates request data for service layer processing.
 - **Domain Entities:** `User` (Domain/Entities/User.cs) - For retrieving and updating user refresh token data.
 
 ## 4. Response Details
@@ -39,7 +38,7 @@ The Refresh Token endpoint allows authenticated users to obtain a new access tok
 
 ## 5. Data Flow
 1. Client sends POST request to `/api/auth/refresh` with refresh token in body.
-2. API controller validates request model and maps to `RefreshTokenCommand`.
+2. API controller validates request model.
 3. `AuthService.RefreshTokenAsync()` validates the refresh token against the database (Users table).
 4. If valid, generates new access and refresh tokens, updates user's refresh token in database.
 5. Logs success/failure to AuditLog table.
@@ -72,12 +71,11 @@ The Refresh Token endpoint allows authenticated users to obtain a new access tok
 
 ## 9. Implementation Steps
 1. Create `RefreshTokenRequest` and `RefreshTokenResponse` DTOs in Application/DTOs/Auth/.
-2. Add `RefreshTokenCommand` class in Application/ for command pattern.
-3. Extend `IAuthService` interface with `RefreshTokenAsync(RefreshTokenCommand command)` method.
-4. Implement the method in `AuthService` to validate refresh token, generate new tokens, and update database.
-5. Add controller action in `AuthController` (Api/Controllers/AuthController.cs) with proper routing and model validation.
-6. Implement input validation using model attributes and custom validators.
-7. Add audit logging for failed attempts in the service layer.
-8. Update dependency injection in Application/DependencyInjection.cs if new services are added.
-9. Test the endpoint with unit tests (happy path, invalid token, expired token) and integration tests.
-10. Document the endpoint in Swagger with detailed schemas and examples.
+2. Extend `IAuthService` interface with `RefreshTokenAsync(RefreshTokenRequest request)` method.
+3. Implement the method in `AuthService` to validate refresh token, generate new tokens, and update database.
+4. Add controller action in `AuthController` (Api/Controllers/AuthController.cs) with proper routing and model validation.
+5. Implement input validation using model attributes and custom validators.
+6. Add audit logging for failed attempts in the service layer.
+7. Update dependency injection in Application/DependencyInjection.cs if new services are added.
+8. Test the endpoint with unit tests (happy path, invalid token, expired token) and integration tests.
+9. Document the endpoint in Swagger with detailed schemas and examples.
