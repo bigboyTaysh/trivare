@@ -42,24 +42,6 @@ public class AuthController : ControllerBase
         [FromBody] RegisterRequest request,
         CancellationToken cancellationToken)
     {
-        // Validate model state
-        if (!ModelState.IsValid)
-        {
-            var errors = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
-                );
-
-            return BadRequest(new ErrorResponse
-            {
-                Error = "ValidationError",
-                Message = "One or more validation errors occurred",
-                Errors = errors
-            });
-        }
-
         try
         {
             var response = await _authService.RegisterAsync(request, cancellationToken);
@@ -119,24 +101,6 @@ public class AuthController : ControllerBase
         [FromBody] LoginRequest request,
         CancellationToken cancellationToken)
     {
-        // Validate model state
-        if (!ModelState.IsValid)
-        {
-            var errors = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
-                );
-
-            return BadRequest(new ErrorResponse
-            {
-                Error = "ValidationError",
-                Message = "One or more validation errors occurred",
-                Errors = errors
-            });
-        }
-
         try
         {
             var response = await _authService.LoginAsync(request, cancellationToken);
@@ -182,24 +146,6 @@ public class AuthController : ControllerBase
         [FromBody] RefreshTokenRequest request,
         CancellationToken cancellationToken)
     {
-        // Validate model state
-        if (!ModelState.IsValid)
-        {
-            var errors = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
-                );
-
-            return BadRequest(new ErrorResponse
-            {
-                Error = "ValidationError",
-                Message = "One or more validation errors occurred",
-                Errors = errors
-            });
-        }
-
         try
         {
             var response = await _authService.RefreshTokenAsync(request, cancellationToken);
@@ -245,24 +191,6 @@ public class AuthController : ControllerBase
         [FromBody] LogoutRequestDto request,
         CancellationToken cancellationToken)
     {
-        // Validate model state
-        if (!ModelState.IsValid)
-        {
-            var errors = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
-                );
-
-            return BadRequest(new ErrorResponse
-            {
-                Error = "ValidationError",
-                Message = "One or more validation errors occurred",
-                Errors = errors
-            });
-        }
-
         try
         {
             var response = await _authService.LogoutAsync(request, cancellationToken);
