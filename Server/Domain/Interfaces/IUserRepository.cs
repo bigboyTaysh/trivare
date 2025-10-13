@@ -38,4 +38,12 @@ public interface IUserRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created user with generated ID</returns>
     Task<User> AddAsync(User user, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates an existing user
+    /// </summary>
+    /// <param name="user">The user entity to update</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Task representing the asynchronous operation</returns>
+    Task UpdateAsync(User user, CancellationToken cancellationToken = default);
 }

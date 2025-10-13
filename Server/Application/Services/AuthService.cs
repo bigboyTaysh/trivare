@@ -51,7 +51,6 @@ public class AuthService : IAuthService
         if (await _userRepository.EmailExistsAsync(email, cancellationToken))
         {
             _logger.LogWarning("Registration failed - email already exists: {Email}", email);
-
             throw new EmailAlreadyExistsException(email);
         }        
         
@@ -89,13 +88,10 @@ public class AuthService : IAuthService
         try
         {
             await _userRepository.AddAsync(user, cancellationToken);
-            _logger.LogInformation("User registered successfully: {Email}, UserId: {UserId}", 
-                user.Email, user.Id);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Database error during user registration for email: {Email}", email);
-            
             throw;
         }
 
@@ -132,7 +128,6 @@ public class AuthService : IAuthService
             if (user == null)
             {
                 _logger.LogWarning("Login failed - user not found: {Email}", email);
-                
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
 
@@ -141,7 +136,6 @@ public class AuthService : IAuthService
             {
                 _logger.LogWarning("Login failed - invalid password: {Email}, UserId: {UserId}", 
                     email, user.Id);
-                
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
 
@@ -149,8 +143,10 @@ public class AuthService : IAuthService
             var accessToken = _jwtTokenService.GenerateAccessToken(user);
             var refreshToken = _jwtTokenService.GenerateRefreshToken(user.Id);
 
-            _logger.LogInformation("User logged in successfully: {Email}, UserId: {UserId}", 
-                user.Email, user.Id);
+            // Store refresh token in database
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_jwtTokenService.GetRefreshTokenExpiresInDays());
+            await _userRepository.UpdateAsync(user, cancellationToken);
 
             // Map to UserDto
             var userDto = new UserDto
@@ -176,7 +172,6 @@ public class AuthService : IAuthService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error during login for email: {Email}", email);
-            
             throw;
         }
     }
@@ -195,7 +190,6 @@ public class AuthService : IAuthService
             if (userId == null)
             {
                 _logger.LogWarning("Refresh token validation failed - invalid token");
-                
                 throw new UnauthorizedAccessException("Invalid refresh token");
             }
 
@@ -204,7 +198,15 @@ public class AuthService : IAuthService
             if (user == null)
             {
                 _logger.LogWarning("Refresh token validation failed - user not found: UserId {UserId}", userId);
-                
+                throw new UnauthorizedAccessException("Invalid refresh token");
+            }
+
+            // Check if the refresh token matches the stored one and is not expired
+            if (user.RefreshToken != request.RefreshToken || 
+                user.RefreshTokenExpiryTime == null || 
+                user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                _logger.LogWarning("Refresh token validation failed - token mismatch or expired: UserId {UserId}", userId);
                 throw new UnauthorizedAccessException("Invalid refresh token");
             }
 
@@ -212,7 +214,10 @@ public class AuthService : IAuthService
             var newAccessToken = _jwtTokenService.GenerateAccessToken(user);
             var newRefreshToken = _jwtTokenService.GenerateRefreshToken(user.Id);
 
-            _logger.LogInformation("Refresh token successful: UserId {UserId}", user.Id);
+            // Update refresh token in database
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_jwtTokenService.GetRefreshTokenExpiresInDays());
+            await _userRepository.UpdateAsync(user, cancellationToken);
 
             return new RefreshTokenResponse
             {
@@ -228,7 +233,62 @@ public class AuthService : IAuthService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error during refresh token");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Logs out a user by invalidating their refresh token
+    /// </summary>
+    public async Task<LogoutResponseDto> LogoutAsync(
+        LogoutRequestDto request, 
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Validate the refresh token
+            var userId = _jwtTokenService.ValidateRefreshToken(request.RefreshToken);
+            if (userId == null)
+            {
+                _logger.LogWarning("Logout failed - invalid refresh token");
+                throw new UnauthorizedAccessException("Invalid refresh token provided");
+            }
+
+            // Fetch user by ID
+            var user = await _userRepository.GetByIdAsync(userId.Value, cancellationToken);
+            if (user == null)
+            {
+                _logger.LogWarning("Logout failed - user not found: UserId {UserId}", userId);
+                throw new UnauthorizedAccessException("Invalid refresh token provided");
+            }
+
+            // Check if the refresh token matches the stored one and is not expired
+            if (user.RefreshToken != request.RefreshToken || 
+                user.RefreshTokenExpiryTime == null || 
+                user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                _logger.LogWarning("Logout failed - token mismatch or expired: UserId {UserId}", userId);
+                throw new UnauthorizedAccessException("Invalid refresh token provided");
+            }
+
+            // Invalidate the refresh token by clearing it from the user record
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = null;
             
+            await _userRepository.UpdateAsync(user, cancellationToken);
+            
+            return new LogoutResponseDto
+            {
+                Message = "Logged out successfully"
+            };
+        }
+        catch (UnauthorizedAccessException)
+        {
+            throw; // Re-throw authentication errors
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error during logout");
             throw;
         }
     }

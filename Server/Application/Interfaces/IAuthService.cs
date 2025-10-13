@@ -35,4 +35,14 @@ public interface IAuthService
     /// <returns>Refresh token response with new JWT tokens</returns>
     /// <exception cref="UnauthorizedAccessException">Thrown when refresh token is invalid or expired</exception>
     Task<RefreshTokenResponse> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Logs out a user by invalidating their refresh token
+    /// Validates the refresh token and marks it as invalidated
+    /// </summary>
+    /// <param name="request">Logout request containing the refresh token</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Logout response with success message</returns>
+    /// <exception cref="UnauthorizedAccessException">Thrown when refresh token is invalid or expired</exception>
+    Task<LogoutResponseDto> LogoutAsync(LogoutRequestDto request, CancellationToken cancellationToken = default);
 }

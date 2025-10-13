@@ -103,7 +103,30 @@ The API is organized around the following main resources, mapped to database tab
 
 ---
 
-#### 2.1.4 Forgot Password
+#### 2.1.4 Logout
+
+- **Method:** `POST`
+- **Path:** `/api/auth/logout`
+- **Description:** Invalidate the refresh token to log the user out. The access token will expire on its own.
+- **Authentication:** None (refresh token in body)
+- **Request Body:**
+```json
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+- **Response (200 OK):**
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+- **Error Responses:**
+  - `400 Bad Request` - Invalid refresh token provided.
+
+---
+
+#### 2.1.5 Forgot Password
 
 - **Method:** `POST`
 - **Path:** `/api/auth/forgot-password`
