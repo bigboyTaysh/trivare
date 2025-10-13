@@ -45,4 +45,13 @@ public interface IAuthService
     /// <returns>Logout response with success message</returns>
     /// <exception cref="UnauthorizedAccessException">Thrown when refresh token is invalid or expired</exception>
     Task<LogoutResponseDto> LogoutAsync(LogoutRequestDto request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Resets a user's password using a reset token
+    /// Validates the token, current password, updates the password, and invalidates the token
+    /// </summary>
+    /// <param name="request">Reset password request with token, current and new password</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result indicating success or failure and an error code/message for expected failures</returns>
+    Task<ResetPasswordResult> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken = default);
 }

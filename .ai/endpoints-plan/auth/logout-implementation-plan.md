@@ -21,8 +21,6 @@ The Logout endpoint allows users to invalidate their refresh token, effectively 
 ## 3. Used Types
 - **Request DTO**: `LogoutRequestDto` (Application/DTOs/Auth/LogoutRequestDto.cs)
   - Property: `RefreshToken` (string, required)
-- **Command Model**: `LogoutCommand` (Application/Commands/Auth/LogoutCommand.cs)
-  - Properties: `RefreshToken` (string), `UserId` (extracted from token, Guid)
 - **Response DTO**: `LogoutResponseDto` (Application/DTOs/Auth/LogoutResponseDto.cs)
   - Property: `Message` (string, e.g., "Logged out successfully")
 - **Domain Entities**: `User` (for validation), `AuditLog` (for error logging)
@@ -45,7 +43,7 @@ The Logout endpoint allows users to invalidate their refresh token, effectively 
 
 ## 5. Data Flow
 1. **API Layer**: `AuthController.Logout` receives the POST request, binds the body to `LogoutRequestDto`, and validates input.
-2. **Application Layer**: Maps to `LogoutCommand`, calls `AuthService.LogoutAsync`.
+2. **Application Layer**: Passes the request to `AuthService.LogoutAsync`.
 3. **Service Logic**: Validates the refresh token (decode JWT, check expiry, verify against database), invalidates it (e.g., update user record or blacklist), and logs success/failure to `AuditLog`.
 4. **Infrastructure Layer**: Uses `ApplicationDbContext` to interact with `Users` and `AuditLog` tables. If invalidation involves external storage (e.g., Redis for blacklisting), use appropriate adapters.
 5. **Response**: Returns success message or error details.
@@ -74,12 +72,11 @@ The Logout endpoint allows users to invalidate their refresh token, effectively 
 
 ## 9. Implementation Steps
 1. **Create DTOs**: Implement `LogoutRequestDto` and `LogoutResponseDto` in Application/DTOs/Auth/.
-2. **Create Command**: Add `LogoutCommand` in Application/Commands/Auth/.
-3. **Update AuthService**: Add `LogoutAsync` method in `AuthService` to handle validation and invalidation logic.
-4. **Add Repository Methods**: Ensure `IAuditLogRepository` has methods for logging events.
-5. **Implement Controller**: Add `Logout` action in `AuthController` with model validation and error handling.
-6. **Add Validation**: Use FluentValidation for `LogoutRequestDto` to check token format.
-7. **Database Changes**: If needed, add fields to `Users` table for token invalidation (via migration).
-8. **Testing**: Write unit tests for service logic and integration tests for the endpoint.
-9. **Security Review**: Ensure token invalidation prevents reuse and review for vulnerabilities.
-10. **Documentation**: Update Swagger with endpoint details, examples, and security schemes.
+2. **Update AuthService**: Add `LogoutAsync` method in `AuthService` to handle validation and invalidation logic.
+3. **Add Repository Methods**: Ensure `IAuditLogRepository` has methods for logging events.
+4. **Implement Controller**: Add `Logout` action in `AuthController` with model validation and error handling.
+5. **Add Validation**: Use FluentValidation for `LogoutRequestDto` to check token format.
+6. **Database Changes**: If needed, add fields to `Users` table for token invalidation (via migration).
+7. **Testing**: Write unit tests for service logic and integration tests for the endpoint.
+8. **Security Review**: Ensure token invalidation prevents reuse and review for vulnerabilities.
+9. **Documentation**: Update Swagger with endpoint details, examples, and security schemes.

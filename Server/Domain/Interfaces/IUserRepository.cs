@@ -46,4 +46,12 @@ public interface IUserRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Task representing the asynchronous operation</returns>
     Task UpdateAsync(User user, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a user by password reset token, including their roles
+    /// </summary>
+    /// <param name="token">The password reset token to search for</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The user if found, null otherwise</returns>
+    Task<User?> GetByPasswordResetTokenAsync(string token, CancellationToken cancellationToken = default);
 }

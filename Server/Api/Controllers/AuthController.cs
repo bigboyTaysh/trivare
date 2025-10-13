@@ -216,4 +216,42 @@ public class AuthController : ControllerBase
             });
         }
     }
+
+    /// <summary>
+    /// Reset user password using reset token
+    /// </summary>
+    /// <param name="request">Reset password details including token and new password</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Success message</returns>
+    /// <response code="200">Password reset successful</response>
+    /// <response code="400">Invalid token, expired token, or weak password</response>
+    /// <response code="404">Token not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("reset-password")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _authService.ResetPasswordAsync(request, cancellationToken);
+
+        if (result.Success)
+        {
+            return Ok(new { message = result.Message ?? "Password reset successful" });
+        }
+
+        // Map expected failure codes to HTTP responses
+        var message = result.Message ?? "An error occurred";
+        return result.ErrorCode switch
+        {
+            "TokenNotFound" => NotFound(new ErrorResponse { Error = "TokenNotFound", Message = message }),
+            "TokenExpired" => BadRequest(new ErrorResponse { Error = "TokenExpired", Message = message }),
+            "CurrentPasswordMismatch" => BadRequest(new ErrorResponse { Error = "CurrentPasswordMismatch", Message = message }),
+            "SamePassword" => BadRequest(new ErrorResponse { Error = "SamePassword", Message = message }),
+            _ => StatusCode(500, new ErrorResponse { Error = "InternalServerError", Message = message })
+        };
+    }
 }

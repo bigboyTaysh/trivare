@@ -150,7 +150,7 @@ The API is organized around the following main resources, mapped to database tab
 
 ---
 
-#### 2.1.5 Reset Password
+#### 2.1.6 Reset Password
 
 - **Method:** `POST`
 - **Path:** `/api/auth/reset-password`

@@ -321,4 +321,116 @@ public class AuthService : IAuthService
             // Don't throw - audit logging failure shouldn't break registration
         }
     }
+
+    /// <summary>
+    /// Resets a user's password using a reset token
+    /// Returns a ResetPasswordResult indicating expected failure modes instead of throwing
+    /// </summary>
+    public async Task<ResetPasswordResult> ResetPasswordAsync(
+        ResetPasswordRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Fetch user by reset token
+            var user = await _userRepository.GetByPasswordResetTokenAsync(request.Token, cancellationToken);
+            if (user == null)
+            {
+                _logger.LogWarning("Password reset failed - token not found: {Token}", request.Token);
+                await LogAuditAsync(null, "PasswordResetFailed", new
+                {
+                    Reason = "TokenNotFound",
+                    Token = request.Token
+                }, cancellationToken);
+
+                return new ResetPasswordResult
+                {
+                    Success = false,
+                    ErrorCode = "TokenNotFound",
+                    Message = "Reset token not found"
+                };
+            }
+
+            // Check if token is expired
+            if (user.PasswordResetTokenExpiry.HasValue && 
+                user.PasswordResetTokenExpiry.Value < DateTime.UtcNow)
+            {
+                _logger.LogWarning("Password reset failed - token expired: UserId {UserId}, Token {Token}", 
+                    user.Id, request.Token);
+                await LogAuditAsync(user.Id, "PasswordResetFailed", new
+                {
+                    Reason = "TokenExpired",
+                    Token = request.Token
+                }, cancellationToken);                return new ResetPasswordResult
+                {
+                    Success = false,
+                    ErrorCode = "TokenExpired",
+                    Message = "Reset token has expired"
+                };
+            }
+
+            // Verify current password provided by user
+            if (!_passwordHashingService.VerifyPassword(request.CurrentPassword, user.PasswordHash, user.PasswordSalt))
+            {
+                _logger.LogWarning("Password reset failed - current password mismatch: UserId {UserId}", user.Id);
+                await LogAuditAsync(user.Id, "PasswordResetFailed", new
+                {
+                    Reason = "CurrentPasswordMismatch",
+                    Token = request.Token
+                }, cancellationToken);
+
+                return new ResetPasswordResult
+                {
+                    Success = false,
+                    ErrorCode = "CurrentPasswordMismatch",
+                    Message = "Current password is incorrect"
+                };
+            }
+
+            // Check if new password is the same as current password
+            if (_passwordHashingService.VerifyPassword(request.NewPassword, user.PasswordHash, user.PasswordSalt))
+            {
+                _logger.LogWarning("Password reset failed - new password same as current: UserId {UserId}", user.Id);
+                await LogAuditAsync(user.Id, "PasswordResetFailed", new
+                {
+                    Reason = "SamePassword",
+                    Token = request.Token
+                }, cancellationToken);
+
+                return new ResetPasswordResult
+                {
+                    Success = false,
+                    ErrorCode = "SamePassword",
+                    Message = "New password cannot be the same as the current password"
+                };
+            }
+
+            // Hash new password
+            var (newHash, newSalt) = _passwordHashingService.HashPassword(request.NewPassword);
+
+            // Update user password and clear reset token
+            user.PasswordHash = newHash;
+            user.PasswordSalt = newSalt;
+            user.PasswordResetToken = null;
+            user.PasswordResetTokenExpiry = null;
+
+            // Save changes
+            await _userRepository.UpdateAsync(user, cancellationToken);
+
+            return new ResetPasswordResult
+            {
+                Success = true,
+                Message = "Password reset successful"
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ResetPasswordResult
+            {
+                Success = false,
+                ErrorCode = "InternalError",
+                Message = "An unexpected error occurred"
+            };
+        }
+    }
 }
