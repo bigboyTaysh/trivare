@@ -51,17 +51,10 @@ public class AuthService : IAuthService
         if (await _userRepository.EmailExistsAsync(email, cancellationToken))
         {
             _logger.LogWarning("Registration failed - email already exists: {Email}", email);
-            
-            // Log failed registration attempt
-            await LogAuditAsync(null, "RegistrationFailed", new
-            {
-                Email = email,
-                Reason = "EmailAlreadyExists"
-            }, cancellationToken);
 
             throw new EmailAlreadyExistsException(email);
-        }
-
+        }        
+        
         // Get default "User" role
         var defaultRole = await _roleRepository.GetByNameAsync("User", cancellationToken);
         if (defaultRole == null)
@@ -103,14 +96,6 @@ public class AuthService : IAuthService
         {
             _logger.LogError(ex, "Database error during user registration for email: {Email}", email);
             
-            // Log failed registration attempt
-            await LogAuditAsync(null, "RegistrationFailed", new
-            {
-                Email = email,
-                Reason = "DatabaseError",
-                ErrorMessage = ex.Message
-            }, cancellationToken);
-
             throw;
         }
 
@@ -148,13 +133,6 @@ public class AuthService : IAuthService
             {
                 _logger.LogWarning("Login failed - user not found: {Email}", email);
                 
-                // Log failed attempt
-                await LogAuditAsync(null, "LoginFailed", new
-                {
-                    Email = email,
-                    Reason = "UserNotFound"
-                }, cancellationToken);
-
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
 
@@ -164,13 +142,6 @@ public class AuthService : IAuthService
                 _logger.LogWarning("Login failed - invalid password: {Email}, UserId: {UserId}", 
                     email, user.Id);
                 
-                // Log failed attempt with user ID
-                await LogAuditAsync(user.Id, "LoginFailed", new
-                {
-                    Email = email,
-                    Reason = "InvalidPassword"
-                }, cancellationToken);
-
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
 
@@ -180,12 +151,6 @@ public class AuthService : IAuthService
 
             _logger.LogInformation("User logged in successfully: {Email}, UserId: {UserId}", 
                 user.Email, user.Id);
-
-            // Log successful login
-            await LogAuditAsync(user.Id, "LoginSuccessful", new
-            {
-                Email = user.Email
-            }, cancellationToken);
 
             // Map to UserDto
             var userDto = new UserDto
@@ -200,7 +165,7 @@ public class AuthService : IAuthService
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
-                ExpiresIn = _jwtTokenService.AccessTokenExpiresIn,
+                ExpiresIn = _jwtTokenService.GetAccessTokenExpiresIn(),
                 User = userDto
             };
         }
@@ -212,13 +177,58 @@ public class AuthService : IAuthService
         {
             _logger.LogError(ex, "Unexpected error during login for email: {Email}", email);
             
-            // Log error
-            await LogAuditAsync(null, "LoginError", new
-            {
-                Email = email,
-                ErrorMessage = ex.Message
-            }, cancellationToken);
+            throw;
+        }
+    }
 
+    /// <summary>
+    /// Refreshes access token using a valid refresh token
+    /// </summary>
+    public async Task<RefreshTokenResponse> RefreshTokenAsync(
+        RefreshTokenRequest request, 
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Validate the refresh token
+            var userId = _jwtTokenService.ValidateRefreshToken(request.RefreshToken);
+            if (userId == null)
+            {
+                _logger.LogWarning("Refresh token validation failed - invalid token");
+                
+                throw new UnauthorizedAccessException("Invalid refresh token");
+            }
+
+            // Fetch user by ID
+            var user = await _userRepository.GetByIdAsync(userId.Value, cancellationToken);
+            if (user == null)
+            {
+                _logger.LogWarning("Refresh token validation failed - user not found: UserId {UserId}", userId);
+                
+                throw new UnauthorizedAccessException("Invalid refresh token");
+            }
+
+            // Generate new tokens
+            var newAccessToken = _jwtTokenService.GenerateAccessToken(user);
+            var newRefreshToken = _jwtTokenService.GenerateRefreshToken(user.Id);
+
+            _logger.LogInformation("Refresh token successful: UserId {UserId}", user.Id);
+
+            return new RefreshTokenResponse
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken,
+                ExpiresIn = _jwtTokenService.GetAccessTokenExpiresIn()
+            };
+        }
+        catch (UnauthorizedAccessException)
+        {
+            throw; // Re-throw authentication errors
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error during refresh token");
+            
             throw;
         }
     }

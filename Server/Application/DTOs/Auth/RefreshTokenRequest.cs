@@ -1,12 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Trivare.Application.DTOs.Auth;
 
 /// <summary>
-/// Request model for refreshing access token
+/// Request model for refresh token operation
+/// Contains the refresh token to validate and exchange for new tokens
 /// </summary>
 public record RefreshTokenRequest
 {
     /// <summary>
-    /// Valid refresh token to exchange for new access token
+    /// JWT refresh token for obtaining new access tokens
     /// </summary>
+    [Required(ErrorMessage = "Refresh token is required")]
     public required string RefreshToken { get; init; }
 }

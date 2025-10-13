@@ -24,7 +24,19 @@ public interface IJwtTokenService
     string GenerateRefreshToken(Guid userId);
 
     /// <summary>
+    /// Validates a refresh token and returns the user ID if valid
+    /// </summary>
+    /// <param name="token">Refresh token to validate</param>
+    /// <returns>User ID if token is valid, null otherwise</returns>
+    Guid? ValidateRefreshToken(string token);
+
+    /// <summary>
     /// Gets the access token expiration time in seconds
     /// </summary>
-    int AccessTokenExpiresIn { get; }
+    int GetAccessTokenExpiresIn();
+
+    /// <summary>
+    /// Gets the refresh token expiration time in days
+    /// </summary>
+    int GetRefreshTokenExpiresInDays();
 }

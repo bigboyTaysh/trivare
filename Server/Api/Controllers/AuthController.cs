@@ -162,4 +162,67 @@ public class AuthController : ControllerBase
             });
         }
     }
+
+    /// <summary>
+    /// Refresh access token using a valid refresh token
+    /// </summary>
+    /// <param name="request">Refresh token request containing the refresh token</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>New JWT tokens</returns>
+    /// <response code="200">Token refresh successful</response>
+    /// <response code="400">Invalid input data or validation errors</response>
+    /// <response code="401">Invalid or expired refresh token</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("refresh")]
+    [ProducesResponseType(typeof(RefreshTokenResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<RefreshTokenResponse>> RefreshToken(
+        [FromBody] RefreshTokenRequest request,
+        CancellationToken cancellationToken)
+    {
+        // Validate model state
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
+                );
+
+            return BadRequest(new ErrorResponse
+            {
+                Error = "ValidationError",
+                Message = "One or more validation errors occurred",
+                Errors = errors
+            });
+        }
+
+        try
+        {
+            var response = await _authService.RefreshTokenAsync(request, cancellationToken);
+            return Ok(response);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Invalid or expired refresh token
+            return Unauthorized(new ErrorResponse
+            {
+                Error = "InvalidRefreshToken",
+                Message = "Invalid or expired refresh token"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error during token refresh");
+            
+            return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse
+            {
+                Error = "InternalError",
+                Message = "An error occurred during token refresh. Please try again later."
+            });
+        }
+    }
 }

@@ -25,4 +25,14 @@ public interface IAuthService
     /// <returns>Login response with JWT tokens and user information</returns>
     /// <exception cref="UnauthorizedAccessException">Thrown when credentials are invalid</exception>
     Task<LoginResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Refreshes access token using a valid refresh token
+    /// Validates the refresh token and generates new access and refresh tokens
+    /// </summary>
+    /// <param name="request">Refresh token request containing the refresh token</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Refresh token response with new JWT tokens</returns>
+    /// <exception cref="UnauthorizedAccessException">Thrown when refresh token is invalid or expired</exception>
+    Task<RefreshTokenResponse> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken = default);
 }
