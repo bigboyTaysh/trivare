@@ -1,3 +1,4 @@
+using Trivare.Application.DTOs.Common;
 using Trivare.Application.DTOs.Users;
 using Trivare.Application.Interfaces;
 using Trivare.Domain.Interfaces;
@@ -19,13 +20,13 @@ public class UserService : IUserService
     /// <summary>
     /// Gets the current authenticated user's profile information
     /// </summary>
-    public async Task<UserDto> GetCurrentUserAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<Result<UserDto>> GetCurrentUserAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
 
         if (user == null)
         {
-            throw new InvalidOperationException("User not found");
+            return new ErrorResponse { Error = UserErrorCodes.UserNotFound, Message = "User not found" };
         }
 
         return new UserDto

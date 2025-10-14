@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Trivare.Api.Controllers.Utils;
 using Trivare.Application.DTOs.Auth;
 using Trivare.Application.DTOs.Common;
-using Trivare.Application.Exceptions;
 using Trivare.Application.Interfaces;
 
 namespace Trivare.Api.Controllers;
@@ -44,32 +44,17 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var response = await _authService.RegisterAsync(request, cancellationToken);
+            var result = await _authService.RegisterAsync(request, cancellationToken);
+            if (result.IsFailure)
+            {
+                return this.HandleResult(result);
+            }
             
-            // Return 201 Created with Location header
             return CreatedAtAction(
                 actionName: nameof(Register),
-                routeValues: new { id = response.Id },
-                value: response
+                routeValues: new { id = result.Value.Id },
+                value: result.Value
             );
-        }
-        catch (EmailAlreadyExistsException ex)
-        {
-            _logger.LogWarning(ex, "Registration failed - email already exists");
-            return Conflict(new ErrorResponse
-            {
-                Error = "EmailAlreadyExists",
-                Message = ex.Message
-            });
-        }
-        catch (InvalidOperationException ex) when (ex.Message.Contains("Role"))
-        {
-            _logger.LogCritical(ex, "Default 'User' role not found in database");
-            return StatusCode(500, new ErrorResponse
-            {
-                Error = "InternalServerError",
-                Message = "An error occurred while processing your request. Please try again later."
-            });
         }
         catch (Exception ex)
         {
@@ -103,17 +88,8 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var response = await _authService.LoginAsync(request, cancellationToken);
-            return Ok(response);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            // User not found or invalid password - same message for security
-            return Unauthorized(new ErrorResponse
-            {
-                Error = "InvalidCredentials",
-                Message = "Invalid email or password"
-            });
+            var result = await _authService.LoginAsync(request, cancellationToken);
+            return this.HandleResult(result);
         }
         catch (Exception ex)
         {
@@ -148,17 +124,8 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var response = await _authService.RefreshTokenAsync(request, cancellationToken);
-            return Ok(response);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            // Invalid or expired refresh token
-            return Unauthorized(new ErrorResponse
-            {
-                Error = "InvalidRefreshToken",
-                Message = "Invalid or expired refresh token"
-            });
+            var result = await _authService.RefreshTokenAsync(request, cancellationToken);
+            return this.HandleResult(result);
         }
         catch (Exception ex)
         {
@@ -193,17 +160,8 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var response = await _authService.LogoutAsync(request, cancellationToken);
-            return Ok(response);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            // Invalid refresh token
-            return Unauthorized(new ErrorResponse
-            {
-                Error = "InvalidRefreshToken",
-                Message = "Invalid refresh token provided"
-            });
+            var result = await _authService.LogoutAsync(request, cancellationToken);
+            return this.HandleResult(result);
         }
         catch (Exception ex)
         {
@@ -236,22 +194,20 @@ public class AuthController : ControllerBase
         [FromBody] ResetPasswordRequest request,
         CancellationToken cancellationToken)
     {
-        var result = await _authService.ResetPasswordAsync(request, cancellationToken);
-
-        if (result.Success)
+        try
         {
-            return Ok(new { message = result.Message ?? "Password reset successful" });
+            var result = await _authService.ResetPasswordAsync(request, cancellationToken);
+            return this.HandleResult(result);
         }
-
-        // Map expected failure codes to HTTP responses
-        var message = result.Message ?? "An error occurred";
-        return result.ErrorCode switch
+        catch (Exception ex)
         {
-            "TokenNotFound" => NotFound(new ErrorResponse { Error = "TokenNotFound", Message = message }),
-            "TokenExpired" => BadRequest(new ErrorResponse { Error = "TokenExpired", Message = message }),
-            "CurrentPasswordMismatch" => BadRequest(new ErrorResponse { Error = "CurrentPasswordMismatch", Message = message }),
-            "SamePassword" => BadRequest(new ErrorResponse { Error = "SamePassword", Message = message }),
-            _ => StatusCode(500, new ErrorResponse { Error = "InternalServerError", Message = message })
-        };
+            _logger.LogError(ex, "Unexpected error during password reset");
+            
+            return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse
+            {
+                Error = "InternalError",
+                Message = "An error occurred during password reset. Please try again later."
+            });
+        }
     }
 }

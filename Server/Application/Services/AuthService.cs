@@ -1,8 +1,8 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Trivare.Application.DTOs.Auth;
+using Trivare.Application.DTOs.Common;
 using Trivare.Application.DTOs.Users;
-using Trivare.Application.Exceptions;
 using Trivare.Application.Interfaces;
 using Trivare.Domain.Entities;
 using Trivare.Domain.Interfaces;
@@ -40,7 +40,7 @@ public class AuthService : IAuthService
     /// <summary>
     /// Registers a new user account
     /// </summary>
-    public async Task<RegisterResponse> RegisterAsync(
+    public async Task<Result<RegisterResponse>> RegisterAsync(
         RegisterRequest request, 
         CancellationToken cancellationToken = default)
     {
@@ -51,7 +51,7 @@ public class AuthService : IAuthService
         if (await _userRepository.EmailExistsAsync(email, cancellationToken))
         {
             _logger.LogWarning("Registration failed - email already exists: {Email}", email);
-            throw new EmailAlreadyExistsException(email);
+            return new ErrorResponse { Error = AuthErrorCodes.EmailAlreadyExists, Message = $"Email '{email}' is already registered." };
         }        
         
         // Get default "User" role
@@ -76,7 +76,6 @@ public class AuthService : IAuthService
         };
 
         // Assign default role
-        // Only set foreign keys - don't set navigation properties to avoid EF tracking issues
         var userRole = new UserRole
         {
             UserId = user.Id,
@@ -84,22 +83,21 @@ public class AuthService : IAuthService
         };
         user.UserRoles.Add(userRole);
 
-        // Save to database
-        try
+        await _userRepository.AddAsync(user, cancellationToken);
+
+        var auditLogEntry = new AuditLog
         {
-            await _userRepository.AddAsync(user, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Database error during user registration for email: {Email}", email);
-            throw;
-        }
+            UserId = user.Id,
+            EventType = "UserRegistered",
+            EventTimestamp = DateTime.UtcNow,
+            Details = JsonSerializer.Serialize(new
+            {
+                Email = user.Email
+            })
+        };
 
         // Log successful registration
-        await LogAuditAsync(user.Id, "UserRegistered", new
-        {
-            Email = user.Email
-        }, cancellationToken);
+        await _auditLogRepository.AddAsync(auditLogEntry, cancellationToken);
 
         // Map to response DTO
         return new RegisterResponse
@@ -113,324 +111,199 @@ public class AuthService : IAuthService
     /// <summary>
     /// Authenticates a user with email and password
     /// </summary>
-    public async Task<LoginResponse> LoginAsync(
+    public async Task<Result<LoginResponse>> LoginAsync(
         LoginRequest request, 
         CancellationToken cancellationToken = default)
     {
         // Normalize email to lowercase and trim whitespace
         var email = request.Email.Trim().ToLowerInvariant();
 
-        try
+        // Fetch user with roles
+        var user = await _userRepository.GetByEmailAsync(email, cancellationToken);
+        
+        if (user == null)
         {
-            // Fetch user with roles
-            var user = await _userRepository.GetByEmailAsync(email, cancellationToken);
-            
-            if (user == null)
-            {
-                _logger.LogWarning("Login failed - user not found: {Email}", email);
-                throw new UnauthorizedAccessException("Invalid credentials");
-            }
-
-            // Verify password
-            if (!_passwordHashingService.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
-            {
-                _logger.LogWarning("Login failed - invalid password: {Email}, UserId: {UserId}", 
-                    email, user.Id);
-                throw new UnauthorizedAccessException("Invalid credentials");
-            }
-
-            // Generate JWT tokens
-            var accessToken = _jwtTokenService.GenerateAccessToken(user);
-            var refreshToken = _jwtTokenService.GenerateRefreshToken(user.Id);
-
-            // Store refresh token in database
-            user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_jwtTokenService.GetRefreshTokenExpiresInDays());
-            await _userRepository.UpdateAsync(user, cancellationToken);
-
-            // Map to UserDto
-            var userDto = new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                CreatedAt = user.CreatedAt,
-                Roles = user.UserRoles.Select(ur => ur.Role?.Name ?? "Unknown").ToList()
-            };
-
-            return new LoginResponse
-            {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
-                ExpiresIn = _jwtTokenService.GetAccessTokenExpiresIn(),
-                User = userDto
-            };
+            _logger.LogWarning("Login failed - user not found: {Email}", email);
+            return new ErrorResponse { Error = AuthErrorCodes.InvalidCredentials, Message = "Invalid email or password" };
         }
-        catch (UnauthorizedAccessException)
+
+        // Verify password
+        if (!_passwordHashingService.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
         {
-            throw; // Re-throw authentication errors
+            _logger.LogWarning("Login failed - invalid password: {Email}, UserId: {UserId}", 
+                email, user.Id);
+            return new ErrorResponse { Error = AuthErrorCodes.InvalidCredentials, Message = "Invalid email or password" };
         }
-        catch (Exception ex)
+
+        // Generate JWT tokens
+        var accessToken = _jwtTokenService.GenerateAccessToken(user);
+        var refreshToken = _jwtTokenService.GenerateRefreshToken(user.Id);
+
+        // Store refresh token in database
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_jwtTokenService.GetRefreshTokenExpiresInDays());
+        await _userRepository.UpdateAsync(user, cancellationToken);
+
+        // Map to UserDto
+        var userDto = new UserDto
         {
-            _logger.LogError(ex, "Unexpected error during login for email: {Email}", email);
-            throw;
-        }
+            Id = user.Id,
+            Email = user.Email,
+            CreatedAt = user.CreatedAt,
+            Roles = user.UserRoles.Select(ur => ur.Role?.Name ?? "Unknown").ToList()
+        };
+
+        return new LoginResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            ExpiresIn = _jwtTokenService.GetAccessTokenExpiresIn(),
+            User = userDto
+        };
     }
 
     /// <summary>
     /// Refreshes access token using a valid refresh token
     /// </summary>
-    public async Task<RefreshTokenResponse> RefreshTokenAsync(
+    public async Task<Result<RefreshTokenResponse>> RefreshTokenAsync(
         RefreshTokenRequest request, 
         CancellationToken cancellationToken = default)
     {
-        try
+        // Validate the refresh token
+        var userId = _jwtTokenService.ValidateRefreshToken(request.RefreshToken);
+        if (userId == null)
         {
-            // Validate the refresh token
-            var userId = _jwtTokenService.ValidateRefreshToken(request.RefreshToken);
-            if (userId == null)
-            {
-                _logger.LogWarning("Refresh token validation failed - invalid token");
-                throw new UnauthorizedAccessException("Invalid refresh token");
-            }
-
-            // Fetch user by ID
-            var user = await _userRepository.GetByIdAsync(userId.Value, cancellationToken);
-            if (user == null)
-            {
-                _logger.LogWarning("Refresh token validation failed - user not found: UserId {UserId}", userId);
-                throw new UnauthorizedAccessException("Invalid refresh token");
-            }
-
-            // Check if the refresh token matches the stored one and is not expired
-            if (user.RefreshToken != request.RefreshToken || 
-                user.RefreshTokenExpiryTime == null || 
-                user.RefreshTokenExpiryTime <= DateTime.UtcNow)
-            {
-                _logger.LogWarning("Refresh token validation failed - token mismatch or expired: UserId {UserId}", userId);
-                throw new UnauthorizedAccessException("Invalid refresh token");
-            }
-
-            // Generate new tokens
-            var newAccessToken = _jwtTokenService.GenerateAccessToken(user);
-            var newRefreshToken = _jwtTokenService.GenerateRefreshToken(user.Id);
-
-            // Update refresh token in database
-            user.RefreshToken = newRefreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_jwtTokenService.GetRefreshTokenExpiresInDays());
-            await _userRepository.UpdateAsync(user, cancellationToken);
-
-            return new RefreshTokenResponse
-            {
-                AccessToken = newAccessToken,
-                RefreshToken = newRefreshToken,
-                ExpiresIn = _jwtTokenService.GetAccessTokenExpiresIn()
-            };
+            _logger.LogWarning("Refresh token validation failed - invalid token");
+            return new ErrorResponse { Error = AuthErrorCodes.InvalidRefreshToken, Message = "Invalid refresh token" };
         }
-        catch (UnauthorizedAccessException)
+
+        // Fetch user by ID
+        var user = await _userRepository.GetByIdAsync(userId.Value, cancellationToken);
+        if (user == null)
         {
-            throw; // Re-throw authentication errors
+            _logger.LogWarning("Refresh token validation failed - user not found: UserId {UserId}", userId);
+            return new ErrorResponse { Error = AuthErrorCodes.InvalidRefreshToken, Message = "Invalid refresh token" };
         }
-        catch (Exception ex)
+
+        // Check if the refresh token matches the stored one and is not expired
+        if (user.RefreshToken != request.RefreshToken || 
+            user.RefreshTokenExpiryTime == null || 
+            user.RefreshTokenExpiryTime <= DateTime.UtcNow)
         {
-            _logger.LogError(ex, "Unexpected error during refresh token");
-            throw;
+            _logger.LogWarning("Refresh token validation failed - token mismatch or expired: UserId {UserId}", userId);
+            return new ErrorResponse { Error = AuthErrorCodes.InvalidRefreshToken, Message = "Invalid or expired refresh token" };
         }
+
+        // Generate new tokens
+        var newAccessToken = _jwtTokenService.GenerateAccessToken(user);
+        var newRefreshToken = _jwtTokenService.GenerateRefreshToken(user.Id);
+
+        // Update refresh token in database
+        user.RefreshToken = newRefreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_jwtTokenService.GetRefreshTokenExpiresInDays());
+        await _userRepository.UpdateAsync(user, cancellationToken);
+
+        return new RefreshTokenResponse
+        {
+            AccessToken = newAccessToken,
+            RefreshToken = newRefreshToken,
+            ExpiresIn = _jwtTokenService.GetAccessTokenExpiresIn()
+        };
     }
 
     /// <summary>
     /// Logs out a user by invalidating their refresh token
     /// </summary>
-    public async Task<LogoutResponse> LogoutAsync(
+    public async Task<Result<LogoutResponse>> LogoutAsync(
         LogoutRequest request, 
         CancellationToken cancellationToken = default)
     {
-        try
+        // Validate the refresh token
+        var userId = _jwtTokenService.ValidateRefreshToken(request.RefreshToken);
+        if (userId == null)
         {
-            // Validate the refresh token
-            var userId = _jwtTokenService.ValidateRefreshToken(request.RefreshToken);
-            if (userId == null)
-            {
-                _logger.LogWarning("Logout failed - invalid refresh token");
-                throw new UnauthorizedAccessException("Invalid refresh token provided");
-            }
-
-            // Fetch user by ID
-            var user = await _userRepository.GetByIdAsync(userId.Value, cancellationToken);
-            if (user == null)
-            {
-                _logger.LogWarning("Logout failed - user not found: UserId {UserId}", userId);
-                throw new UnauthorizedAccessException("Invalid refresh token provided");
-            }
-
-            // Check if the refresh token matches the stored one and is not expired
-            if (user.RefreshToken != request.RefreshToken || 
-                user.RefreshTokenExpiryTime == null || 
-                user.RefreshTokenExpiryTime <= DateTime.UtcNow)
-            {
-                _logger.LogWarning("Logout failed - token mismatch or expired: UserId {UserId}", userId);
-                throw new UnauthorizedAccessException("Invalid refresh token provided");
-            }
-
-            // Invalidate the refresh token by clearing it from the user record
-            user.RefreshToken = null;
-            user.RefreshTokenExpiryTime = null;
-            
-            await _userRepository.UpdateAsync(user, cancellationToken);
-            
-            return new LogoutResponse
-            {
-                Message = "Logged out successfully"
-            };
+            _logger.LogWarning("Logout failed - invalid refresh token");
+            return new ErrorResponse { Error = AuthErrorCodes.InvalidRefreshToken, Message = "Invalid refresh token provided" };
         }
-        catch (UnauthorizedAccessException)
+
+        // Fetch user by ID
+        var user = await _userRepository.GetByIdAsync(userId.Value, cancellationToken);
+        if (user == null)
         {
-            throw; // Re-throw authentication errors
+            _logger.LogWarning("Logout failed - user not found: UserId {UserId}", userId);
+            return new ErrorResponse { Error = AuthErrorCodes.InvalidRefreshToken, Message = "Invalid refresh token provided" };
         }
-        catch (Exception ex)
+
+        // Check if the refresh token matches the stored one
+        if (user.RefreshToken != request.RefreshToken)
         {
-            _logger.LogError(ex, "Unexpected error during logout");
-            throw;
+            _logger.LogWarning("Logout failed - token mismatch: UserId {UserId}", userId);
+            return new ErrorResponse { Error = AuthErrorCodes.InvalidRefreshToken, Message = "Invalid refresh token provided" };
         }
+
+        // Invalidate the refresh token by clearing it from the user record
+        user.RefreshToken = null;
+        user.RefreshTokenExpiryTime = null;
+        
+        await _userRepository.UpdateAsync(user, cancellationToken);
+        
+        return new LogoutResponse
+        {
+            Message = "Logged out successfully"
+        };
     }
-
-    /// <summary>
-    /// Helper method to create audit log entries
-    /// Failures in audit logging don't break the main operation
-    /// </summary>
-    private async Task LogAuditAsync(
-        Guid? userId, 
-        string eventType, 
-        object details, 
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var auditLog = new AuditLog
-            {
-                UserId = userId,
-                EventType = eventType,
-                EventTimestamp = DateTime.UtcNow,
-                Details = JsonSerializer.Serialize(details)
-            };
-
-            await _auditLogRepository.AddAsync(auditLog, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to write audit log for event: {EventType}", eventType);
-            // Don't throw - audit logging failure shouldn't break registration
-        }
-    }
-
+    
     /// <summary>
     /// Resets a user's password using a reset token
     /// Returns a ResetPasswordResult indicating expected failure modes instead of throwing
     /// </summary>
-    public async Task<ResetPasswordResult> ResetPasswordAsync(
+    public async Task<Result<string>> ResetPasswordAsync(
         ResetPasswordRequest request,
         CancellationToken cancellationToken = default)
     {
-        try
+        // Fetch user by reset token
+        var user = await _userRepository.GetByPasswordResetTokenAsync(request.Token, cancellationToken);
+        if (user == null)
         {
-            // Fetch user by reset token
-            var user = await _userRepository.GetByPasswordResetTokenAsync(request.Token, cancellationToken);
-            if (user == null)
-            {
-                _logger.LogWarning("Password reset failed - token not found: {Token}", request.Token);
-                await LogAuditAsync(null, "PasswordResetFailed", new
-                {
-                    Reason = "TokenNotFound",
-                    Token = request.Token
-                }, cancellationToken);
-
-                return new ResetPasswordResult
-                {
-                    Success = false,
-                    ErrorCode = "TokenNotFound",
-                    Message = "Reset token not found"
-                };
-            }
-
-            // Check if token is expired
-            if (user.PasswordResetTokenExpiry.HasValue && 
-                user.PasswordResetTokenExpiry.Value < DateTime.UtcNow)
-            {
-                _logger.LogWarning("Password reset failed - token expired: UserId {UserId}, Token {Token}", 
-                    user.Id, request.Token);
-                await LogAuditAsync(user.Id, "PasswordResetFailed", new
-                {
-                    Reason = "TokenExpired",
-                    Token = request.Token
-                }, cancellationToken);                return new ResetPasswordResult
-                {
-                    Success = false,
-                    ErrorCode = "TokenExpired",
-                    Message = "Reset token has expired"
-                };
-            }
-
-            // Verify current password provided by user
-            if (!_passwordHashingService.VerifyPassword(request.CurrentPassword, user.PasswordHash, user.PasswordSalt))
-            {
-                _logger.LogWarning("Password reset failed - current password mismatch: UserId {UserId}", user.Id);
-                await LogAuditAsync(user.Id, "PasswordResetFailed", new
-                {
-                    Reason = "CurrentPasswordMismatch",
-                    Token = request.Token
-                }, cancellationToken);
-
-                return new ResetPasswordResult
-                {
-                    Success = false,
-                    ErrorCode = "CurrentPasswordMismatch",
-                    Message = "Current password is incorrect"
-                };
-            }
-
-            // Check if new password is the same as current password
-            if (_passwordHashingService.VerifyPassword(request.NewPassword, user.PasswordHash, user.PasswordSalt))
-            {
-                _logger.LogWarning("Password reset failed - new password same as current: UserId {UserId}", user.Id);
-                await LogAuditAsync(user.Id, "PasswordResetFailed", new
-                {
-                    Reason = "SamePassword",
-                    Token = request.Token
-                }, cancellationToken);
-
-                return new ResetPasswordResult
-                {
-                    Success = false,
-                    ErrorCode = "SamePassword",
-                    Message = "New password cannot be the same as the current password"
-                };
-            }
-
-            // Hash new password
-            var (newHash, newSalt) = _passwordHashingService.HashPassword(request.NewPassword);
-
-            // Update user password and clear reset token
-            user.PasswordHash = newHash;
-            user.PasswordSalt = newSalt;
-            user.PasswordResetToken = null;
-            user.PasswordResetTokenExpiry = null;
-
-            // Save changes
-            await _userRepository.UpdateAsync(user, cancellationToken);
-
-            return new ResetPasswordResult
-            {
-                Success = true,
-                Message = "Password reset successful"
-            };
+            _logger.LogWarning("Password reset failed - token not found: {Token}", request.Token);
+            return new ErrorResponse { Error = AuthErrorCodes.TokenNotFound, Message = "Reset token not found" };
         }
-        catch (Exception ex)
+
+        // Check if token is expired
+        if (user.PasswordResetTokenExpiry.HasValue && 
+            user.PasswordResetTokenExpiry.Value < DateTime.UtcNow)
         {
-            return new ResetPasswordResult
-            {
-                Success = false,
-                ErrorCode = "InternalError",
-                Message = "An unexpected error occurred"
-            };
+            _logger.LogWarning("Password reset failed - token expired: UserId {UserId}, Token {Token}", 
+                user.Id, request.Token);
+            return new ErrorResponse { Error = AuthErrorCodes.TokenExpired, Message = "Reset token has expired" };
         }
+
+        // Verify current password provided by user
+        if (!_passwordHashingService.VerifyPassword(request.CurrentPassword, user.PasswordHash, user.PasswordSalt))
+        {
+            _logger.LogWarning("Password reset failed - current password mismatch: UserId {UserId}", user.Id);
+            return new ErrorResponse { Error = AuthErrorCodes.CurrentPasswordMismatch, Message = "Current password is incorrect" };
+        }
+
+        // Check if new password is the same as current password
+        if (_passwordHashingService.VerifyPassword(request.NewPassword, user.PasswordHash, user.PasswordSalt))
+        {
+            _logger.LogWarning("Password reset failed - new password same as current: UserId {UserId}", user.Id);
+            return new ErrorResponse { Error = AuthErrorCodes.SamePassword, Message = "New password cannot be the same as the current password" };
+        }
+
+        // Hash new password
+        var (newHash, newSalt) = _passwordHashingService.HashPassword(request.NewPassword);
+
+        // Update user password and clear reset token
+        user.PasswordHash = newHash;
+        user.PasswordSalt = newSalt;
+        user.PasswordResetToken = null;
+        user.PasswordResetTokenExpiry = null;
+
+        // Save changes
+        await _userRepository.UpdateAsync(user, cancellationToken);
+
+        return "Password reset successful";
     }
 }

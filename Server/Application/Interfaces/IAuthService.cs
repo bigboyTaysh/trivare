@@ -1,4 +1,5 @@
 using Trivare.Application.DTOs.Auth;
+using Trivare.Application.DTOs.Common;
 
 namespace Trivare.Application.Interfaces;
 
@@ -13,8 +14,7 @@ public interface IAuthService
     /// <param name="request">Registration details including email and password</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Registration response with user information</returns>
-    /// <exception cref="Exceptions.EmailAlreadyExistsException">Thrown when email is already registered</exception>
-    Task<RegisterResponse> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
+    Task<Result<RegisterResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Authenticates a user with email and password credentials
@@ -23,8 +23,7 @@ public interface IAuthService
     /// <param name="request">Login credentials (email and password)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Login response with JWT tokens and user information</returns>
-    /// <exception cref="UnauthorizedAccessException">Thrown when credentials are invalid</exception>
-    Task<LoginResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default);
+    Task<Result<LoginResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Refreshes access token using a valid refresh token
@@ -33,8 +32,7 @@ public interface IAuthService
     /// <param name="request">Refresh token request containing the refresh token</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Refresh token response with new JWT tokens</returns>
-    /// <exception cref="UnauthorizedAccessException">Thrown when refresh token is invalid or expired</exception>
-    Task<RefreshTokenResponse> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken = default);
+    Task<Result<RefreshTokenResponse>> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Logs out a user by invalidating their refresh token
@@ -43,8 +41,7 @@ public interface IAuthService
     /// <param name="request">Logout request containing the refresh token</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Logout response with success message</returns>
-    /// <exception cref="UnauthorizedAccessException">Thrown when refresh token is invalid or expired</exception>
-    Task<LogoutResponse> LogoutAsync(LogoutRequest request, CancellationToken cancellationToken = default);
+    Task<Result<LogoutResponse>> LogoutAsync(LogoutRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Resets a user's password using a reset token
@@ -53,5 +50,5 @@ public interface IAuthService
     /// <param name="request">Reset password request with token, current and new password</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result indicating success or failure and an error code/message for expected failures</returns>
-    Task<ResetPasswordResult> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken = default);
+    Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken = default);
 }

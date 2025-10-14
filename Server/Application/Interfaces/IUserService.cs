@@ -1,3 +1,4 @@
+using Trivare.Application.DTOs.Common;
 using Trivare.Application.DTOs.Users;
 
 namespace Trivare.Application.Interfaces;
@@ -13,5 +14,5 @@ public interface IUserService
     /// <param name="userId">The ID of the authenticated user</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The user's profile data</returns>
-    Task<UserDto> GetCurrentUserAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<Result<UserDto>> GetCurrentUserAsync(Guid userId, CancellationToken cancellationToken = default);
 }
