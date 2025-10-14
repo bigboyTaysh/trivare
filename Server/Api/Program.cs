@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Trivare.Infrastructure.Settings;
+using Trivare.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -150,6 +151,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseGlobalExceptionHandler();
 
 // CORS must come before HttpsRedirection and Authorization
 app.UseCors("AllowFrontend");

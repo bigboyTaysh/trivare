@@ -330,25 +330,19 @@ public class AuthService : IAuthService
 
         await _userRepository.UpdateAsync(user, cancellationToken);
 
-        await _emailService.SendPasswordResetEmailAsync(user.Email, token);
-
-        _logger.LogInformation("Password reset token generated for {Email}", user.Email);
-
-        var auditLogEntry = new AuditLog
+        try
         {
-            UserId = user.Id,
-            EventType = "PasswordResetRequested",
-            EventTimestamp = DateTime.UtcNow,
-            Details = JsonSerializer.Serialize(new
-            {
-                Email = user.Email,
-                Token = token
-            })
-        };
-
-        // Log password reset request
-        await _auditLogRepository.AddAsync(auditLogEntry, cancellationToken);
-
+            await _emailService.SendPasswordResetEmailAsync(user.Email, token);
+            _logger.LogInformation("Password reset email sent successfully to {Email}", user.Email);
+        }
+        catch (Exception ex)
+        {
+            // Log the error but don't fail the entire operation
+            // Token is already stored in database for manual recovery if needed
+            _logger.LogError(ex, "Failed to send password reset email to {Email}. Token stored in database.", user.Email);
+            // Still return success message to prevent email enumeration
+        }
+        
         return "If an account with this email exists, a password reset link has been sent.";
     }
 }

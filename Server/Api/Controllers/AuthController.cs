@@ -42,29 +42,17 @@ public class AuthController : ControllerBase
         [FromBody] RegisterRequest request,
         CancellationToken cancellationToken)
     {
-        try
+        var result = await _authService.RegisterAsync(request, cancellationToken);
+        if (result.IsFailure)
         {
-            var result = await _authService.RegisterAsync(request, cancellationToken);
-            if (result.IsFailure)
-            {
-                return this.HandleResult(result);
-            }
-            
-            return CreatedAtAction(
-                actionName: nameof(Register),
-                routeValues: new { id = result.Value.Id },
-                value: result.Value
-            );
+            return this.HandleResult(result);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error during user registration");
-            return StatusCode(500, new ErrorResponse
-            {
-                Error = "InternalServerError",
-                Message = "An error occurred while processing your request. Please try again later."
-            });
-        }
+        
+        return CreatedAtAction(
+            actionName: nameof(Register),
+            routeValues: new { id = result.Value.Id },
+            value: result.Value
+        );
     }
 
     /// <summary>
@@ -86,21 +74,8 @@ public class AuthController : ControllerBase
         [FromBody] LoginRequest request,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var result = await _authService.LoginAsync(request, cancellationToken);
-            return this.HandleResult(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error during login for email: {Email}", request.Email);
-            
-            return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse
-            {
-                Error = "InternalError",
-                Message = "An error occurred during login. Please try again later."
-            });
-        }
+        var result = await _authService.LoginAsync(request, cancellationToken);
+        return this.HandleResult(result);
     }
 
     /// <summary>
@@ -122,21 +97,8 @@ public class AuthController : ControllerBase
         [FromBody] RefreshTokenRequest request,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var result = await _authService.RefreshTokenAsync(request, cancellationToken);
-            return this.HandleResult(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error during token refresh");
-            
-            return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse
-            {
-                Error = "InternalError",
-                Message = "An error occurred during token refresh. Please try again later."
-            });
-        }
+        var result = await _authService.RefreshTokenAsync(request, cancellationToken);
+        return this.HandleResult(result);
     }
 
     /// <summary>
@@ -158,21 +120,8 @@ public class AuthController : ControllerBase
         [FromBody] LogoutRequest request,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var result = await _authService.LogoutAsync(request, cancellationToken);
-            return this.HandleResult(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error during logout");
-            
-            return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse
-            {
-                Error = "InternalError",
-                Message = "An error occurred during logout. Please try again later."
-            });
-        }
+        var result = await _authService.LogoutAsync(request, cancellationToken);
+        return this.HandleResult(result);
     }
 
     /// <summary>
@@ -194,21 +143,8 @@ public class AuthController : ControllerBase
         [FromBody] ResetPasswordRequest request,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var result = await _authService.ResetPasswordAsync(request, cancellationToken);
-            return this.HandleResult(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error during password reset");
-            
-            return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse
-            {
-                Error = "InternalError",
-                Message = "An error occurred during password reset. Please try again later."
-            });
-        }
+        var result = await _authService.ResetPasswordAsync(request, cancellationToken);
+        return this.HandleResult(result);
     }
 
     /// <summary>
@@ -228,19 +164,7 @@ public class AuthController : ControllerBase
         [FromBody] ForgotPasswordRequest request,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var result = await _authService.ForgotPasswordAsync(request, cancellationToken);
-            return this.HandleResult(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error during forgot password for email: {Email}", request.Email);
-            return StatusCode(500, new ErrorResponse
-            {
-                Error = "InternalServerError",
-                Message = "An error occurred while processing your request. Please try again later."
-            });
-        }
+        var result = await _authService.ForgotPasswordAsync(request, cancellationToken);
+        return this.HandleResult(result);
     }
 }

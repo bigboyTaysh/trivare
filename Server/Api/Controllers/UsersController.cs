@@ -39,23 +39,22 @@ public class UsersController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<UserDto>> GetMe(CancellationToken cancellationToken)
     {
-        try
+        // Extract user ID from JWT claims - "sub" is mapped to NameIdentifier
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
         {
-            // Extract user ID from JWT claims - "sub" is mapped to NameIdentifier
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-            {
-                _logger.LogWarning("Invalid or missing user ID in JWT claims");
-                return Unauthorized(new ErrorResponse { Error = "Unauthorized", Message = "Invalid authentication token" });
-            }
+            _logger.LogWarning("Invalid or missing user ID in JWT claims");
+            return Unauthorized(new ErrorResponse { Error = "Unauthorized", Message = "Invalid authentication token" });
+        }
 
-            var userDto = await _userService.GetCurrentUserAsync(userId, cancellationToken);
-            return Ok(userDto);
-        }
-        catch (Exception ex)
+        var result = await _userService.GetCurrentUserAsync(userId, cancellationToken);
+        
+        if (result.IsFailure)
         {
-            _logger.LogError(ex, "Error retrieving current user profile");
-            return StatusCode(500, new ErrorResponse { Error = "InternalServerError", Message = "An error occurred while retrieving user profile" });
+            _logger.LogWarning("User not found: {UserId}", userId);
+            return NotFound(result.Error);
         }
+
+        return Ok(result.Value);
     }
 }
