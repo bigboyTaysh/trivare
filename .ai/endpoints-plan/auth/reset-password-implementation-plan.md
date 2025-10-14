@@ -57,7 +57,6 @@ This endpoint allows users to reset their password using a reset token received 
 - **Weak Password:** 400 with validation errors.
 - **DB Errors:** 500 with generic message; log details.
 - **Rate Limiting:** 429 if implemented.
-- Log all errors to `AuditLog` with event type "PasswordResetFailed".
 
 ## 8. Performance Considerations
 - DB query: Indexed lookup on `PasswordResetToken`.

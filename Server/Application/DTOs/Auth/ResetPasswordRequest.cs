@@ -25,10 +25,4 @@ public record ResetPasswordRequest
     [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$",
         ErrorMessage = "Password must contain uppercase, lowercase, number, and special character")]
     public required string NewPassword { get; init; }
-
-    /// <summary>
-    /// Current password known by the user - required to confirm identity before reset
-    /// </summary>
-    [Required(ErrorMessage = "Current password is required")]
-    public required string CurrentPassword { get; init; }
 }

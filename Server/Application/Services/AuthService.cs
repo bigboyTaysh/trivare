@@ -281,13 +281,6 @@ public class AuthService : IAuthService
             return new ErrorResponse { Error = AuthErrorCodes.TokenExpired, Message = "Reset token has expired" };
         }
 
-        // Verify current password provided by user
-        if (!_passwordHashingService.VerifyPassword(request.CurrentPassword, user.PasswordHash, user.PasswordSalt))
-        {
-            _logger.LogWarning("Password reset failed - current password mismatch: UserId {UserId}", user.Id);
-            return new ErrorResponse { Error = AuthErrorCodes.CurrentPasswordMismatch, Message = "Current password is incorrect" };
-        }
-
         // Check if new password is the same as current password
         if (_passwordHashingService.VerifyPassword(request.NewPassword, user.PasswordHash, user.PasswordSalt))
         {
