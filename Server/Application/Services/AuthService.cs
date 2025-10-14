@@ -20,6 +20,7 @@ public class AuthService : IAuthService
     private readonly IPasswordHashingService _passwordHashingService;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly ILogger<AuthService> _logger;
+    private readonly IEmailService _emailService;
 
     public AuthService(
         IUserRepository userRepository,
@@ -27,7 +28,8 @@ public class AuthService : IAuthService
         IAuditLogRepository auditLogRepository,
         IPasswordHashingService passwordHashingService,
         IJwtTokenService jwtTokenService,
-        ILogger<AuthService> logger)
+        ILogger<AuthService> logger,
+        IEmailService emailService)
     {
         _userRepository = userRepository;
         _roleRepository = roleRepository;
@@ -35,6 +37,7 @@ public class AuthService : IAuthService
         _passwordHashingService = passwordHashingService;
         _jwtTokenService = jwtTokenService;
         _logger = logger;
+        _emailService = emailService;
     }
 
     /// <summary>
@@ -304,6 +307,48 @@ public class AuthService : IAuthService
         // Save changes
         await _userRepository.UpdateAsync(user, cancellationToken);
 
-        return "Password reset successful";
+        return "Password reset successfully.";
+    }
+
+    public async Task<Result<string>> ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetByEmailAsync(request.Email.Trim().ToLowerInvariant(), cancellationToken);
+
+        if (user == null)
+        {
+            // To prevent email enumeration, always return a success-like message.
+            _logger.LogInformation("Password reset requested for non-existent email: {Email}", request.Email);
+            return "If an account with this email exists, a password reset link has been sent.";
+        }
+
+        // Generate a secure, URL-safe token
+        var token = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(64));
+        token = token.Replace('+', '-').Replace('/', '_'); // Make it URL-safe
+
+        user.PasswordResetToken = token;
+        user.PasswordResetTokenExpiry = DateTime.UtcNow.AddHours(1); // Token is valid for 1 hour
+
+        await _userRepository.UpdateAsync(user, cancellationToken);
+
+        await _emailService.SendPasswordResetEmailAsync(user.Email, token);
+
+        _logger.LogInformation("Password reset token generated for {Email}", user.Email);
+
+        var auditLogEntry = new AuditLog
+        {
+            UserId = user.Id,
+            EventType = "PasswordResetRequested",
+            EventTimestamp = DateTime.UtcNow,
+            Details = JsonSerializer.Serialize(new
+            {
+                Email = user.Email,
+                Token = token
+            })
+        };
+
+        // Log password reset request
+        await _auditLogRepository.AddAsync(auditLogEntry, cancellationToken);
+
+        return "If an account with this email exists, a password reset link has been sent.";
     }
 }

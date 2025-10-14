@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Trivare.Domain.Interfaces;
 using Trivare.Infrastructure.Repositories;
+using Trivare.Infrastructure.Services;
 
 namespace Trivare.Infrastructure;
 
@@ -20,6 +21,9 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+
+        // Register services
+        services.AddScoped<IEmailService, EmailService>();
 
         return services;
     }

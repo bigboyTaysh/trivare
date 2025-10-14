@@ -14,5 +14,14 @@
     "Audience": "Trivare",
     "AccessTokenExpirationMinutes": "15",
     "RefreshTokenExpirationDays": "7"
+  },
+  "AllowedHosts": "*",
+  "SmtpSettings": {
+    "Server": "server",
+    "Port": 587,
+    "SenderName": "Trivare",
+    "SenderEmail": "your-email@mail.com",
+    "Username": "your-email@mail.com",
+    "Password": "your-app-password"
   }
 }

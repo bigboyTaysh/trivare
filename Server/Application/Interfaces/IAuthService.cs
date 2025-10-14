@@ -51,4 +51,13 @@ public interface IAuthService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result indicating success or failure and an error code/message for expected failures</returns>
     Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Initiates the password recovery process for a user
+    /// Sends a password reset token to the user's registered email
+    /// </summary>
+    /// <param name="request">Forgot password request containing the user's email</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result indicating success or failure of the operation</returns>
+    Task<Result<string>> ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken cancellationToken = default);
 }

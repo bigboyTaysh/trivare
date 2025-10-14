@@ -210,4 +210,37 @@ public class AuthController : ControllerBase
             });
         }
     }
+
+    /// <summary>
+    /// Initiate password recovery for a user
+    /// </summary>
+    /// <param name="request">Forgot password request containing the user's email</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A message indicating the result of the operation</returns>
+    /// <response code="200">Password reset link sent to your email</response>
+    /// <response code="400">Invalid email format</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("forgot-password")]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<string>> ForgotPassword(
+        [FromBody] ForgotPasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await _authService.ForgotPasswordAsync(request, cancellationToken);
+            return this.HandleResult(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error during forgot password for email: {Email}", request.Email);
+            return StatusCode(500, new ErrorResponse
+            {
+                Error = "InternalServerError",
+                Message = "An error occurred while processing your request. Please try again later."
+            });
+        }
+    }
 }
