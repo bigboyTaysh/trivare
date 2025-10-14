@@ -30,6 +30,7 @@ The API is organized around the following main resources, mapped to database tab
 - **Request Body:**
 ```json
 {
+  "userName": "johndoe",
   "email": "user@example.com",
   "password": "SecurePassword123!"
 }
@@ -38,6 +39,7 @@ The API is organized around the following main resources, mapped to database tab
 ```json
 {
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "userName": "johndoe",
   "email": "user@example.com",
   "createdAt": "2025-10-12T10:30:00Z"
 }
@@ -69,6 +71,7 @@ The API is organized around the following main resources, mapped to database tab
   "expiresIn": 900,
   "user": {
     "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "userName": "johndoe",
     "email": "user@example.com"
   }
 }
@@ -187,6 +190,7 @@ The API is organized around the following main resources, mapped to database tab
 ```json
 {
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "userName": "johndoe",
   "email": "user@example.com",
   "createdAt": "2025-10-01T10:30:00Z",
   "roles": ["User"]
@@ -201,26 +205,30 @@ The API is organized around the following main resources, mapped to database tab
 
 - **Method:** `PATCH`
 - **Path:** `/api/users/me`
-- **Description:** Update current user profile
+- **Description:** Update current user username and/or password
 - **Authentication:** Required (JWT)
 - **Request Body:**
 ```json
 {
-  "email": "newemail@example.com"
+  "userName": "newusername",
+  "currentPassword": "CurrentPassword123!",
+  "newPassword": "NewSecurePassword123!"
 }
 ```
 - **Response (200 OK):**
 ```json
 {
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "email": "newemail@example.com",
+  "userName": "newusername",
+  "email": "user@example.com",
   "createdAt": "2025-10-01T10:30:00Z",
   "roles": ["User"]
 }
 ```
 - **Error Responses:**
-  - `400 Bad Request` - Invalid email format
-  - `409 Conflict` - Email already exists
+  - `400 Bad Request` - Invalid data or current password mismatch
+
+**Note:** Both `userName` and password fields are optional. To change password, both `currentPassword` and `newPassword` must be provided. Email cannot be changed.
 
 ---
 
@@ -1249,6 +1257,11 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
 ### 4.1 Validation Rules by Resource
 
 #### Users
+- **UserName:**
+  - Required on registration
+  - Minimum length: 3 characters
+  - Maximum length: 50 characters
+  - Can only contain letters, numbers, underscores, and hyphens
 - **Email:**
   - Required on registration
   - Must be valid email format (RFC 5322)

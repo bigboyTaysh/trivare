@@ -50,51 +50,60 @@ public class GlobalExceptionHandlerMiddleware
                 Error = "ConcurrencyError",
                 Message = "The record was modified by another user. Please refresh and try again."
             },
+
             DbUpdateException dbEx => new ErrorResponse
             {
                 Error = "DatabaseError",
                 Message = "A database error occurred while processing your request.",
-                Errors = _environment.IsDevelopment() 
+                Errors = _environment.IsDevelopment()
                     ? new Dictionary<string, string[]> { { "Details", new[] { dbEx.Message } } }
                     : null
             },
-            
+
+            // Authentication exceptions
+            UnauthorizedAccessException unAuthEx => new ErrorResponse
+            {
+                Error = "Unauthorized",
+                Message = unAuthEx.Message
+            },
+
             // Validation exceptions
             ArgumentNullException argEx => new ErrorResponse
             {
                 Error = "ValidationError",
                 Message = $"Required parameter is missing: {argEx.ParamName}"
             },
+
             ArgumentException argEx => new ErrorResponse
             {
                 Error = "ValidationError",
                 Message = argEx.Message
             },
-            
+
             // Operation exceptions
             InvalidOperationException invEx => new ErrorResponse
             {
                 Error = "OperationError",
-                Message = _environment.IsDevelopment() 
-                    ? invEx.Message 
+                Message = _environment.IsDevelopment()
+                    ? invEx.Message
                     : "The operation could not be completed."
             },
-            
+
             // Timeout exceptions
             TimeoutException => new ErrorResponse
             {
                 Error = "TimeoutError",
                 Message = "The operation timed out. Please try again."
             },
-            
+
             // Generic exception
             _ => new ErrorResponse
             {
                 Error = "InternalServerError",
                 Message = "An unexpected error occurred. Please try again later.",
-                Errors = _environment.IsDevelopment() 
-                    ? new Dictionary<string, string[]> 
-                    { 
+                Errors = _environment.IsDevelopment()
+                    ? new Dictionary<string, string[]>
+                    {
                         { "ExceptionType", new[] { exception.GetType().Name } },
                         { "StackTrace", new[] { exception.StackTrace ?? "No stack trace available" } }
                     }
@@ -104,6 +113,7 @@ public class GlobalExceptionHandlerMiddleware
 
         context.Response.StatusCode = exception switch
         {
+            UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized,
             DbUpdateConcurrencyException => (int)HttpStatusCode.Conflict,
             DbUpdateException => (int)HttpStatusCode.BadRequest,
             ArgumentException => (int)HttpStatusCode.BadRequest,

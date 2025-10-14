@@ -49,13 +49,14 @@ public class AuthService : IAuthService
     {
         // Normalize email to lowercase and trim whitespace
         var email = request.Email.Trim().ToLowerInvariant();
+        var userName = request.UserName.Trim();
 
         // Check if email already exists
         if (await _userRepository.EmailExistsAsync(email, cancellationToken))
         {
             _logger.LogWarning("Registration failed - email already exists: {Email}", email);
             return new ErrorResponse { Error = AuthErrorCodes.EmailAlreadyExists, Message = $"Email '{email}' is already registered." };
-        }        
+        }
         
         // Get default "User" role
         var defaultRole = await _roleRepository.GetByNameAsync("User", cancellationToken);
@@ -72,6 +73,7 @@ public class AuthService : IAuthService
         var user = new User
         {
             Id = Guid.NewGuid(),
+            UserName = userName,
             Email = email,
             PasswordHash = hash,
             PasswordSalt = salt,
@@ -106,6 +108,7 @@ public class AuthService : IAuthService
         return new RegisterResponse
         {
             Id = user.Id,
+            UserName = user.UserName,
             Email = user.Email,
             CreatedAt = user.CreatedAt
         };
@@ -151,6 +154,7 @@ public class AuthService : IAuthService
         var userDto = new UserDto
         {
             Id = user.Id,
+            UserName = user.UserName,
             Email = user.Email,
             CreatedAt = user.CreatedAt,
             Roles = user.UserRoles.Select(ur => ur.Role?.Name ?? "Unknown").ToList()

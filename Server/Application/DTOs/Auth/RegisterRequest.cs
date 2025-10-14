@@ -9,6 +9,15 @@ namespace Trivare.Application.DTOs.Auth;
 public record RegisterRequest
 {
     /// <summary>
+    /// User's username - must be unique
+    /// </summary>
+    [Required(ErrorMessage = "Username is required")]
+    [MinLength(3, ErrorMessage = "Username must be at least 3 characters")]
+    [MaxLength(50, ErrorMessage = "Username must not exceed 50 characters")]
+    [RegularExpression(@"^[a-zA-Z0-9_-]+$", ErrorMessage = "Username can only contain letters, numbers, underscores and hyphens")]
+    public required string UserName { get; init; }
+
+    /// <summary>
     /// User's email address - must be valid and unique
     /// </summary>
     [Required(ErrorMessage = "Email is required")]

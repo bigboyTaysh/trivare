@@ -13,6 +13,11 @@ public record UserDto
     public required Guid Id { get; init; }
 
     /// <summary>
+    /// User's username from User.UserName
+    /// </summary>
+    public required string UserName { get; init; }
+
+    /// <summary>
     /// User's email address from User.Email
     /// </summary>
     public required string Email { get; init; }

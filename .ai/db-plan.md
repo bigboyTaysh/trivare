@@ -16,6 +16,7 @@ This document outlines the database schema for the Trivare project, designed for
 | Column | Data Type | Constraints |
 | --- | --- | --- |
 | `Id` | `UNIQUEIDENTIFIER` | `PRIMARY KEY DEFAULT NEWSEQUENTIALID()` |
+| `UserName` | `NVARCHAR(50)` | `NOT NULL` |
 | `Email` | `NVARCHAR(255)` | `NOT NULL, UNIQUE` |
 | `PasswordHash` | `VARBINARY(256)` | `NOT NULL` |
 | `PasswordSalt` | `VARBINARY(128)` | `NOT NULL` |
