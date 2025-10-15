@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Trivare.Application.DTOs.Trips;
 
 /// <summary>
@@ -16,6 +18,7 @@ public record UpdateTripRequest
     /// Updated destination - max 255 characters
     /// Updates Trip.Destination
     /// </summary>
+    [StringLength(255, ErrorMessage = "Destination cannot exceed 255 characters")]
     public string? Destination { get; init; }
 
     /// <summary>
@@ -34,5 +37,6 @@ public record UpdateTripRequest
     /// Updated notes - max 2000 characters
     /// Updates Trip.Notes
     /// </summary>
+    [StringLength(2000, ErrorMessage = "Notes cannot exceed 2000 characters")]
     public string? Notes { get; init; }
 }

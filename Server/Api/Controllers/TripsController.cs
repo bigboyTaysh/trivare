@@ -71,4 +71,32 @@ public class TripsController : ControllerBase
 
         return this.HandleResult(result);
     }
+
+    /// <summary>
+    /// Update an existing trip
+    /// </summary>
+    /// <param name="tripId">The ID of the trip to update</param>
+    /// <param name="request">Trip update data (partial update)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Updated trip information</returns>
+    /// <response code="200">Trip updated successfully</response>
+    /// <response code="400">Invalid request data</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="403">Forbidden - trip belongs to another user</response>
+    /// <response code="404">Trip not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPatch("{tripId}")]
+    [ProducesResponseType(typeof(TripDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<TripDetailDto>> UpdateTrip(Guid tripId, [FromBody] UpdateTripRequest request, CancellationToken cancellationToken)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _tripService.UpdateTripAsync(tripId, request, userId, cancellationToken);
+
+        return this.HandleResult(result);
+    }
 }

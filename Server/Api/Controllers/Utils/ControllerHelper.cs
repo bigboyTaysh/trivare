@@ -22,6 +22,8 @@ public static class ControllerHelper
             AuthErrorCodes.CurrentPasswordMismatch => controller.BadRequest(result.Error),
             AuthErrorCodes.SamePassword => controller.BadRequest(result.Error),
             TripErrorCodes.TripLimitExceeded => controller.Conflict(result.Error),
+            TripErrorCodes.TripNotFound => controller.NotFound(result.Error),
+            TripErrorCodes.TripNotOwned => controller.StatusCode(StatusCodes.Status403Forbidden, result.Error),
             _ => controller.BadRequest(result.Error)
         };
     }

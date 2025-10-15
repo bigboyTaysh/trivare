@@ -236,6 +236,99 @@ Authorization: Bearer {{auth_token}}
 
 ###
 
+### Update Trip - Successful (Partial Update)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Updated Trip to Paris",
+  "notes": "Updated notes for the trip!"
+}
+
+###
+
+### Update Trip - Full Update
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Trip to Rome",
+  "destination": "Rome, Italy",
+  "startDate": "2025-11-15",
+  "endDate": "2025-11-20",
+  "notes": "Excited for Rome!"
+}
+
+###
+
+### Update Trip - Validation Error (Empty Name)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": ""
+}
+
+###
+
+### Update Trip - Validation Error (Invalid Date Range)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "startDate": "2025-12-05",
+  "endDate": "2025-12-01"
+}
+
+###
+
+### Update Trip - Validation Error (Destination Too Long)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "destination": "This destination name is way too long and exceeds the maximum allowed length of 255 characters for the destination field in the database schema."
+}
+
+###
+
+### Update Trip - Not Found (will return 404)
+PATCH {{Api_HostAddress}}/api/trips/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Non-existent Trip"
+}
+
+###
+
+### Update Trip - Forbidden (Trip belongs to another user, will return 403)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174001
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Someone else's trip"
+}
+
+###
+
+### Update Trip - Unauthorized (missing token, will return 401)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
+
+{
+  "name": "Unauthorized update"
+}
+
+###
+
 ### List Trips - Default Parameters
 GET {{Api_HostAddress}}/api/trips
 Authorization: Bearer {{auth_token}}

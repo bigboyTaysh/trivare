@@ -16,12 +16,20 @@ public interface ITripRepository
     Task<Trip> AddAsync(Trip trip, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets all trips for a specific user
+    /// Gets a trip by its ID
     /// </summary>
-    /// <param name="userId">The user ID to filter trips</param>
+    /// <param name="tripId">The trip ID to retrieve</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Collection of trips for the user</returns>
-    Task<ICollection<Trip>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
+    /// <returns>The trip entity or null if not found</returns>
+    Task<Trip?> GetByIdAsync(Guid tripId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates an existing trip
+    /// </summary>
+    /// <param name="trip">The trip entity to update</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The updated trip</returns>
+    Task<Trip> UpdateAsync(Trip trip, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Counts the number of trips for a specific user

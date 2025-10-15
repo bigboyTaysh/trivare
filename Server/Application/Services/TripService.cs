@@ -132,4 +132,78 @@ public class TripService : ITripService
 
         return response;
     }
+
+    /// <summary>
+    /// Updates an existing trip for the authenticated user
+    /// Validates input, checks ownership, applies partial updates, and logs the operation
+    /// </summary>
+    public async Task<Result<TripDetailDto>> UpdateTripAsync(Guid tripId, UpdateTripRequest request, Guid userId, CancellationToken cancellationToken = default)
+    {
+        // Validate input data
+        if (request.Name != null && string.IsNullOrWhiteSpace(request.Name))
+        {
+            _logger.LogWarning("Trip update failed for user {UserId}: Invalid trip data - name is empty or whitespace", userId);
+            return new ErrorResponse { Error = TripErrorCodes.InvalidTripData, Message = "Trip name cannot be empty or whitespace." };
+        }
+
+        // Validate date range if both dates are provided
+        if (request.StartDate.HasValue && request.EndDate.HasValue && request.EndDate.Value < request.StartDate.Value)
+        {
+            _logger.LogWarning("Trip update failed for user {UserId}: Invalid date range - end date before start date", userId);
+            return new ErrorResponse { Error = TripErrorCodes.InvalidDateRange, Message = "End date must be on or after start date." };
+        }
+
+        // Fetch the trip with ownership check
+        var trip = await _tripRepository.GetByIdAsync(tripId, cancellationToken);
+        if (trip == null)
+        {
+            _logger.LogWarning("Trip update failed for user {UserId}: Trip {TripId} not found", userId, tripId);
+            return new ErrorResponse { Error = TripErrorCodes.TripNotFound, Message = "Trip not found." };
+        }
+
+        if (trip.UserId != userId)
+        {
+            _logger.LogWarning("Trip update failed for user {UserId}: Trip {TripId} not owned by user", userId, tripId);
+            return new ErrorResponse { Error = TripErrorCodes.TripNotOwned, Message = "Access denied." };
+        }
+
+        // Apply partial updates
+        if (request.Name != null)
+        {
+            trip.Name = request.Name.Trim();
+        }
+        if (request.Destination != null)
+        {
+            trip.Destination = request.Destination.Trim();
+        }
+        if (request.StartDate.HasValue)
+        {
+            trip.StartDate = request.StartDate.Value;
+        }
+        if (request.EndDate.HasValue)
+        {
+            trip.EndDate = request.EndDate.Value;
+        }
+        if (request.Notes != null)
+        {
+            trip.Notes = request.Notes.Trim();
+        }
+
+        // Save changes
+        await _tripRepository.UpdateAsync(trip, cancellationToken);
+
+        // Map to response DTO
+        var response = new TripDetailDto
+        {
+            Id = trip.Id,
+            Name = trip.Name,
+            Destination = trip.Destination,
+            StartDate = trip.StartDate,
+            EndDate = trip.EndDate,
+            Notes = trip.Notes,
+            CreatedAt = trip.CreatedAt
+        };
+
+        return response;
+    }
 }

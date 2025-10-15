@@ -25,4 +25,14 @@ public interface ITripService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The paginated trip list or an error</returns>
     Task<Result<TripListResponse>> GetTripsAsync(TripListRequest request, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates an existing trip for the authenticated user
+    /// </summary>
+    /// <param name="tripId">The ID of the trip to update</param>
+    /// <param name="request">The trip update request with optional fields</param>
+    /// <param name="userId">The ID of the authenticated user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The updated trip data or an error</returns>
+    Task<Result<TripDetailDto>> UpdateTripAsync(Guid tripId, UpdateTripRequest request, Guid userId, CancellationToken cancellationToken = default);
 }

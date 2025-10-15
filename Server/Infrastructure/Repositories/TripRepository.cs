@@ -49,6 +49,25 @@ public class TripRepository : ITripRepository
     }
 
     /// <summary>
+    /// Gets a trip by its ID
+    /// </summary>
+    public async Task<Trip?> GetByIdAsync(Guid tripId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Trips
+            .FirstOrDefaultAsync(t => t.Id == tripId, cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates an existing trip
+    /// </summary>
+    public async Task<Trip> UpdateAsync(Trip trip, CancellationToken cancellationToken = default)
+    {
+        _context.Trips.Update(trip);
+        await _context.SaveChangesAsync(cancellationToken);
+        return trip;
+    }
+
+    /// <summary>
     /// Gets a paginated list of trips with filtering and sorting applied
     /// </summary>
     public async Task<(IEnumerable<Trip> Trips, int TotalCount)> GetTripsPaginatedAsync(string? search, string sortBy, string sortOrder, int page, int pageSize, CancellationToken cancellationToken = default)
