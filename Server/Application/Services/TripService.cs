@@ -91,4 +91,45 @@ public class TripService : ITripService
 
         return response;
     }
+
+    /// <summary>
+    /// Retrieves a paginated list of trips for the authenticated user
+    /// Applies filtering, sorting, and pagination to the trip query
+    /// </summary>
+    public async Task<Result<TripListResponse>> GetTripsAsync(TripListRequest request, Guid userId, CancellationToken cancellationToken = default)
+    {
+        // Build query with filtering and sorting
+        var (trips, totalItems) = await _tripRepository.GetTripsPaginatedAsync(request.Search, request.SortBy, request.SortOrder, request.Page, request.PageSize, cancellationToken);
+
+        // Map to DTOs
+        var tripDtos = trips.Select(t => new TripListDto
+        {
+            Id = t.Id,
+            Name = t.Name,
+            Destination = t.Destination,
+            StartDate = t.StartDate,
+            EndDate = t.EndDate,
+            Notes = t.Notes,
+            CreatedAt = t.CreatedAt
+        });
+
+        // Calculate total pages
+        var totalPages = (int)Math.Ceiling((double)totalItems / request.PageSize);
+
+        var pagination = new PaginationResponse
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalItems,
+            TotalPages = totalPages
+        };
+
+        var response = new TripListResponse
+        {
+            Data = tripDtos,
+            Pagination = pagination
+        };
+
+        return response;
+    }
 }

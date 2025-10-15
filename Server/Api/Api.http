@@ -7,7 +7,8 @@ POST {{Api_HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "newuser@example.com",
+  "userName": "newuser",
+  "email": "user@example.com",
   "password": "SecurePassword123!"
 }
 
@@ -18,7 +19,8 @@ POST {{Api_HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "existing@example.com",
+  "userName": "existinguser",
+  "email": "user@example.com",
   "password": "SecurePassword123!"
 }
 
@@ -234,15 +236,67 @@ Authorization: Bearer {{auth_token}}
 
 ###
 
-### Create Trip - Trip Limit Exceeded
-POST {{Api_HostAddress}}/api/trips
-Content-Type: application/json
+### List Trips - Default Parameters
+GET {{Api_HostAddress}}/api/trips
 Authorization: Bearer {{auth_token}}
 
-{
-  "name": "Eleventh Trip",
-  "startDate": "2025-12-01",
-  "endDate": "2025-12-05"
-}
+###
+
+### List Trips - Custom Pagination
+GET {{Api_HostAddress}}/api/trips?page=2&pageSize=5
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Sorted by Name Ascending
+GET {{Api_HostAddress}}/api/trips?sortBy=name&sortOrder=asc
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Sorted by Start Date Descending
+GET {{Api_HostAddress}}/api/trips?sortBy=startDate&sortOrder=desc
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - With Search (by name, destination, notes, dates)
+GET {{Api_HostAddress}}/api/trips?search=Paris
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Combined Parameters
+GET {{Api_HostAddress}}/api/trips?page=1&pageSize=10&sortBy=createdAt&sortOrder=desc&search=Europe
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Invalid Page (will return 400)
+GET {{Api_HostAddress}}/api/trips?page=0
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Invalid Page Size (will return 400)
+GET {{Api_HostAddress}}/api/trips?pageSize=100
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Invalid Sort Field (will return 400)
+GET {{Api_HostAddress}}/api/trips?sortBy=invalid
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Invalid Sort Order (will return 400)
+GET {{Api_HostAddress}}/api/trips?sortOrder=invalid
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Unauthorized (missing token, will return 401)
+GET {{Api_HostAddress}}/api/trips
 
 ###

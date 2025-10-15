@@ -47,4 +47,43 @@ public class TripRepository : ITripRepository
             .AsNoTracking()
             .CountAsync(t => t.UserId == userId, cancellationToken);
     }
+
+    /// <summary>
+    /// Gets a paginated list of trips with filtering and sorting applied
+    /// </summary>
+    public async Task<(IEnumerable<Trip> Trips, int TotalCount)> GetTripsPaginatedAsync(string? search, string sortBy, string sortOrder, int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var query = _context.Trips.AsNoTracking();
+
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchTerm = search.Trim();
+            query = query.Where(t => 
+                t.Name.Contains(searchTerm) || 
+                (t.Destination != null && t.Destination.Contains(searchTerm)) ||
+                (t.Notes != null && t.Notes.Contains(searchTerm)) ||
+                t.StartDate.ToString().Contains(searchTerm) ||
+                t.EndDate.ToString().Contains(searchTerm));
+        }
+
+        // Apply sorting
+        query = sortBy switch
+        {
+            "name" => sortOrder == "asc" ? query.OrderBy(t => t.Name) : query.OrderByDescending(t => t.Name),
+            "startDate" => sortOrder == "asc" ? query.OrderBy(t => t.StartDate) : query.OrderByDescending(t => t.StartDate),
+            _ => sortOrder == "asc" ? query.OrderBy(t => t.CreatedAt) : query.OrderByDescending(t => t.CreatedAt)
+        };
+
+        // Get total count
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // Apply pagination
+        var trips = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (trips, totalCount);
+    }
 }

@@ -48,4 +48,27 @@ public class TripsController : ControllerBase
 
         return this.HandleResult(result);
     }
+
+    /// <summary>
+    /// Get a paginated list of trips for the authenticated user
+    /// </summary>
+    /// <param name="request">Query parameters for pagination, sorting, and filtering</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Paginated list of trips</returns>
+    /// <response code="200">Trips retrieved successfully</response>
+    /// <response code="400">Invalid query parameters</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(TripListResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<TripListResponse>> ListTrips([FromQuery] TripListRequest request, CancellationToken cancellationToken)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _tripService.GetTripsAsync(request, userId, cancellationToken);
+
+        return this.HandleResult(result);
+    }
 }
