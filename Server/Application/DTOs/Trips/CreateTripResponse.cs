@@ -12,6 +12,11 @@ public record CreateTripResponse
     public required Guid Id { get; init; }
 
     /// <summary>
+    /// User identifier from Trip.UserId
+    /// </summary>
+    public required Guid UserId { get; init; }
+
+    /// <summary>
     /// Trip name from Trip.Name
     /// </summary>
     public required string Name { get; init; }

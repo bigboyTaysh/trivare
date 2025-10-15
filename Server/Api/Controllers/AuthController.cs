@@ -43,16 +43,7 @@ public class AuthController : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _authService.RegisterAsync(request, cancellationToken);
-        if (result.IsFailure)
-        {
-            return this.HandleResult(result);
-        }
-        
-        return CreatedAtAction(
-            actionName: nameof(Register),
-            routeValues: new { id = result.Value.Id },
-            value: result.Value
-        );
+        return this.HandleResult(result, StatusCodes.Status201Created);
     }
 
     /// <summary>

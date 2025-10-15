@@ -8,13 +8,21 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Trivare.Infrastructure.Settings;
+using Trivare.Api.Interceptors;
 using Trivare.Api.Middleware;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpContextAccessor();
+
+// Register the RLS interceptor
+builder.Services.AddScoped<RlsSessionContextInterceptor>();
+
 // Add services
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .AddInterceptors(serviceProvider.GetRequiredService<RlsSessionContextInterceptor>()));
 
 // Register layer services
 builder.Services.AddInfrastructureServices();

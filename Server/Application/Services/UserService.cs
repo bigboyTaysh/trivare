@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Trivare.Application.DTOs.Common;
 using Trivare.Application.DTOs.Users;
 using Trivare.Application.Interfaces;
@@ -12,11 +13,13 @@ public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHashingService _passwordHashingService;
+    private readonly ILogger<UserService> _logger;
 
-    public UserService(IUserRepository userRepository, IPasswordHashingService passwordHashingService)
+    public UserService(IUserRepository userRepository, IPasswordHashingService passwordHashingService, ILogger<UserService> logger)
     {
         _userRepository = userRepository;
         _passwordHashingService = passwordHashingService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -28,6 +31,7 @@ public class UserService : IUserService
 
         if (user == null)
         {
+            _logger.LogWarning("User not found: {UserId}", userId);
             return new ErrorResponse { Error = UserErrorCodes.UserNotFound, Message = "User not found" };
         }
 
@@ -50,6 +54,7 @@ public class UserService : IUserService
 
         if (user == null)
         {
+            _logger.LogWarning("User update failed - user not found: {UserId}", userId);
             return new ErrorResponse { Error = UserErrorCodes.UserNotFound, Message = "User not found" };
         }
 
@@ -71,6 +76,7 @@ public class UserService : IUserService
             // Verify current password
             if (!_passwordHashingService.VerifyPassword(request.CurrentPassword, user.PasswordHash, user.PasswordSalt))
             {
+                _logger.LogWarning("User update failed - current password mismatch: {UserId}", userId);
                 return new ErrorResponse { Error = AuthErrorCodes.CurrentPasswordMismatch, Message = "Current password is incorrect" };
             }
 

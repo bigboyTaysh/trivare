@@ -330,7 +330,6 @@ public class AuthService : IAuthService
         try
         {
             await _emailService.SendPasswordResetEmailAsync(user.Email, token);
-            _logger.LogInformation("Password reset email sent successfully to {Email}", user.Email);
         }
         catch (Exception ex)
         {

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Trivare.Api.Controllers.Utils;
 using Trivare.Api.Extensions;
 using Trivare.Application.DTOs.Common;
 using Trivare.Application.DTOs.Users;
@@ -17,12 +18,10 @@ namespace Trivare.Api.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
-    private readonly ILogger<UsersController> _logger;
 
-    public UsersController(IUserService userService, ILogger<UsersController> logger)
+    public UsersController(IUserService userService)
     {
         _userService = userService;
-        _logger = logger;
     }
 
     /// <summary>
@@ -42,13 +41,7 @@ public class UsersController : ControllerBase
         var userId = this.GetAuthenticatedUserId();
         var result = await _userService.GetCurrentUserAsync(userId, cancellationToken);
         
-        if (result.IsFailure)
-        {
-            _logger.LogWarning("User not found: {UserId}", userId);
-            return NotFound(result.Error);
-        }
-
-        return Ok(result.Value);
+        return this.HandleResult(result);
     }
 
     /// <summary>
@@ -71,18 +64,6 @@ public class UsersController : ControllerBase
         var userId = this.GetAuthenticatedUserId();
         var result = await _userService.UpdateUserAsync(userId, request, cancellationToken);
         
-        if (result.IsFailure)
-        {
-            var errorResponse = result.Error as ErrorResponse;
-            if (errorResponse?.Error == AuthErrorCodes.CurrentPasswordMismatch)
-            {
-                return BadRequest(errorResponse);
-            }
-            
-            _logger.LogWarning("User update failed: {UserId}, Error: {Error}", userId, errorResponse?.Error);
-            return BadRequest(result.Error);
-        }
-
-        return Ok(result.Value);
+        return this.HandleResult(result);
     }
 }

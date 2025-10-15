@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<ITripService, TripService>();
         services.AddSingleton<IPasswordHashingService, PasswordHashingService>();
 
         return services;
