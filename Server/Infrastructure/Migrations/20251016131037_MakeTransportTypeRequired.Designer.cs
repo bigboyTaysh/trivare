@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Trivare.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using Trivare.Infrastructure.Data;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251016131037_MakeTransportTypeRequired")]
+    partial class MakeTransportTypeRequired
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -298,7 +301,8 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TripId");
+                    b.HasIndex("TripId")
+                        .IsUnique();
 
                     b.ToTable("Transport");
                 });
@@ -497,8 +501,8 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Trivare.Domain.Entities.Transport", b =>
                 {
                     b.HasOne("Trivare.Domain.Entities.Trip", "Trip")
-                        .WithMany("Transports")
-                        .HasForeignKey("TripId")
+                        .WithOne("Transport")
+                        .HasForeignKey("Trivare.Domain.Entities.Transport", "TripId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -570,7 +574,7 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("Files");
 
-                    b.Navigation("Transports");
+                    b.Navigation("Transport");
                 });
 
             modelBuilder.Entity("Trivare.Domain.Entities.User", b =>

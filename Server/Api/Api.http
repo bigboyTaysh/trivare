@@ -393,3 +393,138 @@ Authorization: Bearer {{auth_token}}
 GET {{Api_HostAddress}}/api/trips
 
 ###
+
+### Transport Controller Endpoints
+
+### Create Transport - Successful
+POST {{Api_HostAddress}}/api/trips/fe1a75ea-1174-414f-916b-47255c307250/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "Flight",
+  "departureLocation": "John F. Kennedy International Airport (JFK)",
+  "arrivalLocation": "Charles de Gaulle Airport (CDG)",
+  "departureTime": "2025-12-15T14:30:00Z",
+  "arrivalTime": "2025-12-15T18:45:00Z",
+  "notes": "Direct flight with meal service. Gate changes possible."
+}
+
+###
+
+### Create Transport - Minimal Data (Only Required Fields)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "Flight"
+}
+
+###
+
+### Create Transport - Validation Error (Missing Required Type)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "departureLocation": "JFK",
+  "arrivalLocation": "CDG"
+}
+
+###
+
+### Create Transport - Only Type and Locations
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "Train",
+  "departureLocation": "Central Station",
+  "arrivalLocation": "Airport Terminal"
+}
+
+###
+
+### Create Transport - Validation Error (Type Too Long)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "This transportation type name is way too long and exceeds the maximum allowed length of 100 characters for the type field in the database schema",
+  "departureLocation": "Valid Location",
+  "arrivalLocation": "Valid Location"
+}
+
+###
+
+### Create Transport - Validation Error (Departure Location Too Long)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "Flight",
+  "departureLocation": "This departure location name is way too long and exceeds the maximum allowed length of 255 characters for the location fields in the database schema. This should trigger a validation error.",
+  "arrivalLocation": "Valid Location"
+}
+
+###
+
+### Create Transport - Validation Error (Notes Too Long)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "Flight",
+  "departureLocation": "JFK",
+  "arrivalLocation": "CDG",
+  "notes": "This notes field contains way too much text and exceeds the maximum allowed length of 2000 characters for the notes field in the database schema. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. This is just filler text to make this exceed the 2000 character limit that is enforced by the database schema and validation rules."
+}
+
+###
+
+### Create Transport - Business Rule Error (Arrival Before Departure)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "Flight",
+  "departureLocation": "JFK",
+  "arrivalLocation": "CDG",
+  "departureTime": "2025-12-15T18:45:00Z",
+  "arrivalTime": "2025-12-15T14:30:00Z",
+  "notes": "Invalid time range - arrival before departure"
+}
+
+###
+
+### Create Transport - Not Found (Trip doesn't exist, will return 404)
+POST {{Api_HostAddress}}/api/trips/00000000-0000-0000-0000-000000000000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "Flight",
+  "departureLocation": "JFK",
+  "arrivalLocation": "CDG"
+}
+
+###
+
+### Create Transport - Unauthorized (missing token, will return 401)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+
+{
+  "type": "Flight",
+  "departureLocation": "JFK",
+  "arrivalLocation": "CDG"
+}
+
+###

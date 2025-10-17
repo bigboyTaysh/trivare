@@ -11,7 +11,7 @@ public class Trip
     public DateOnly EndDate { get; set; }
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
-    public Transport? Transport { get; set; }
+    public ICollection<Transport> Transports { get; set; } = new List<Transport>();
     public Accommodation? Accommodation { get; set; }
     public ICollection<Day> Days { get; set; } = new List<Day>();
     public ICollection<File> Files { get; set; } = new List<File>();

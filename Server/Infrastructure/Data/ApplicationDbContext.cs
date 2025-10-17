@@ -70,9 +70,8 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-            entity.HasOne(e => e.Trip).WithOne(t => t.Transport).HasForeignKey<Transport>(e => e.TripId).OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => e.TripId).IsUnique();
-            entity.Property(e => e.Type).HasMaxLength(100);
+            entity.HasOne(e => e.Trip).WithMany(t => t.Transports).HasForeignKey(e => e.TripId).OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.Type).HasMaxLength(100).IsRequired();
             entity.Property(e => e.DepartureLocation).HasMaxLength(255);
             entity.Property(e => e.ArrivalLocation).HasMaxLength(255);
             entity.Property(e => e.Notes).HasMaxLength(2000);

@@ -70,9 +70,11 @@ public class TripRepository : ITripRepository
     /// <summary>
     /// Gets a paginated list of trips with filtering and sorting applied
     /// </summary>
-    public async Task<(IEnumerable<Trip> Trips, int TotalCount)> GetTripsPaginatedAsync(string? search, string sortBy, string sortOrder, int page, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<(IEnumerable<Trip> Trips, int TotalCount)> GetTripsPaginatedAsync(Guid userId, string? search, string sortBy, string sortOrder, int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        var query = _context.Trips.AsNoTracking();
+        var query = _context.Trips
+            .AsNoTracking()
+            .Where(t => t.UserId == userId);
 
         // Apply search filter
         if (!string.IsNullOrWhiteSpace(search))
@@ -104,5 +106,25 @@ public class TripRepository : ITripRepository
             .ToListAsync(cancellationToken);
 
         return (trips, totalCount);
+    }
+
+    /// <summary>
+    /// Gets the transport for a specific trip
+    /// </summary>
+    public async Task<Transport?> GetTransportByTripIdAsync(Guid tripId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Transport
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.TripId == tripId, cancellationToken);
+    }
+
+    /// <summary>
+    /// Creates a new transport
+    /// </summary>
+    public async Task<Transport> AddTransportAsync(Transport transport, CancellationToken cancellationToken = default)
+    {
+        _context.Transport.Add(transport);
+        await _context.SaveChangesAsync(cancellationToken);
+        return transport;
     }
 }
