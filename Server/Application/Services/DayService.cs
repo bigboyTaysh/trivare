@@ -82,4 +82,37 @@ public class DayService : IDayService
         _logger.LogInformation("Day {DayId} created for trip {TripId} by user {UserId}", createdDay.Id, tripId, userId);
         return response;
     }
+
+    /// <summary>
+    /// Gets all days for a specific trip
+    /// Validates trip ownership before returning days
+    /// </summary>
+    public async Task<Result<IEnumerable<DayDto>>> GetDaysForTripAsync(Guid tripId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        // Check if trip exists and belongs to user
+        var trip = await _tripRepository.GetByIdAsync(tripId, cancellationToken);
+        if (trip == null)
+        {
+            _logger.LogWarning("Days retrieval failed for user {UserId}: Trip {TripId} not found", userId, tripId);
+            return new ErrorResponse { Error = "TripNotFound", Message = "The specified trip does not exist." };
+        }
+
+        if (trip.UserId != userId)
+        {
+            _logger.LogWarning("Days retrieval failed for user {UserId}: Trip {TripId} belongs to another user", userId, tripId);
+            return new ErrorResponse { Error = "TripForbidden", Message = "You do not have permission to access this trip." };
+        }
+
+        // Get days for the trip
+        var days = await _dayRepository.GetByTripIdAsync(tripId, cancellationToken);
+
+        var dayDtos = days.Select(d => new DayDto
+        {
+            Id = d.Id,
+            Date = d.Date,
+            Notes = d.Notes
+        });
+
+        return dayDtos.ToList();
+    }
 }

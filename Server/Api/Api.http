@@ -464,6 +464,29 @@ Content-Type: application/json
 
 ###
 
+### List Days - Successful
+GET {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/days
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Days - Trip Not Found (will return 404)
+GET {{Api_HostAddress}}/api/trips/00000000-0000-0000-0000-000000000000/days
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Days - Forbidden (Trip belongs to another user, will return 403)
+GET {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174001/days
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Days - Unauthorized (missing token, will return 401)
+GET {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/days
+
+###
+
 ### Transport Controller Endpoints
 
 ### Create Transport - Successful

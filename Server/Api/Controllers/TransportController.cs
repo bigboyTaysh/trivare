@@ -49,7 +49,7 @@ public class TransportController : ControllerBase
         var userId = this.GetAuthenticatedUserId();
         var result = await _transportService.CreateTransportAsync(tripId, request, userId, cancellationToken);
 
-        return this.HandleResult(result);
+        return this.HandleResult(result, StatusCodes.Status201Created);
     }
 
     /// <summary>

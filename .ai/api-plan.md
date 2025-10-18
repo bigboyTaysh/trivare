@@ -606,7 +606,7 @@ The API is organized around the following main resources, mapped to database tab
 
 ---
 
-### 2.6 Days (`/api/trips/{tripId}/days` and `/api/days`)
+### 2.6 Days (`/api/trips/{tripId}/days`)
 
 #### 2.6.1 List Days
 
@@ -646,19 +646,6 @@ The API is organized around the following main resources, mapped to database tab
     "tripId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "date": "2025-07-01",
     "notes": "Arrival day",
-    "places": [
-    {
-        "id": "8fa85f64-5717-4562-b3fc-2c963f66afab",
-        "name": "Eiffel Tower",
-        "formattedAddress": "Champ de Mars, Paris",
-        "website": "https://www.toureiffel.paris",
-        "googleMapsLink": "https://maps.google.com/?cid=123456",
-        "openingHoursText": "9:00 AM - 11:00 PM",
-        "isManuallyAdded": false,
-        "order": 1,
-        "isVisited": false
-    }
-    ]
 }
 ```
 - **Error Responses:**

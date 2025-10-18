@@ -51,7 +51,7 @@ public class AccommodationController : ControllerBase
         var userId = this.GetAuthenticatedUserId();
         var result = await _accommodationService.AddAccommodationAsync(request, tripId, userId, cancellationToken);
 
-        return this.HandleResult(result);
+        return this.HandleResult(result, StatusCodes.Status201Created);
     }
 
     /// <summary>

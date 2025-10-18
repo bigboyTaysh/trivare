@@ -46,7 +46,7 @@ public class TripsController : ControllerBase
         var userId = this.GetAuthenticatedUserId();
         var result = await _tripService.CreateTripAsync(request, userId, cancellationToken);
 
-        return this.HandleResult(result);
+        return this.HandleResult(result, StatusCodes.Status201Created);
     }
 
     /// <summary>

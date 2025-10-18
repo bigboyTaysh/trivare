@@ -18,4 +18,14 @@ public interface IDayService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created day response or error</returns>
     Task<Result<CreateDayResponse>> CreateDayAsync(CreateDayRequest request, Guid tripId, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all days for a specific trip
+    /// Validates trip ownership before returning days
+    /// </summary>
+    /// <param name="tripId">The trip identifier</param>
+    /// <param name="userId">The user identifier</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of day DTOs or error</returns>
+    Task<Result<IEnumerable<DayDto>>> GetDaysForTripAsync(Guid tripId, Guid userId, CancellationToken cancellationToken = default);
 }

@@ -5,6 +5,7 @@ using Trivare.Api.Extensions;
 using Trivare.Application.DTOs.Days;
 using Trivare.Application.DTOs.Common;
 using Trivare.Application.Interfaces;
+using System.Net;
 
 namespace Trivare.Api.Controllers;
 
@@ -44,10 +45,26 @@ public class DaysController : ControllerBase
         var userId = this.GetAuthenticatedUserId();
         var result = await _dayService.CreateDayAsync(request, tripId, userId, cancellationToken);
 
-        if (result.IsSuccess)
-        {
-            return CreatedAtAction(nameof(CreateDay), new { tripId }, result.Value);
-        }
+        return this.HandleResult(result, StatusCodes.Status201Created);
+    }
+
+    /// <summary>
+    /// Retrieves all days for a specific trip
+    /// </summary>
+    /// <param name="tripId">The ID of the trip</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of days for the trip</returns>
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<DayDto>), 200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
+    public async Task<IActionResult> GetDays(Guid tripId, CancellationToken cancellationToken = default)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _dayService.GetDaysForTripAsync(tripId, userId, cancellationToken);
 
         return this.HandleResult(result);
     }
