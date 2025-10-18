@@ -1,0 +1,54 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Trivare.Api.Controllers.Utils;
+using Trivare.Api.Extensions;
+using Trivare.Application.DTOs.Days;
+using Trivare.Application.DTOs.Common;
+using Trivare.Application.Interfaces;
+
+namespace Trivare.Api.Controllers;
+
+/// <summary>
+/// Controller for day-related operations
+/// </summary>
+[ApiController]
+[Route("api/trips/{tripId}/days")]
+[Authorize]
+public class DaysController : ControllerBase
+{
+    private readonly IDayService _dayService;
+
+    public DaysController(IDayService dayService)
+    {
+        _dayService = dayService;
+    }
+
+    /// <summary>
+    /// Creates a new day for a specific trip
+    /// Validates that the day falls within the trip's date range and ensures no duplicate dates exist
+    /// </summary>
+    /// <param name="tripId">The ID of the trip</param>
+    /// <param name="request">The create day request</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The created day details</returns>
+    [HttpPost]
+    [ProducesResponseType(typeof(CreateDayResponse), 201)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(409)]
+    [ProducesResponseType(500)]
+    public async Task<IActionResult> CreateDay(Guid tripId, CreateDayRequest request, CancellationToken cancellationToken = default)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _dayService.CreateDayAsync(request, tripId, userId, cancellationToken);
+
+        if (result.IsSuccess)
+        {
+            return CreatedAtAction(nameof(CreateDay), new { tripId }, result.Value);
+        }
+
+        return this.HandleResult(result);
+    }
+}

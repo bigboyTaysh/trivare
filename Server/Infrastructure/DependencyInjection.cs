@@ -24,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<ITransportRepository, TransportRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IAccommodationRepository, AccommodationRepository>();
+        services.AddScoped<IDayRepository, DayRepository>();
 
         // Register services
         services.AddScoped<IEmailService, EmailService>();

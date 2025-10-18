@@ -15,5 +15,6 @@ public record CreateDayRequest
     /// <summary>
     /// Additional notes for the day - optional, max 2000 characters
     /// </summary>
+    [System.ComponentModel.DataAnnotations.MaxLength(2000, ErrorMessage = "Notes cannot exceed 2000 characters.")]
     public string? Notes { get; init; }
 }

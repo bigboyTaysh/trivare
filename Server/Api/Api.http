@@ -394,6 +394,76 @@ GET {{Api_HostAddress}}/api/trips
 
 ###
 
+### Days Controller Endpoints
+
+### Create Day - Successful
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/days
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "date": "2025-12-01",
+  "notes": "Arrival day - explore nearby area"
+}
+
+###
+
+### Create Day - Validation Error (Date Outside Trip Range)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/days
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "date": "2025-11-30",
+  "notes": "Before trip starts"
+}
+
+###
+
+### Create Day - Conflict (Duplicate Date)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/days
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "date": "2025-12-01",
+  "notes": "Duplicate date"
+}
+
+###
+
+### Create Day - Trip Not Found (will return 404)
+POST {{Api_HostAddress}}/api/trips/00000000-0000-0000-0000-000000000000/days
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "date": "2025-12-01"
+}
+
+###
+
+### Create Day - Forbidden (Trip belongs to another user, will return 403)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174001/days
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "date": "2025-12-01"
+}
+
+###
+
+### Create Day - Unauthorized (missing token, will return 401)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/days
+Content-Type: application/json
+
+{
+  "date": "2025-12-01"
+}
+
+###
+
 ### Transport Controller Endpoints
 
 ### Create Transport - Successful
