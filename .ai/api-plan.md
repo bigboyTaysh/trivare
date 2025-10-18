@@ -901,8 +901,8 @@ The API is organized around the following main resources, mapped to database tab
 #### 2.8.2 Upload File to Transport
 
 - **Method:** `POST`
-- **Path:** `/api/trips/{tripId}/transport/files`
-- **Description:** Upload a file associated with trip transport
+- **Path:** `/api/transports/{transportId}/files`
+- **Description:** Upload a file associated with a specific transport
 - **Authentication:** Required (JWT)
 - **Content-Type:** `multipart/form-data`
 - **Request Body:**
@@ -915,8 +915,8 @@ The API is organized around the following main resources, mapped to database tab
 #### 2.8.3 Upload File to Accommodation
 
 - **Method:** `POST`
-- **Path:** `/api/trips/{tripId}/accommodation/files`
-- **Description:** Upload a file associated with trip accommodation
+- **Path:** `/api/accommodations/{accommodationId}/files`
+- **Description:** Upload a file associated with a specific accommodation
 - **Authentication:** Required (JWT)
 - **Content-Type:** `multipart/form-data`
 - **Request Body:**

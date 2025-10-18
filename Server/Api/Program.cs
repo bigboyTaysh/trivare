@@ -10,7 +10,7 @@ using System.Text;
 using Trivare.Infrastructure.Settings;
 using Trivare.Api.Interceptors;
 using Trivare.Api.Middleware;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +29,7 @@ builder.Services.AddInfrastructureServices();
 builder.Services.AddApplicationServices();
 
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+builder.Services.Configure<CloudflareR2Settings>(builder.Configuration.GetSection("CloudflareR2"));
 
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>

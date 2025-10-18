@@ -27,9 +27,11 @@ public static class DependencyInjection
         services.AddScoped<IDayRepository, DayRepository>();
         services.AddScoped<IPlaceRepository, PlaceRepository>();
         services.AddScoped<IDayAttractionRepository, DayAttractionRepository>();
+        services.AddScoped<IFileRepository, FileRepository>();
 
         // Register services
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IFileStorageService, CloudflareR2FileStorageService>();
 
         return services;
     }

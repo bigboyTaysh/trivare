@@ -22,13 +22,16 @@ public static class ControllerHelper
             TripErrorCodes.InvalidTripData or
             AccommodationErrorCodes.AccommodationInvalidDateRange or
             DayErrorCodes.InvalidDate or
-            PlaceErrorCodes.InvalidSearchParameters
+            PlaceErrorCodes.InvalidSearchParameters or
+            FileErrorCodes.FileInvalidType or
+            FileErrorCodes.FileTooLarge
                 => controller.BadRequest(result.Error),
 
             // Conflict errors
             AuthErrorCodes.EmailAlreadyExists or
             TripErrorCodes.TripLimitExceeded or
-            DayErrorCodes.DayConflict 
+            DayErrorCodes.DayConflict or
+            FileErrorCodes.FileLimitExceeded
                 => controller.Conflict(result.Error),
 
             // Unauthorized errors
@@ -41,7 +44,8 @@ public static class ControllerHelper
             TripErrorCodes.TripNotFound or
             AccommodationErrorCodes.AccommodationNotFound or
             UserErrorCodes.UserNotFound or
-            DayErrorCodes.DayNotFound 
+            DayErrorCodes.DayNotFound or
+            FileErrorCodes.FileNotFound
                 => controller.NotFound(result.Error),
 
             // Forbidden errors
@@ -55,7 +59,9 @@ public static class ControllerHelper
             PlaceErrorCodes.PlaceSearchFailed or
             PlaceErrorCodes.GooglePlacesApiError or
             PlaceErrorCodes.OpenRouterApiError or
-            PlaceErrorCodes.ExternalApiTimeout
+            PlaceErrorCodes.ExternalApiTimeout or
+            FileErrorCodes.FileUploadFailed or
+            FileErrorCodes.FileSaveFailed
                 => controller.StatusCode(StatusCodes.Status500InternalServerError, result.Error),
 
             _ => controller.BadRequest(result.Error)

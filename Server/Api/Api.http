@@ -911,3 +911,61 @@ Content-Type: application/json
 }
 
 ###
+
+### File Upload Endpoints
+
+### Upload File to Trip - Successful
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/files
+Authorization: Bearer {{auth_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="flight-ticket.pdf"
+Content-Type: application/pdf
+
+< /path/to/flight-ticket.pdf
+------WebKitFormBoundary--
+
+###
+
+### Upload File to Transport - Successful
+POST {{Api_HostAddress}}/api/transports/123e4567-e89b-12d3-a456-426614174001/files
+Authorization: Bearer {{auth_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="boarding-pass.pdf"
+Content-Type: application/pdf
+
+< /path/to/boarding-pass.pdf
+------WebKitFormBoundary--
+
+###
+
+### Upload File to Accommodation - Successful
+POST {{Api_HostAddress}}/api/accommodations/123e4567-e89b-12d3-a456-426614174002/files
+Authorization: Bearer {{auth_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="hotel-booking.pdf"
+Content-Type: application/pdf
+
+< /path/to/hotel-booking.pdf
+------WebKitFormBoundary--
+
+###
+
+### Upload File to Day - Successful
+POST {{Api_HostAddress}}/api/days/123e4567-e89b-12d3-a456-426614174003/files
+Authorization: Bearer {{auth_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="museum-ticket.pdf"
+Content-Type: application/pdf
+
+< /path/to/museum-ticket.pdf
+------WebKitFormBoundary--
+
+###

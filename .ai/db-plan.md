@@ -50,7 +50,7 @@ This document outlines the database schema for the Trivare project, designed for
 | Column | Data Type | Constraints |
 | --- | --- | --- |
 | `Id` | `UNIQUEIDENTIFIER` | `PRIMARY KEY DEFAULT NEWSEQUENTIALID()` |
-| `TripId` | `UNIQUEIDENTIFIER` | `NOT NULL, UNIQUE, FOREIGN KEY REFERENCES Trips(Id) ON DELETE CASCADE` |
+| `TripId` | `UNIQUEIDENTIFIER` | `NOT NULL, FOREIGN KEY REFERENCES Trips(Id) ON DELETE CASCADE` |
 | `Type` | `NVARCHAR(100)` | `NULL` |
 | `DepartureLocation` | `NVARCHAR(255)` | `NULL` |
 | `ArrivalLocation` | `NVARCHAR(255)` | `NULL` |
@@ -134,7 +134,8 @@ This document outlines the database schema for the Trivare project, designed for
 -   **Users and Roles**: Many-to-many (`Users` <-> `UserRoles` <-> `Roles`).
 -   **Users and Trips**: One-to-many (`Users` -> `Trips`). A user can have up to 10 trips (enforced by the application).
 -   **Trips and Components**:
-    -   One-to-one with `Transport` and `Accommodation`.
+    -   One-to-many with `Transport`.
+    -   One-to-one with `Accommodation`.
     -   One-to-many with `Days`.
 -   **Days and Places**: Many-to-many (`Days` <-> `DayAttractions` <-> `Places`).
 -   **Files (Polymorphic)**: A file belongs to exactly one parent (`Trip`, `Transport`, `Accommodation`, or `Day`), enforced by a `CHECK` constraint. `ON DELETE` is handled by the application to ensure files are deleted from storage before the database record is removed.
