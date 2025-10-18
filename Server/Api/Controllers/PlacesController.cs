@@ -87,4 +87,39 @@ public class PlacesController : ControllerBase
 
         return this.HandleResult(result, StatusCodes.Status201Created);
     }
+
+    /// <summary>
+    /// Updates the order or visited status of a place in a day's itinerary
+    /// Supports partial updates - only provided fields are modified
+    /// Requires authentication and ownership of the trip
+    /// </summary>
+    /// <param name="dayId">ID of the day containing the place</param>
+    /// <param name="placeId">ID of the place to update</param>
+    /// <param name="request">Request containing fields to update (order and/or isVisited)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Updated day-place association data</returns>
+    /// <response code="200">Place updated successfully</response>
+    /// <response code="400">Invalid input data or validation errors</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="403">Forbidden - day belongs to another user</response>
+    /// <response code="404">Day not found or place not associated with day</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPatch("~/api/days/{dayId}/places/{placeId}")]
+    [ProducesResponseType(typeof(UpdateDayAttractionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<UpdateDayAttractionResponse>> UpdatePlaceOnDay(
+        Guid dayId,
+        Guid placeId,
+        [FromBody] UpdateDayAttractionRequest request,
+        CancellationToken cancellationToken)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _placesService.UpdatePlaceOnDayAsync(dayId, placeId, request, userId, cancellationToken);
+
+        return this.HandleResult(result);
+    }
 }

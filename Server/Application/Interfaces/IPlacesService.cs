@@ -38,4 +38,22 @@ public interface IPlacesService
         AddPlaceRequest request,
         Guid userId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates the order or visited status of a place associated with a specific day
+    /// Supports partial updates - only provided fields are updated
+    /// Validates ownership and ensures the association exists
+    /// </summary>
+    /// <param name="dayId">ID of the day containing the place</param>
+    /// <param name="placeId">ID of the place to update</param>
+    /// <param name="request">Request containing fields to update (order and/or isVisited)</param>
+    /// <param name="userId">ID of the authenticated user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the updated day-attraction data</returns>
+    Task<Result<UpdateDayAttractionResponse>> UpdatePlaceOnDayAsync(
+        Guid dayId,
+        Guid placeId,
+        UpdateDayAttractionRequest request,
+        Guid userId,
+        CancellationToken cancellationToken = default);
 }

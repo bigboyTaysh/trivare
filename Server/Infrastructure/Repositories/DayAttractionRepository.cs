@@ -36,4 +36,14 @@ public class DayAttractionRepository : IDayAttractionRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(da => da.DayId == dayId && da.PlaceId == placeId, cancellationToken);
     }
+
+    /// <summary>
+    /// Updates an existing day-attraction association
+    /// </summary>
+    public async Task<DayAttraction> UpdateAsync(DayAttraction dayAttraction, CancellationToken cancellationToken = default)
+    {
+        _context.DayAttractions.Update(dayAttraction);
+        await _context.SaveChangesAsync(cancellationToken);
+        return dayAttraction;
+    }
 }

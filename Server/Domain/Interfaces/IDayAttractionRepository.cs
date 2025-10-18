@@ -23,4 +23,12 @@ public interface IDayAttractionRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The day-attraction entity or null if not found</returns>
     Task<DayAttraction?> GetByDayIdAndPlaceIdAsync(Guid dayId, Guid placeId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates an existing day-attraction association
+    /// </summary>
+    /// <param name="dayAttraction">The day-attraction entity to update</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The updated day-attraction entity</returns>
+    Task<DayAttraction> UpdateAsync(DayAttraction dayAttraction, CancellationToken cancellationToken = default);
 }

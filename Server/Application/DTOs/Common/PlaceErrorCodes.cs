@@ -16,4 +16,8 @@ public static class PlaceErrorCodes
     public const string PlaceAlreadyAdded = "PlaceAlreadyAdded";
     public const string InvalidOrder = "InvalidOrder";
     public const string InternalServerError = "InternalServerError";
+
+    // Update place on day error codes
+    public const string DayAttractionNotFound = "DayAttractionNotFound";
+    public const string NoFieldsToUpdate = "NoFieldsToUpdate";
 }

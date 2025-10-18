@@ -307,4 +307,107 @@ public class PlacesService : IPlacesService
             };
         }
     }
+
+    /// <summary>
+    /// Updates the order or visited status of a place associated with a specific day
+    /// </summary>
+    /// <param name="dayId">ID of the day containing the place</param>
+    /// <param name="placeId">ID of the place to update</param>
+    /// <param name="request">Request containing fields to update</param>
+    /// <param name="userId">ID of the authenticated user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the updated day-attraction data</returns>
+    public async Task<Result<UpdateDayAttractionResponse>> UpdatePlaceOnDayAsync(
+        Guid dayId,
+        Guid placeId,
+        UpdateDayAttractionRequest request,
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Input validation
+            if (request.Order.HasValue && request.Order.Value <= 0)
+            {
+                return new ErrorResponse
+                {
+                    Error = PlaceErrorCodes.InvalidOrder,
+                    Message = "Order must be a positive integer"
+                };
+            }
+
+            if (!request.Order.HasValue && !request.IsVisited.HasValue)
+            {
+                return new ErrorResponse
+                {
+                    Error = PlaceErrorCodes.NoFieldsToUpdate,
+                    Message = "At least one field (order or isVisited) must be provided"
+                };
+            }
+
+            // Get day with trip for ownership check
+            var day = await _dayRepository.GetByIdWithTripAsync(dayId, cancellationToken);
+            if (day == null)
+            {
+                return new ErrorResponse
+                {
+                    Error = PlaceErrorCodes.DayNotFound,
+                    Message = "Day not found"
+                };
+            }
+
+            if (day.Trip.UserId != userId)
+            {
+                return new ErrorResponse
+                {
+                    Error = PlaceErrorCodes.DayNotOwned,
+                    Message = "Day does not belong to the authenticated user"
+                };
+            }
+
+            // Get existing day-attraction
+            var dayAttraction = await _dayAttractionRepository.GetByDayIdAndPlaceIdAsync(dayId, placeId, cancellationToken);
+            if (dayAttraction == null)
+            {
+                return new ErrorResponse
+                {
+                    Error = PlaceErrorCodes.DayAttractionNotFound,
+                    Message = "Place is not associated with this day"
+                };
+            }
+
+            // Update fields
+            if (request.Order.HasValue)
+            {
+                dayAttraction.Order = request.Order.Value;
+            }
+            if (request.IsVisited.HasValue)
+            {
+                dayAttraction.IsVisited = request.IsVisited.Value;
+            }
+
+            // Save changes
+            dayAttraction = await _dayAttractionRepository.UpdateAsync(dayAttraction, cancellationToken);
+
+            // Map to response
+            var result = new UpdateDayAttractionResponse
+            {
+                DayId = dayAttraction.DayId,
+                PlaceId = dayAttraction.PlaceId,
+                Order = dayAttraction.Order,
+                IsVisited = dayAttraction.IsVisited
+            };
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating place {PlaceId} on day {DayId} for user {UserId}", placeId, dayId, userId);
+            return new ErrorResponse
+            {
+                Error = PlaceErrorCodes.InternalServerError,
+                Message = "An unexpected error occurred"
+            };
+        }
+    }
 }
