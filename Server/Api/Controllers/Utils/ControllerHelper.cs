@@ -24,6 +24,8 @@ public static class ControllerHelper
             TripErrorCodes.TripLimitExceeded => controller.Conflict(result.Error),
             TripErrorCodes.TripNotFound => controller.NotFound(result.Error),
             TripErrorCodes.TripNotOwned => controller.StatusCode(StatusCodes.Status403Forbidden, result.Error),
+            AccommodationErrorCodes.AccommodationNotFound => controller.NotFound(result.Error),
+            AccommodationErrorCodes.InvalidDateRange => controller.BadRequest(result.Error),
             _ => controller.BadRequest(result.Error)
         };
     }

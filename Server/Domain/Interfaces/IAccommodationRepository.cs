@@ -22,4 +22,12 @@ public interface IAccommodationRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The accommodation entity or null if not found</returns>
     Task<Accommodation?> GetByTripIdAsync(Guid tripId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates an existing accommodation
+    /// </summary>
+    /// <param name="accommodation">The accommodation entity to update</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The updated accommodation entity</returns>
+    Task<Accommodation> UpdateAsync(Accommodation accommodation, CancellationToken cancellationToken = default);
 }

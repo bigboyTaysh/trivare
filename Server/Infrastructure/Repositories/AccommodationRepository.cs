@@ -35,4 +35,14 @@ public class AccommodationRepository : IAccommodationRepository
         return await _context.Accommodations
             .FirstOrDefaultAsync(a => a.TripId == tripId, cancellationToken);
     }
+
+    /// <summary>
+    /// Updates an existing accommodation
+    /// </summary>
+    public async Task<Accommodation> UpdateAsync(Accommodation accommodation, CancellationToken cancellationToken = default)
+    {
+        _context.Accommodations.Update(accommodation);
+        await _context.SaveChangesAsync(cancellationToken);
+        return accommodation;
+    }
 }

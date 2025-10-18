@@ -693,22 +693,128 @@ Content-Type: application/json
 
 ###
 
-### Create Accommodation - Forbidden (Trip belongs to another user, will return 403)
-POST {{Api_HostAddress}}/api/trips/fe1a75ea-1174-414f-916b-47255c307250/accommodation
+### Update Accommodation - Successful Full Update
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
 Content-Type: application/json
+Authorization: Bearer {{auth_token}}
 
 {
-  "name": "Hotel Forbidden"
+  "name": "Updated Hotel Name",
+  "address": "Updated Address, 123 New Street",
+  "checkInDate": "2025-07-15T14:00:00Z",
+  "checkOutDate": "2025-07-20T11:00:00Z",
+  "notes": "Updated booking notes"
 }
 
 ###
 
-### Create Accommodation - Unauthorized (missing token, will return 401)
-POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+### Update Accommodation - Partial Update (Only Name)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Partially Updated Name"
+}
+
+###
+
+### Update Accommodation - Partial Update (Dates Only)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "checkInDate": "2025-08-01T15:00:00Z",
+  "checkOutDate": "2025-08-10T10:00:00Z"
+}
+
+###
+
+### Update Accommodation - Validation Error (Name Too Long)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "This accommodation name is way too long and exceeds the maximum allowed length of 255 characters for the name field in the database schema and validation rules"
+}
+
+###
+
+### Update Accommodation - Validation Error (Address Too Long)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "address": "This accommodation address is way too long and exceeds the maximum allowed length of 500 characters for the address field in the database schema and validation rules. This is a very long address that goes on and on and on with lots of unnecessary details about the location."
+}
+
+###
+
+### Update Accommodation - Validation Error (Notes Too Long)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "notes": "These notes are way too long and exceed the maximum allowed length of 2000 characters for the notes field in the database schema and validation rules. This is a very long note that contains lots of unnecessary information about the accommodation, including detailed descriptions of amenities, nearby attractions, check-in procedures, and other miscellaneous details that make this text much longer than it should be for a simple note field."
+}
+
+###
+
+### Update Accommodation - Business Rule Error (Check-out Before Check-in)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "checkInDate": "2025-07-20T14:00:00Z",
+  "checkOutDate": "2025-07-15T11:00:00Z"
+}
+
+###
+
+### Update Accommodation - Not Found (Accommodation doesn't exist)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Non-existent Accommodation"
+}
+
+###
+
+### Update Accommodation - Not Found (Trip doesn't exist)
+PATCH {{Api_HostAddress}}/api/trips/fe1a75ea-1174-414f-916b-47255c307249/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Trip Not Found"
+}
+
+###
+
+### Update Accommodation - Forbidden (Trip belongs to another user)
+PATCH {{Api_HostAddress}}/api/trips/fe1a75ea-1174-414f-916b-47255c307250/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Forbidden Update"
+}
+
+###
+
+### Update Accommodation - Unauthorized (missing token)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
 Content-Type: application/json
 
 {
-  "name": "Hotel Unauthorized"
+  "name": "Unauthorized Update"
 }
 
 ###
