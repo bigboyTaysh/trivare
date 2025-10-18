@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Trivare.Application.DTOs.Accommodation;
 
 /// <summary>
@@ -9,11 +11,13 @@ public record CreateAccommodationRequest
     /// <summary>
     /// Accommodation name - optional, max 255 characters
     /// </summary>
+    [MaxLength(255, ErrorMessage = "Accommodation name cannot exceed 255 characters")]
     public string? Name { get; init; }
 
     /// <summary>
     /// Accommodation address - optional, max 500 characters
     /// </summary>
+    [MaxLength(500, ErrorMessage = "Accommodation address cannot exceed 500 characters")]
     public string? Address { get; init; }
 
     /// <summary>
@@ -29,5 +33,6 @@ public record CreateAccommodationRequest
     /// <summary>
     /// Additional notes - optional, max 2000 characters
     /// </summary>
+    [MaxLength(2000, ErrorMessage = "Notes cannot exceed 2000 characters")]
     public string? Notes { get; init; }
 }

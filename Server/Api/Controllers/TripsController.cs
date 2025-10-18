@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Trivare.Api.Controllers.Utils;
 using Trivare.Api.Extensions;
+using Trivare.Application.DTOs.Accommodation;
 using Trivare.Application.DTOs.Common;
 using Trivare.Application.DTOs.Transport;
 using Trivare.Application.DTOs.Trips;
@@ -20,11 +21,13 @@ public class TripsController : ControllerBase
 {
     private readonly ITripService _tripService;
     private readonly ITransportService _transportService;
+    private readonly IAccommodationService _accommodationService;
 
-    public TripsController(ITripService tripService, ITransportService transportService)
+    public TripsController(ITripService tripService, ITransportService transportService, IAccommodationService accommodationService)
     {
         _tripService = tripService;
         _transportService = transportService;
+        _accommodationService = accommodationService;
     }
 
     /// <summary>
@@ -48,6 +51,36 @@ public class TripsController : ControllerBase
     {
         var userId = this.GetAuthenticatedUserId();
         var result = await _tripService.CreateTripAsync(request, userId, cancellationToken);
+
+        return this.HandleResult(result);
+    }
+
+    /// <summary>
+    /// Add accommodation to a specific trip
+    /// </summary>
+    /// <param name="tripId">The unique identifier of the trip</param>
+    /// <param name="request">Accommodation data to add</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Created accommodation information</returns>
+    /// <response code="201">Accommodation added successfully</response>
+    /// <response code="400">Invalid request data</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="403">Forbidden - trip belongs to another user</response>
+    /// <response code="404">Trip not found</response>
+    /// <response code="409">Accommodation already exists for this trip</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("{tripId}/accommodation")]
+    [ProducesResponseType(typeof(AccommodationDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<AccommodationDto>> AddAccommodation(Guid tripId, [FromBody] CreateAccommodationRequest request, CancellationToken cancellationToken)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _accommodationService.AddAccommodationAsync(request, tripId, userId, cancellationToken);
 
         return this.HandleResult(result);
     }

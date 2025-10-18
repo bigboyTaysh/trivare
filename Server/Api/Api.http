@@ -528,3 +528,187 @@ Content-Type: application/json
 }
 
 ###
+
+### Transport Update Controller Endpoints
+
+### Update Transport - Successful (Partial Update)
+PATCH {{Api_HostAddress}}/api/transports/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "type": "Updated Flight",
+  "notes": "Updated flight details"
+}
+
+###
+
+### Update Transport - Full Update
+PATCH {{Api_HostAddress}}/api/transports/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "type": "Train",
+  "departureLocation": "Paris Gare du Nord",
+  "arrivalLocation": "London St Pancras",
+  "departureTime": "2024-12-20T08:00:00Z",
+  "arrivalTime": "2024-12-20T11:30:00Z",
+  "notes": "Eurostar train from Paris to London"
+}
+
+###
+
+### Update Transport - Validation Error (Type Too Long)
+PATCH {{Api_HostAddress}}/api/transports/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "type": "This transportation type name is way too long and exceeds the maximum allowed length of 100 characters for the type field"
+}
+
+###
+
+### Update Transport - Validation Error (Invalid Time Range)
+PATCH {{Api_HostAddress}}/api/transports/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "departureTime": "2024-12-20T12:00:00Z",
+  "arrivalTime": "2024-12-20T10:00:00Z"
+}
+
+###
+
+### Update Transport - Not Found (will return 404)
+PATCH {{Api_HostAddress}}/api/transports/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "type": "Updated Transport"
+}
+
+###
+
+### Update Transport - Forbidden (Transport belongs to another user, will return 403)
+PATCH {{Api_HostAddress}}/api/transports/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "type": "Updated by wrong user"
+}
+
+###
+
+### Update Transport - Unauthorized (missing token, will return 401)
+PATCH {{Api_HostAddress}}/api/transports/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "type": "Flight"
+}
+
+###
+
+### Accommodation Controller Endpoints
+
+### Create Accommodation - Successful
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{
+  "name": "Hotel Eiffel",
+  "address": "123 Rue de Paris, 75001 Paris",
+  "checkInDate": "2025-07-01T15:00:00Z",
+  "checkOutDate": "2025-07-10T11:00:00Z",
+  "notes": "Booking confirmation #123456"
+}
+
+###
+
+### Create Accommodation - Minimal Data (Only Required Fields)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{}
+
+###
+
+### Create Accommodation - Validation Error (Name Too Long)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{
+  "name": "This accommodation name is way too long and exceeds the maximum allowed length of 255 characters for the name field in the database schema and validation rules"
+}
+
+###
+
+### Create Accommodation - Validation Error (Address Too Long)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{
+  "address": "This accommodation address is way too long and exceeds the maximum allowed length of 500 characters for the address field in the database schema and validation rules. This is a very long address that goes on and on and on with lots of unnecessary details about the location."
+}
+
+###
+
+### Create Accommodation - Validation Error (Notes Too Long)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{
+  "notes": "These notes are way too long and exceed the maximum allowed length of 2000 characters for the notes field in the database schema and validation rules. This is a very long note that contains lots of unnecessary information about the accommodation, including detailed descriptions of amenities, nearby attractions, check-in procedures, and other miscellaneous details that make this text much longer than it should be for a simple note field."
+}
+
+###
+
+### Create Accommodation - Business Rule Error (Check-out Before Check-in)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{
+  "checkInDate": "2025-07-10T15:00:00Z",
+  "checkOutDate": "2025-07-01T11:00:00Z"
+}
+
+###
+
+### Create Accommodation - Conflict (Accommodation Already Exists)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{
+  "name": "Second Accommodation Attempt"
+}
+
+###
+
+### Create Accommodation - Not Found (Trip doesn't exist, will return 404)
+POST {{Api_HostAddress}}/api/trips/00000000-0000-0000-0000-000000000000/accommodation
+Content-Type: application/json
+
+{
+  "name": "Hotel Not Found"
+}
+
+###
+
+### Create Accommodation - Forbidden (Trip belongs to another user, will return 403)
+POST {{Api_HostAddress}}/api/trips/fe1a75ea-1174-414f-916b-47255c307250/accommodation
+Content-Type: application/json
+
+{
+  "name": "Hotel Forbidden"
+}
+
+###
+
+### Create Accommodation - Unauthorized (missing token, will return 401)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{
+  "name": "Hotel Unauthorized"
+}
+
+###
