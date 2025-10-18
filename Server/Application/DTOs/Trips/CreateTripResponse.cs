@@ -1,0 +1,48 @@
+namespace Trivare.Application.DTOs.Trips;
+
+/// <summary>
+/// Response model for successful trip creation
+/// Derived from Trip entity
+/// </summary>
+public record CreateTripResponse
+{
+    /// <summary>
+    /// Trip identifier from Trip.Id
+    /// </summary>
+    public required Guid Id { get; init; }
+
+    /// <summary>
+    /// User identifier from Trip.UserId
+    /// </summary>
+    public required Guid UserId { get; init; }
+
+    /// <summary>
+    /// Trip name from Trip.Name
+    /// </summary>
+    public required string Name { get; init; }
+
+    /// <summary>
+    /// Trip destination from Trip.Destination
+    /// </summary>
+    public string? Destination { get; init; }
+
+    /// <summary>
+    /// Trip start date from Trip.StartDate
+    /// </summary>
+    public required DateOnly StartDate { get; init; }
+
+    /// <summary>
+    /// Trip end date from Trip.EndDate
+    /// </summary>
+    public required DateOnly EndDate { get; init; }
+
+    /// <summary>
+    /// Additional notes from Trip.Notes
+    /// </summary>
+    public string? Notes { get; init; }
+
+    /// <summary>
+    /// Trip creation timestamp from Trip.CreatedAt
+    /// </summary>
+    public required DateTime CreatedAt { get; init; }
+}

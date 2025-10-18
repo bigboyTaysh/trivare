@@ -1,4 +1,45 @@
-cd Client
+#!/bin/sh
+
+# Store the root directory
+ROOT_DIR=$(pwd)
+
+# Build .NET application
+echo "Building .NET application..."
+cd "$ROOT_DIR/Server"
+dotnet build
+BUILD_EXIT_CODE=$?
+if [ $BUILD_EXIT_CODE -ne 0 ]; then
+    echo "❌ .NET build failed. Commit aborted."
+    exit 1
+fi
+
+# Run Client checks
+echo "Running Client checks..."
+cd "$ROOT_DIR/Client"
+
+echo "Running ESLint..."
 npx eslint .
+ESLINT_EXIT_CODE=$?
+if [ $ESLINT_EXIT_CODE -ne 0 ]; then
+    echo "❌ ESLint failed. Commit aborted."
+    exit 1
+fi
+
+echo "Checking code formatting..."
 npx prettier --check .
+PRETTIER_EXIT_CODE=$?
+if [ $PRETTIER_EXIT_CODE -ne 0 ]; then
+    echo "❌ Prettier check failed. Run 'npm run format' to fix formatting issues."
+    exit 1
+fi
+
+echo "Running lint-staged..."
 npx lint-staged
+LINT_STAGED_EXIT_CODE=$?
+if [ $LINT_STAGED_EXIT_CODE -ne 0 ]; then
+    echo "❌ Lint-staged failed. Commit aborted."
+    exit 1
+fi
+
+echo "✅ All pre-commit checks passed!"
+exit 0

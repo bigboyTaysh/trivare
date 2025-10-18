@@ -292,13 +292,13 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Type")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TripId")
-                        .IsUnique();
+                    b.HasIndex("TripId");
 
                     b.ToTable("Transport");
                 });
@@ -377,6 +377,17 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("varbinary(128)");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -486,8 +497,8 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Trivare.Domain.Entities.Transport", b =>
                 {
                     b.HasOne("Trivare.Domain.Entities.Trip", "Trip")
-                        .WithOne("Transport")
-                        .HasForeignKey("Trivare.Domain.Entities.Transport", "TripId")
+                        .WithMany("Transports")
+                        .HasForeignKey("TripId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -559,7 +570,7 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("Files");
 
-                    b.Navigation("Transport");
+                    b.Navigation("Transports");
                 });
 
             modelBuilder.Entity("Trivare.Domain.Entities.User", b =>

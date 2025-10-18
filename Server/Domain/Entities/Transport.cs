@@ -5,7 +5,7 @@ public class Transport
     public Guid Id { get; set; }
     public Guid TripId { get; set; }
     public Trip Trip { get; set; } = null!;
-    public string? Type { get; set; }
+    public string Type { get; set; } = null!;
     public string? DepartureLocation { get; set; }
     public string? ArrivalLocation { get; set; }
     public DateTime? DepartureTime { get; set; }

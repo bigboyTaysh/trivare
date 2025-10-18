@@ -1,0 +1,102 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Trivare.Api.Controllers.Utils;
+using Trivare.Api.Extensions;
+using Trivare.Application.DTOs.Common;
+using Trivare.Application.DTOs.Trips;
+using Trivare.Application.Interfaces;
+
+namespace Trivare.Api.Controllers;
+
+/// <summary>
+/// Controller for trip operations
+/// </summary>
+[ApiController]
+[Route("api/trips")]
+[Authorize]
+[Produces("application/json")]
+public class TripsController : ControllerBase
+{
+    private readonly ITripService _tripService;
+
+    public TripsController(ITripService tripService)
+    {
+        _tripService = tripService;
+    }
+
+    /// <summary>
+    /// Create a new trip
+    /// </summary>
+    /// <param name="request">Trip creation data</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Created trip information</returns>
+    /// <response code="201">Trip created successfully</response>
+    /// <response code="400">Invalid request data</response>
+    /// <response code="409">Trip limit exceeded</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost]
+    [ProducesResponseType(typeof(CreateTripResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<CreateTripResponse>> CreateTrip([FromBody] CreateTripRequest request, CancellationToken cancellationToken)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _tripService.CreateTripAsync(request, userId, cancellationToken);
+
+        return this.HandleResult(result, StatusCodes.Status201Created);
+    }
+
+    /// <summary>
+    /// Get a paginated list of trips for the authenticated user
+    /// </summary>
+    /// <param name="request">Query parameters for pagination, sorting, and filtering</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Paginated list of trips</returns>
+    /// <response code="200">Trips retrieved successfully</response>
+    /// <response code="400">Invalid query parameters</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(TripListResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<TripListResponse>> ListTrips([FromQuery] TripListRequest request, CancellationToken cancellationToken)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _tripService.GetTripsAsync(request, userId, cancellationToken);
+
+        return this.HandleResult(result);
+    }
+
+    /// <summary>
+    /// Update an existing trip
+    /// </summary>
+    /// <param name="tripId">The ID of the trip to update</param>
+    /// <param name="request">Trip update data (partial update)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Updated trip information</returns>
+    /// <response code="200">Trip updated successfully</response>
+    /// <response code="400">Invalid request data</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="403">Forbidden - trip belongs to another user</response>
+    /// <response code="404">Trip not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPatch("{tripId}")]
+    [ProducesResponseType(typeof(TripDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<TripDetailDto>> UpdateTrip(Guid tripId, [FromBody] UpdateTripRequest request, CancellationToken cancellationToken)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _tripService.UpdateTripAsync(tripId, request, userId, cancellationToken);
+
+        return this.HandleResult(result);
+    }
+}

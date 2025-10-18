@@ -13,6 +13,7 @@ applyTo: 'Server/**'
 - Use interfaces (ports) and implementations (adapters) to isolate external dependencies
 - Create use cases that orchestrate entity interactions for specific business operations
 - Implement mappers to transform data between layers to maintain separation of concerns
+- Do not use CQRS or Command-Query Separation (with command or query DTO) pattern unless there is a clear request to do it or benefit for complexity management.
 
 ### Guidelines for DOCUMENTATION
 
@@ -45,6 +46,7 @@ applyTo: 'Server/**'
 - Apply proper response caching with cache profiles and ETags for improved performance on high-traffic endpoints
 - Implement proper exception handling with ExceptionFilter or middleware to provide consistent error responses
 - Use dependency injection with scoped lifetime for request-specific services and singleton for stateless services
+- Do not insert Auditlog for actions that are not mentioned in the PRD.
 
 ## DATABASE
 

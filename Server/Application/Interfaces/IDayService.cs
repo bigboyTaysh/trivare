@@ -1,0 +1,42 @@
+using Trivare.Application.DTOs.Common;
+using Trivare.Application.DTOs.Days;
+
+namespace Trivare.Application.Interfaces;
+
+/// <summary>
+/// Service interface for day-related operations
+/// </summary>
+public interface IDayService
+{
+    /// <summary>
+    /// Creates a new day for a trip
+    /// Validates trip ownership, date range, and ensures no duplicate dates
+    /// </summary>
+    /// <param name="request">The create day request</param>
+    /// <param name="tripId">The trip identifier</param>
+    /// <param name="userId">The user identifier</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The created day response or error</returns>
+    Task<Result<CreateDayResponse>> CreateDayAsync(CreateDayRequest request, Guid tripId, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all days for a specific trip
+    /// Validates trip ownership before returning days
+    /// </summary>
+    /// <param name="tripId">The trip identifier</param>
+    /// <param name="userId">The user identifier</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of day DTOs or error</returns>
+    Task<Result<IEnumerable<DayDto>>> GetDaysForTripAsync(Guid tripId, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates an existing day
+    /// Validates day ownership and ensures no duplicate dates within the trip
+    /// </summary>
+    /// <param name="dayId">The day identifier</param>
+    /// <param name="request">The update day request</param>
+    /// <param name="userId">The user identifier</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The updated day DTO or error</returns>
+    Task<Result<DayDto>> UpdateDayAsync(Guid dayId, UpdateDayRequest request, Guid userId, CancellationToken cancellationToken = default);
+}
