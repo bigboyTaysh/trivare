@@ -14,6 +14,7 @@ namespace Trivare.Api.Controllers;
 [ApiController]
 [Route("api/trips/{tripId}/accommodation")]
 [Authorize]
+[Produces("application/json")]
 public class AccommodationController : ControllerBase
 {
     private readonly IAccommodationService _accommodationService;
@@ -21,6 +22,36 @@ public class AccommodationController : ControllerBase
     public AccommodationController(IAccommodationService accommodationService)
     {
         _accommodationService = accommodationService;
+    }
+
+    /// <summary>
+    /// Add accommodation to a specific trip
+    /// </summary>
+    /// <param name="tripId">The unique identifier of the trip</param>
+    /// <param name="request">Accommodation data to add</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Created accommodation information</returns>
+    /// <response code="201">Accommodation added successfully</response>
+    /// <response code="400">Invalid request data</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="403">Forbidden - trip belongs to another user</response>
+    /// <response code="404">Trip not found</response>
+    /// <response code="409">Accommodation already exists for this trip</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost]
+    [ProducesResponseType(typeof(AccommodationDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> CreateAccommodation(Guid tripId, CreateAccommodationRequest request, CancellationToken cancellationToken = default)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _accommodationService.AddAccommodationAsync(request, tripId, userId, cancellationToken);
+
+        return this.HandleResult(result);
     }
 
     /// <summary>
