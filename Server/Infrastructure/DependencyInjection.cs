@@ -25,6 +25,8 @@ public static class DependencyInjection
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IAccommodationRepository, AccommodationRepository>();
         services.AddScoped<IDayRepository, DayRepository>();
+        services.AddScoped<IPlaceRepository, PlaceRepository>();
+        services.AddScoped<IDayAttractionRepository, DayAttractionRepository>();
 
         // Register services
         services.AddScoped<IEmailService, EmailService>();

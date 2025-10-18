@@ -52,4 +52,39 @@ public class PlacesController : ControllerBase
 
         return this.HandleResult(result);
     }
+
+    /// <summary>
+    /// Adds a place to a specific day in the user's trip itinerary
+    /// Supports adding existing places or creating new manual places
+    /// Validates ownership and prevents duplicates
+    /// </summary>
+    /// <param name="dayId">ID of the day to add the place to</param>
+    /// <param name="request">Request containing place details and order</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The created day-place association</returns>
+    /// <response code="201">Place added to day successfully</response>
+    /// <response code="400">Invalid place data or order</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="403">Forbidden - day belongs to another user</response>
+    /// <response code="404">Day or place not found</response>
+    /// <response code="409">Place already added to this day</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("~/api/days/{dayId}/places")]
+    [ProducesResponseType(typeof(DayAttractionDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<DayAttractionDto>> AddPlaceToDay(
+        Guid dayId,
+        [FromBody] AddPlaceRequest request,
+        CancellationToken cancellationToken)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _placesService.AddPlaceToDayAsync(dayId, request, userId, cancellationToken);
+
+        return this.HandleResult(result, StatusCodes.Status201Created);
+    }
 }

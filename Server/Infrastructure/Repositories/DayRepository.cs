@@ -60,6 +60,17 @@ public class DayRepository : IDayRepository
     }
 
     /// <summary>
+    /// Gets a day by ID including the associated trip
+    /// </summary>
+    public async Task<Day?> GetByIdWithTripAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Days
+            .AsNoTracking()
+            .Include(d => d.Trip)
+            .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
+    }
+
+    /// <summary>
     /// Updates an existing day
     /// </summary>
     public async Task<Day> UpdateAsync(Day day, CancellationToken cancellationToken = default)

@@ -22,4 +22,20 @@ public interface IPlacesService
         PlaceSearchRequest request, 
         Guid userId, 
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a place to a specific day in the user's trip itinerary
+    /// Supports adding existing places or creating new manual places
+    /// Validates ownership, prevents duplicates, and maintains proper ordering
+    /// </summary>
+    /// <param name="dayId">ID of the day to add the place to</param>
+    /// <param name="request">Request containing place details and order</param>
+    /// <param name="userId">ID of the authenticated user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the created day-attraction association</returns>
+    Task<Result<DayAttractionDto>> AddPlaceToDayAsync(
+        Guid dayId,
+        AddPlaceRequest request,
+        Guid userId,
+        CancellationToken cancellationToken = default);
 }

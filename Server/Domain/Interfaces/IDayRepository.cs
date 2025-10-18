@@ -47,4 +47,12 @@ public interface IDayRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated day entity</returns>
     Task<Day> UpdateAsync(Day day, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a day by ID including the associated trip
+    /// </summary>
+    /// <param name="id">The day ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The day entity with trip or null if not found</returns>
+    Task<Day?> GetByIdWithTripAsync(Guid id, CancellationToken cancellationToken = default);
 }
