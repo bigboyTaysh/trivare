@@ -9,7 +9,7 @@ The API is organized around the following main resources, mapped to database tab
 | Auth | Users, Roles, UserRoles | Authentication and authorization operations |
 | Users | Users | User profile management |
 | Trips | Trips | Core trip information and planning |
-| Transport | Transport | Transportation details for trips (one-to-one with Trip) |
+| Transport | Transport | Transportation details for trips (one-to-many with Trip) |
 | Accommodation | Accommodation | Accommodation details for trips (one-to-one with Trip) |
 | Days | Days | Individual days within trips |
 | Places | Places | Attractions and points of interest |
@@ -303,7 +303,7 @@ The API is organized around the following main resources, mapped to database tab
   "endDate": "2025-07-10",
   "notes": "Family trip to Paris",
   "createdAt": "2025-06-01T10:30:00Z",
-  "transport": {
+  "transports": [{
     "id": "4fa85f64-5717-4562-b3fc-2c963f66afa7",
     "type": "Flight",
     "departureLocation": "New York JFK",
@@ -311,7 +311,7 @@ The API is organized around the following main resources, mapped to database tab
     "departureTime": "2025-07-01T08:00:00Z",
     "arrivalTime": "2025-07-01T20:00:00Z",
     "notes": "Air France AF007"
-  },
+  }],
   "accommodation": {
     "id": "5fa85f64-5717-4562-b3fc-2c963f66afa8",
     "name": "Hotel Eiffel",
@@ -443,7 +443,7 @@ The API is organized around the following main resources, mapped to database tab
 
 - **Method:** `POST`
 - **Path:** `/api/trips/{tripId}/transport`
-- **Description:** Add transportation details to a trip (one-to-one relationship)
+- **Description:** Add transportation details to a trip (one-to-many relationship)
 - **Authentication:** Required (JWT)
 - **Request Body:**
 ```json
@@ -473,15 +473,15 @@ The API is organized around the following main resources, mapped to database tab
   - `400 Bad Request` - Invalid data (e.g., arrival before departure)
   - `403 Forbidden` - Trip belongs to another user
   - `404 Not Found` - Trip not found
-  - `409 Conflict` - Transport already exists for this trip
+  - `409 Conflict` - Transport with the same details already exists for this trip
 
 ---
 
 #### 2.4.2 Update Transport
 
 - **Method:** `PATCH`
-- **Path:** `/api/trips/{tripId}/transport`
-- **Description:** Update transportation details
+- **Path:** `/api/transport/{transportId}`
+- **Description:** Update details for a specific transport record.
 - **Authentication:** Required (JWT)
 - **Request Body:**
 ```json
@@ -506,21 +506,21 @@ The API is organized around the following main resources, mapped to database tab
 ```
 - **Error Responses:**
   - `400 Bad Request` - Invalid data
-  - `403 Forbidden` - Trip belongs to another user
-  - `404 Not Found` - Trip or transport not found
+  - `403 Forbidden` - Transport belongs to another user's trip
+  - `404 Not Found` - Transport not found
 
 ---
 
 #### 2.4.3 Delete Transport
 
 - **Method:** `DELETE`
-- **Path:** `/api/trips/{tripId}/transport`
-- **Description:** Remove transportation details from trip
+- **Path:** `/api/transport/{transportId}`
+- **Description:** Delete a specific transport record.
 - **Authentication:** Required (JWT)
 - **Response (204 No Content)**
 - **Error Responses:**
-  - `403 Forbidden` - Trip belongs to another user
-  - `404 Not Found` - Trip or transport not found
+  - `403 Forbidden` - Transport belongs to another user's trip
+  - `404 Not Found` - Transport not found
 
 ---
 

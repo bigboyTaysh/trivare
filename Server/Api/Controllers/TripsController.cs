@@ -19,10 +19,12 @@ namespace Trivare.Api.Controllers;
 public class TripsController : ControllerBase
 {
     private readonly ITripService _tripService;
+    private readonly ITransportService _transportService;
 
-    public TripsController(ITripService tripService)
+    public TripsController(ITripService tripService, ITransportService transportService)
     {
         _tripService = tripService;
+        _transportService = transportService;
     }
 
     /// <summary>
@@ -124,7 +126,7 @@ public class TripsController : ControllerBase
     public async Task<ActionResult<CreateTransportResponse>> CreateTransport(Guid tripId, [FromBody] CreateTransportRequest request, CancellationToken cancellationToken)
     {
         var userId = this.GetAuthenticatedUserId();
-        var result = await _tripService.CreateTransportAsync(tripId, request, userId, cancellationToken);
+        var result = await _transportService.CreateTransportAsync(tripId, request, userId, cancellationToken);
 
         return this.HandleResult(result);
     }

@@ -21,6 +21,7 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<ITripRepository, TripRepository>();
+        services.AddScoped<ITransportRepository, TransportRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
         // Register services

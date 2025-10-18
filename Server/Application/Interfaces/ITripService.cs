@@ -36,14 +36,4 @@ public interface ITripService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated trip data or an error</returns>
     Task<Result<TripDetailDto>> UpdateTripAsync(Guid tripId, UpdateTripRequest request, Guid userId, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Creates transportation details for an existing trip
-    /// </summary>
-    /// <param name="tripId">The ID of the trip to add transport to</param>
-    /// <param name="request">The transport creation request</param>
-    /// <param name="userId">The ID of the authenticated user</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>The created transport data or an error</returns>
-    Task<Result<CreateTransportResponse>> CreateTransportAsync(Guid tripId, CreateTransportRequest request, Guid userId, CancellationToken cancellationToken = default);
 }
