@@ -34,13 +34,13 @@ public class DayService : IDayService
         if (trip == null)
         {
             _logger.LogWarning("Day creation failed for user {UserId}: Trip {TripId} not found", userId, tripId);
-            return new ErrorResponse { Error = "TripNotFound", Message = "The specified trip does not exist." };
+            return new ErrorResponse { Error = TripErrorCodes.TripNotFound, Message = "The specified trip does not exist." };
         }
 
         if (trip.UserId != userId)
         {
             _logger.LogWarning("Day creation failed for user {UserId}: Trip {TripId} belongs to another user", userId, tripId);
-            return new ErrorResponse { Error = "TripForbidden", Message = "You do not have permission to modify this trip." };
+            return new ErrorResponse { Error = TripErrorCodes.TripNotOwned, Message = "You do not have permission to modify this trip." };
         }
 
         // Validate date is within trip range
@@ -48,7 +48,7 @@ public class DayService : IDayService
         {
             _logger.LogWarning("Day creation failed for user {UserId}: Date {Date} is outside trip {TripId} range ({StartDate} to {EndDate})",
                 userId, request.Date, tripId, trip.StartDate, trip.EndDate);
-            return new ErrorResponse { Error = "InvalidDate", Message = "The date must be within the trip's start and end dates." };
+            return new ErrorResponse { Error = DayErrorCodes.InvalidDate, Message = "The date must be within the trip's start and end dates." };
         }
 
         // Check if day already exists for this trip and date
@@ -56,7 +56,7 @@ public class DayService : IDayService
         if (existingDay != null)
         {
             _logger.LogWarning("Day creation failed for user {UserId}: Day already exists for trip {TripId} on date {Date}", userId, tripId, request.Date);
-            return new ErrorResponse { Error = "DayConflict", Message = "A day already exists for this trip on the specified date." };
+            return new ErrorResponse { Error = DayErrorCodes.DayConflict, Message = "A day already exists for this trip on the specified date." };
         }
 
         // Create new day
@@ -94,13 +94,13 @@ public class DayService : IDayService
         if (trip == null)
         {
             _logger.LogWarning("Days retrieval failed for user {UserId}: Trip {TripId} not found", userId, tripId);
-            return new ErrorResponse { Error = "TripNotFound", Message = "The specified trip does not exist." };
+            return new ErrorResponse { Error = TripErrorCodes.TripNotFound, Message = "The specified trip does not exist." };
         }
 
         if (trip.UserId != userId)
         {
             _logger.LogWarning("Days retrieval failed for user {UserId}: Trip {TripId} belongs to another user", userId, tripId);
-            return new ErrorResponse { Error = "TripForbidden", Message = "You do not have permission to access this trip." };
+            return new ErrorResponse { Error = TripErrorCodes.TripNotOwned, Message = "You do not have permission to access this trip." };
         }
 
         // Get days for the trip
@@ -109,10 +109,80 @@ public class DayService : IDayService
         var dayDtos = days.Select(d => new DayDto
         {
             Id = d.Id,
+            TripId = d.TripId,
             Date = d.Date,
             Notes = d.Notes
         });
 
         return dayDtos.ToList();
+    }
+
+    /// <summary>
+    /// Updates an existing day
+    /// Validates day ownership and ensures no duplicate dates within the trip
+    /// </summary>
+    public async Task<Result<DayDto>> UpdateDayAsync(Guid dayId, UpdateDayRequest request, Guid userId, CancellationToken cancellationToken = default)
+    {
+        // Check if day exists
+        var day = await _dayRepository.GetByIdAsync(dayId, cancellationToken);
+        if (day == null)
+        {
+            _logger.LogWarning("Day update failed for user {UserId}: Day {DayId} not found", userId, dayId);
+            return new ErrorResponse { Error = DayErrorCodes.DayNotFound, Message = "The specified day does not exist." };
+        }
+
+        // Check if trip exists and belongs to user
+        var trip = await _tripRepository.GetByIdAsync(day.TripId, cancellationToken);
+        if (trip == null)
+        {
+            _logger.LogWarning("Day update failed for user {UserId}: Trip {TripId} not found", userId, day.TripId);
+            return new ErrorResponse { Error = TripErrorCodes.TripNotFound, Message = "The trip associated with this day does not exist." };
+        }
+
+        if (trip.UserId != userId)
+        {
+            _logger.LogWarning("Day update failed for user {UserId}: Day {DayId} belongs to another user", userId, dayId);
+            return new ErrorResponse { Error = DayErrorCodes.DayForbidden, Message = "You do not have permission to modify this day." };
+        }
+
+        // Validate date if provided
+        if (request.Date.HasValue)
+        {
+            // Check if date is within trip range
+            if (request.Date.Value < trip.StartDate || request.Date.Value > trip.EndDate)
+            {
+                _logger.LogWarning("Day update failed for user {UserId}: Date {Date} is outside trip {TripId} range ({StartDate} to {EndDate})",
+                    userId, request.Date.Value, day.TripId, trip.StartDate, trip.EndDate);
+                return new ErrorResponse { Error = DayErrorCodes.InvalidDate, Message = "The date must be within the trip's start and end dates." };
+            }
+
+            // Check if another day already exists for this trip and date (excluding current day)
+            var existingDay = await _dayRepository.GetByTripIdAndDateAsync(day.TripId, request.Date.Value, cancellationToken);
+            if (existingDay != null && existingDay.Id != dayId)
+            {
+                _logger.LogWarning("Day update failed for user {UserId}: Another day already exists for trip {TripId} on date {Date}", userId, day.TripId, request.Date.Value);
+                return new ErrorResponse { Error = DayErrorCodes.DayConflict, Message = "Another day already exists for this trip on the specified date." };
+            }
+
+            day.Date = request.Date.Value;
+        }
+
+        // Update notes if provided
+        if (request.Notes != null)
+        {
+            day.Notes = request.Notes;
+        }
+
+        var updatedDay = await _dayRepository.UpdateAsync(day, cancellationToken);
+
+        var response = new DayDto
+        {
+            Id = updatedDay.Id,
+            TripId = updatedDay.TripId,
+            Date = updatedDay.Date,
+            Notes = updatedDay.Notes
+        };
+
+        return response;
     }
 }

@@ -40,7 +40,7 @@ public class TripService : ITripService
         if (request.EndDate < request.StartDate)
         {
             _logger.LogWarning("Trip creation failed for user {UserId}: Invalid date range - end date before start date", userId);
-            return new ErrorResponse { Error = TripErrorCodes.InvalidDateRange, Message = "End date must be on or after start date." };
+            return new ErrorResponse { Error = TripErrorCodes.TripInvalidDateRange, Message = "End date must be on or after start date." };
         }
 
         // Check trip limit
@@ -151,7 +151,7 @@ public class TripService : ITripService
         if (request.StartDate.HasValue && request.EndDate.HasValue && request.EndDate.Value < request.StartDate.Value)
         {
             _logger.LogWarning("Trip update failed for user {UserId}: Invalid date range - end date before start date", userId);
-            return new ErrorResponse { Error = TripErrorCodes.InvalidDateRange, Message = "End date must be on or after start date." };
+            return new ErrorResponse { Error = TripErrorCodes.TripInvalidDateRange, Message = "End date must be on or after start date." };
         }
 
         // Fetch the trip with ownership check

@@ -14,18 +14,45 @@ public static class ControllerHelper
 
         return result.Error?.Error switch
         {
-            AuthErrorCodes.EmailAlreadyExists => controller.Conflict(result.Error),
-            AuthErrorCodes.InvalidCredentials => controller.Unauthorized(result.Error),
-            AuthErrorCodes.InvalidRefreshToken => controller.Unauthorized(result.Error),
-            AuthErrorCodes.TokenNotFound => controller.NotFound(result.Error),
-            AuthErrorCodes.TokenExpired => controller.BadRequest(result.Error),
-            AuthErrorCodes.CurrentPasswordMismatch => controller.BadRequest(result.Error),
-            AuthErrorCodes.SamePassword => controller.BadRequest(result.Error),
-            TripErrorCodes.TripLimitExceeded => controller.Conflict(result.Error),
-            TripErrorCodes.TripNotFound => controller.NotFound(result.Error),
-            TripErrorCodes.TripNotOwned => controller.StatusCode(StatusCodes.Status403Forbidden, result.Error),
-            AccommodationErrorCodes.AccommodationNotFound => controller.NotFound(result.Error),
-            AccommodationErrorCodes.InvalidDateRange => controller.BadRequest(result.Error),
+            // BadRequest errors
+            AuthErrorCodes.TokenExpired or
+            AuthErrorCodes.CurrentPasswordMismatch or
+            AuthErrorCodes.SamePassword or
+            TripErrorCodes.TripInvalidDateRange or
+            TripErrorCodes.InvalidTripData or
+            AccommodationErrorCodes.AccommodationInvalidDateRange or
+            DayErrorCodes.InvalidDate 
+                => controller.BadRequest(result.Error),
+
+            // Conflict errors
+            AuthErrorCodes.EmailAlreadyExists or
+            TripErrorCodes.TripLimitExceeded or
+            DayErrorCodes.DayConflict 
+                => controller.Conflict(result.Error),
+
+            // Unauthorized errors
+            AuthErrorCodes.InvalidCredentials or
+            AuthErrorCodes.InvalidRefreshToken 
+                => controller.Unauthorized(result.Error),
+
+            // NotFound errors
+            AuthErrorCodes.TokenNotFound or
+            TripErrorCodes.TripNotFound or
+            AccommodationErrorCodes.AccommodationNotFound or
+            UserErrorCodes.UserNotFound or
+            DayErrorCodes.DayNotFound 
+                => controller.NotFound(result.Error),
+
+            // Forbidden errors
+            TripErrorCodes.TripNotOwned or
+            UserErrorCodes.UnauthorizedAccess or
+            DayErrorCodes.DayForbidden 
+                => controller.StatusCode(StatusCodes.Status403Forbidden, result.Error),
+
+            // Internal Server Error
+            AuthErrorCodes.InternalServerError 
+                => controller.StatusCode(StatusCodes.Status500InternalServerError, result.Error),
+
             _ => controller.BadRequest(result.Error)
         };
     }

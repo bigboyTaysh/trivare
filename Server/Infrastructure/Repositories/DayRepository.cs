@@ -48,4 +48,24 @@ public class DayRepository : IDayRepository
             .OrderBy(d => d.Date)
             .ToListAsync(cancellationToken);
     }
+
+    /// <summary>
+    /// Gets a day by ID
+    /// </summary>
+    public async Task<Day?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Days
+            .AsNoTracking()
+            .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates an existing day
+    /// </summary>
+    public async Task<Day> UpdateAsync(Day day, CancellationToken cancellationToken = default)
+    {
+        _context.Days.Update(day);
+        await _context.SaveChangesAsync(cancellationToken);
+        return day;
+    }
 }

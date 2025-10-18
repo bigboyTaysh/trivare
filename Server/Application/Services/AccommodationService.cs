@@ -100,13 +100,13 @@ public class AccommodationService : IAccommodationService
         if (trip == null)
         {
             _logger.LogWarning("Accommodation update failed for user {UserId}: Trip {TripId} not found", userId, tripId);
-            return new ErrorResponse { Error = AccommodationErrorCodes.TripNotFound, Message = "The specified trip does not exist." };
+            return new ErrorResponse { Error = TripErrorCodes.TripNotFound, Message = "The specified trip does not exist." };
         }
 
         if (trip.UserId != userId)
         {
             _logger.LogWarning("Accommodation update failed for user {UserId}: Trip {TripId} belongs to another user", userId, tripId);
-            return new ErrorResponse { Error = AccommodationErrorCodes.TripNotOwned, Message = "You do not have permission to modify this trip." };
+            return new ErrorResponse { Error = TripErrorCodes.TripNotOwned, Message = "You do not have permission to modify this trip." };
         }
 
         // Get existing accommodation
@@ -123,7 +123,7 @@ public class AccommodationService : IAccommodationService
         if (newCheckIn.HasValue && newCheckOut.HasValue && newCheckOut <= newCheckIn)
         {
             _logger.LogWarning("Accommodation update failed for user {UserId}: Invalid date range for trip {TripId}", userId, tripId);
-            return new ErrorResponse { Error = AccommodationErrorCodes.InvalidDateRange, Message = "Check-out date must be after check-in date." };
+            return new ErrorResponse { Error = AccommodationErrorCodes.AccommodationInvalidDateRange, Message = "Check-out date must be after check-in date." };
         }
 
         // Apply partial updates

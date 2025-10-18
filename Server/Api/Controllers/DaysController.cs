@@ -68,4 +68,29 @@ public class DaysController : ControllerBase
 
         return this.HandleResult(result);
     }
+
+    /// <summary>
+    /// Updates the details of a specific day
+    /// Validates ownership and ensures no duplicate dates within the trip
+    /// </summary>
+    /// <param name="dayId">The ID of the day to update</param>
+    /// <param name="request">The update day request</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The updated day details</returns>
+    [HttpPatch("{dayId}")]
+    [Route("api/days/{dayId}")]
+    [ProducesResponseType(typeof(DayDto), 200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(409)]
+    [ProducesResponseType(500)]
+    public async Task<IActionResult> UpdateDay(Guid dayId, UpdateDayRequest request, CancellationToken cancellationToken = default)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _dayService.UpdateDayAsync(dayId, request, userId, cancellationToken);
+
+        return this.HandleResult(result);
+    }
 }

@@ -12,6 +12,11 @@ public record DayDto
     public required Guid Id { get; init; }
 
     /// <summary>
+    /// Trip identifier from Day.TripId
+    /// </summary>
+    public required Guid TripId { get; init; }
+
+    /// <summary>
     /// Date for this day from Day.Date
     /// </summary>
     public required DateOnly Date { get; init; }

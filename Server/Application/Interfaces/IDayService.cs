@@ -28,4 +28,15 @@ public interface IDayService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of day DTOs or error</returns>
     Task<Result<IEnumerable<DayDto>>> GetDaysForTripAsync(Guid tripId, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates an existing day
+    /// Validates day ownership and ensures no duplicate dates within the trip
+    /// </summary>
+    /// <param name="dayId">The day identifier</param>
+    /// <param name="request">The update day request</param>
+    /// <param name="userId">The user identifier</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The updated day DTO or error</returns>
+    Task<Result<DayDto>> UpdateDayAsync(Guid dayId, UpdateDayRequest request, Guid userId, CancellationToken cancellationToken = default);
 }
