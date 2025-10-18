@@ -725,7 +725,7 @@ The API is organized around the following main resources, mapped to database tab
 
 ---
 
-### 2.7 Places (`/api/places` and `/api/days/{dayId}/places`)
+### 2.7 Places (`/api/days/{dayId}/places`)
 
 #### 2.7.1 Search Places (AI-Powered)
 
@@ -752,7 +752,6 @@ The API is organized around the following main resources, mapped to database tab
       "website": "https://www.lepotagerdumarais.fr",
       "googleMapsLink": "https://maps.google.com/?cid=123456",
       "openingHoursText": "12:00 PM - 11:00 PM",
-      "aiRecommendation": "Excellent vegetarian restaurant with outdoor seating in Le Marais district"
     }
   ],
   "count": 5

@@ -24,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<ITransportService, TransportService>();
         services.AddScoped<IAccommodationService, AccommodationService>();
         services.AddScoped<IDayService, DayService>();
+        services.AddScoped<IPlacesService, PlacesService>();
         services.AddSingleton<IPasswordHashingService, PasswordHashingService>();
 
         return services;

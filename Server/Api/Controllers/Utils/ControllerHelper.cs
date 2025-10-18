@@ -21,7 +21,8 @@ public static class ControllerHelper
             TripErrorCodes.TripInvalidDateRange or
             TripErrorCodes.InvalidTripData or
             AccommodationErrorCodes.AccommodationInvalidDateRange or
-            DayErrorCodes.InvalidDate 
+            DayErrorCodes.InvalidDate or
+            PlaceErrorCodes.InvalidSearchParameters
                 => controller.BadRequest(result.Error),
 
             // Conflict errors
@@ -50,7 +51,11 @@ public static class ControllerHelper
                 => controller.StatusCode(StatusCodes.Status403Forbidden, result.Error),
 
             // Internal Server Error
-            AuthErrorCodes.InternalServerError 
+            AuthErrorCodes.InternalServerError or
+            PlaceErrorCodes.PlaceSearchFailed or
+            PlaceErrorCodes.GooglePlacesApiError or
+            PlaceErrorCodes.OpenRouterApiError or
+            PlaceErrorCodes.ExternalApiTimeout
                 => controller.StatusCode(StatusCodes.Status500InternalServerError, result.Error),
 
             _ => controller.BadRequest(result.Error)
