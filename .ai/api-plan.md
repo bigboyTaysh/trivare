@@ -612,10 +612,8 @@ The API is organized around the following main resources, mapped to database tab
 
 - **Method:** `GET`
 - **Path:** `/api/trips/{tripId}/days`
-- **Description:** Get all days for a trip with optional places
+- **Description:** Get all days for a trip.
 - **Authentication:** Required (JWT)
-- **Query Parameters:**
-  - `include` (string, optional) - Include "places" to get attractions for each day
 - **Response (200 OK):**
 ```json
 {
@@ -624,20 +622,7 @@ The API is organized around the following main resources, mapped to database tab
       "id": "6fa85f64-5717-4562-b3fc-2c963f66afa9",
       "tripId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
       "date": "2025-07-01",
-      "notes": "Arrival day",
-      "places": [
-        {
-          "id": "8fa85f64-5717-4562-b3fc-2c963f66afab",
-          "name": "Eiffel Tower",
-          "formattedAddress": "Champ de Mars, Paris",
-          "website": "https://www.toureiffel.paris",
-          "googleMapsLink": "https://maps.google.com/?cid=123456",
-          "openingHoursText": "9:00 AM - 11:00 PM",
-          "isManuallyAdded": false,
-          "order": 1,
-          "isVisited": false
-        }
-      ]
+      "notes": "Arrival day"
     }
   ]
 }
@@ -648,7 +633,41 @@ The API is organized around the following main resources, mapped to database tab
 
 ---
 
-#### 2.6.2 Create Day
+#### 2.6.2 Get Day
+
+- **Method:** `GET`
+- **Path:** `/api/days/{dayId}`
+- **Description:** Get detailed information for a specific day, including associated places.
+- **Authentication:** Required (JWT)
+- **Response (200 OK):**
+```json
+{
+    "id": "6fa85f64-5717-4562-b3fc-2c963f66afa9",
+    "tripId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "date": "2025-07-01",
+    "notes": "Arrival day",
+    "places": [
+    {
+        "id": "8fa85f64-5717-4562-b3fc-2c963f66afab",
+        "name": "Eiffel Tower",
+        "formattedAddress": "Champ de Mars, Paris",
+        "website": "https://www.toureiffel.paris",
+        "googleMapsLink": "https://maps.google.com/?cid=123456",
+        "openingHoursText": "9:00 AM - 11:00 PM",
+        "isManuallyAdded": false,
+        "order": 1,
+        "isVisited": false
+    }
+    ]
+}
+```
+- **Error Responses:**
+  - `403 Forbidden` - Day belongs to another user's trip
+  - `404 Not Found` - Day not found
+
+---
+
+#### 2.6.3 Create Day
 
 - **Method:** `POST`
 - **Path:** `/api/trips/{tripId}/days`
