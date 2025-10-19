@@ -1,0 +1,44 @@
+---
+description: 
+globs: *.cs, *.csproj, *.sln, 
+alwaysApply: false
+---
+
+# AI Rules for Backend Development
+
+This file contains rules and guidelines for backend development in the Trivare project.
+
+## Tech Stack
+
+**Backend (Server/)**
+- .NET 9 - REST API platform
+- Azure SQL - Managed relational database
+- Cloudflare R2 - File storage (no egress fees)
+- OpenRouter.ai - LLM aggregator for AI features
+- Google Places API - Place suggestions
+
+## Project Structure
+
+The backend follows Clean Architecture principles with clear separation between API, Application, Domain, and Infrastructure layers.
+
+```
+Server/          # .NET 9 backend
+  Api/           # ASP.NET Core Web API
+  Application/   # Business logic layer
+  Domain/        # Domain entities
+  Infrastructure/# Data access & external services
+```
+
+When modifying the directory structure, always update this section.
+
+## Coding practices
+
+### Guidelines for clean code
+
+- Favor elegant, maintainable solutions over verbose code. Assume understanding of language idioms and design patterns.
+- Highlight potential performance implications and optimization opportunities in suggested code.
+- Frame solutions within broader architectural contexts and suggest design alternatives when appropriate.
+- Focus comments on 'why' not 'what' - assume code readability through well-named functions and variables.
+- Proactively address edge cases, race conditions, and security considerations without being prompted.
+- When debugging, provide targeted diagnostic approaches rather than shotgun solutions.
+- Suggest comprehensive testing strategies rather than just example tests, including considerations for mocking, test organization, and coverage.
