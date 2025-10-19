@@ -1,11 +1,8 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import DataFetcher from "../components/DataFetcher";
+import { HomePage } from "../components/pages/HomePage";
 ---
 
-<Layout title="Astro + .NET 9 App">
-  <main class="container mx-auto p-8">
-    <h1 class="text-4xl font-bold mb-8">Welcome to Astro + .NET 9</h1>
-    <DataFetcher client:load />
-  </main>
+<Layout title="Dashboard - Trivare">
+  <HomePage client:only="react" />
 </Layout>

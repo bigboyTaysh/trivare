@@ -5,6 +5,7 @@
       "Microsoft.AspNetCore": "Warning"
     }
   },
+  "Urls": "http://localhost:5000;https://localhost:5001",
   "ConnectionStrings": {
     "DefaultConnection": "Server=localhost,1433;Database=Trivare;User Id=sa;Password=REPLACE_WITH_SA_PASSWORD;Trusted_Connection=False;MultipleActiveResultSets=true;TrustServerCertificate=True"
   },
