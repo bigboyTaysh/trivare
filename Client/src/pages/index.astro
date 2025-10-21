@@ -1,8 +1,12 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { HomePage } from "../components/pages/HomePage";
+import { DashboardView } from "../components/views/DashboardView";
 ---
 
 <Layout title="Dashboard - Trivare">
-  <HomePage client:only="react" />
+  <DashboardView client:load />
+
+  <script>
+    // Client-side authentication check import {requireAuth} from "@/lib/auth"; requireAuth();
+  </script>
 </Layout>

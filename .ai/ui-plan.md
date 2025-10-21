@@ -43,7 +43,7 @@ The architecture leverages a component-based approach using `shadcn/ui` for a co
 -   **View Name:** Dashboard
 -   **View Path:** `/`
 -   **Main Purpose:** To provide an overview of the user's trips and serve as the main entry point to the application.
--   **Key Information to Display:** A tabbed list of trips ("Current," "Future," "Past"), a prominent "Create New Trip" button, and a usage counter for trips (e.g., "8/10 used").
+-   **Key Information to Display:** A tabbed list of trips ("Ongoing" for current and future trips, "Past" for completed trips), a prominent "Create New Trip" button, and a usage counter for trips (e.g., "8/10 used").
 -   **Key View Components:** `Tabs`, `Card` (for each trip), `Button`, `Skeleton` (for loading state), `EmptyState` component.
 -   **UX, Accessibility, and Security:** Trips will be clearly organized and easy to access. The "Create New Trip" button will be disabled if the user has reached their 10-trip limit. The view will be fully responsive.
 
