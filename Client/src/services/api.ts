@@ -1,7 +1,7 @@
 import { API_BASE_URL } from "../config/api";
 import type { TripListResponse, CreateTripRequest, CreateTripResponse } from "../types/trips";
 import type { UserDto, UpdateUserRequest, DeleteAccountRequest } from "../types/user";
-import type { ForgotPasswordRequest } from "../types/auth";
+import type { ForgotPasswordRequest, ResetPasswordRequest } from "../types/auth";
 
 /**
  * Generic fetch helper with JWT authentication
@@ -131,6 +131,23 @@ export async function forgotPassword(data: ForgotPasswordRequest): Promise<void>
     method: "POST",
     body: JSON.stringify(data),
   });
+}
+
+/**
+ * Reset user password
+ * @param data Reset password request data
+ * @returns Promise with success status and optional error message
+ */
+export async function resetPassword(data: ResetPasswordRequest): Promise<{ success: boolean; error?: string }> {
+  try {
+    await fetchDataNoResponse("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : "An unexpected error occurred" };
+  }
 }
 
 export const api = {

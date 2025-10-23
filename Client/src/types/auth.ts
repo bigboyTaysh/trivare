@@ -34,6 +34,11 @@ export interface ForgotPasswordRequest {
   email: string;
 }
 
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
 export interface ForgotPasswordFormViewModel {
   email: string;
 }
@@ -76,3 +81,20 @@ export const RegisterViewModel = z
   });
 
 export type RegisterViewModel = z.infer<typeof RegisterViewModel>;
+
+export const ResetPasswordViewModel = z
+  .object({
+    newPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]+$/, {
+        message: "Password must contain uppercase, lowercase, number, and special character (@$!%*?&.)",
+      }),
+    confirmPassword: z.string().min(1, "Confirm password is required"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export type ResetPasswordViewModel = z.infer<typeof ResetPasswordViewModel>;
