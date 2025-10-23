@@ -1,5 +1,5 @@
 ---
-applyTo: 'Client/**'
+applyTo: "Client/**"
 ---
 
 ## CODING_PRACTICES
@@ -24,7 +24,6 @@ applyTo: 'Client/**'
 - Configure consistent quote style and semicolon usage to match team conventions
 - Implement CI checks to ensure all committed code adheres to the defined style
 
-
 ## FRONTEND
 
 ### Guidelines for REACT
@@ -42,6 +41,106 @@ applyTo: 'Client/**'
 - Consider using the new useOptimistic hook for optimistic UI updates in forms
 - Use useTransition for non-urgent state updates to keep the UI responsive
 
+### Shadcn UI Components
+
+This project uses @shadcn/ui for user interface components. These are beautifully designed, accessible components that you can adapt for your application.
+
+#### Finding installed components
+
+The components are available in the `src/components/ui` folder, according to the aliases from the `components.json` file.
+
+#### Using a component
+
+Import the component according to the configured alias `@/`
+
+```tsx
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+```
+
+Example usage of components:
+
+```tsx
+<Button variant="outline">Click me</Button>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Card Title</CardTitle>
+    <CardDescription>Card Description</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p>Card Content</p>
+  </CardContent>
+  <CardFooter>
+    <p>Card Footer</p>
+  </CardFooter>
+</Card>
+```
+
+#### Installing additional components
+
+Many other components are available, but they are not currently installed. A full list can be found at https://ui.shadcn.com/r
+
+To install a new component, use the shadcn CLI
+
+```bash
+npx shadcn@latest add [component-name]
+```
+
+For example, to add the accordion component
+
+```bash
+npx shadcn@latest add accordion
+```
+
+Important: `npx shadcn-ui@latest` has been deprecated, use `npx shadcn@latest`
+
+Some popular components are:
+
+- Accordion
+- Alert
+- AlertDialog
+- AspectRatio
+- Avatar
+- Calendar
+- Checkbox
+- Collapsible
+- Command
+- ContextMenu
+- DataTable
+- DatePicker
+- Dropdown Menu
+- Form
+- Hover Card
+- Menubar
+- Navigation Menu
+- Popover
+- Progress
+- Radio Group
+- ScrollArea
+- Select
+- Separator
+- Sheet
+- Skeleton
+- Slider
+- Switch
+- Table
+- Textarea
+- Sonner (previously Toast)
+- Toggle
+- Tooltip
+
+#### Component Styling
+
+This project uses the "new-york" style variant with the "zinc" base color and CSS variables for theming, as configured in the `components.json` file.
 
 ### Guidelines for ASTRO
 
@@ -58,7 +157,6 @@ applyTo: 'Client/**'
 - Use Astro.cookies for server-side cookie management
 - Leverage import.meta.env for environment variables
 
-
 ### Guidelines for STYLING
 
 #### TAILWIND
@@ -73,23 +171,6 @@ applyTo: 'Client/**'
 - Implement dark mode with the dark: variant
 - Use responsive variants (sm:, md:, lg:, etc.) for adaptive designs
 - Leverage state variants (hover:, focus:, active:, etc.) for interactive elements
-
-## DEVOPS
-
-### Guidelines for CI_CD
-
-#### GITHUB_ACTIONS
-
-- Check if `package.json` exists in project root and summarize key scripts
-- Check if `.nvmrc` exists in project root
-- Check if `.env.example` exists in project root to identify key `env:` variables
-- Always use terminal command: `git branch -a | cat` to verify whether we use `main` or `master` branch
-- Always use `env:` variables and secrets attached to jobs instead of global workflows
-- Always use `npm ci` for Node-based dependency setup
-- Extract common steps into composite actions in separate files
-- Once you're done, as a final step conduct the following: for each public action always use <tool>"Run Terminal"</tool> to see what is the most up-to-date version (use only major version) - extract tag_name from the response:
-- ```bash curl -s https://api.github.com/repos/{owner}/{repo}/releases/latest ```
-
 
 ## TESTING
 
@@ -107,4 +188,3 @@ applyTo: 'Client/**'
 - Implement code coverage reporting with meaningful targets
 - Use mockResolvedValue and mockRejectedValue for async testing
 - Leverage fake timers for testing time-dependent functionality
-
