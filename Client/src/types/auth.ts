@@ -17,6 +17,19 @@ export interface LoginResponse {
   };
 }
 
+export interface RegisterRequest {
+  userName: string;
+  email: string;
+  password: string;
+}
+
+export interface RegisterResponse {
+  id: string;
+  userName: string;
+  email: string;
+  createdAt: string;
+}
+
 // ViewModel for form validation
 export const LoginViewModel = z.object({
   email: z
@@ -28,3 +41,30 @@ export const LoginViewModel = z.object({
 });
 
 export type LoginViewModel = z.infer<typeof LoginViewModel>;
+
+export const RegisterViewModel = z
+  .object({
+    userName: z
+      .string()
+      .min(3, { message: "Username must be at least 3 characters" })
+      .max(50, { message: "Username must not exceed 50 characters" })
+      .regex(/^[a-zA-Z0-9_-]+$/, { message: "Username can only contain letters, numbers, underscores and hyphens" }),
+    email: z
+      .string()
+      .min(1, { message: "Email is required" })
+      .max(255, { message: "Email must not exceed 255 characters" })
+      .email({ message: "Invalid email format" }),
+    password: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters" })
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]+$/, {
+        message: "Password must contain uppercase, lowercase, number, and special character (@$!%*?&.)",
+      }),
+    confirmPassword: z.string().min(1, { message: "Please confirm your password" }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
+export type RegisterViewModel = z.infer<typeof RegisterViewModel>;
