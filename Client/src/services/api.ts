@@ -1,6 +1,7 @@
 import { API_BASE_URL } from "../config/api";
 import type { TripListResponse, CreateTripRequest, CreateTripResponse } from "../types/trips";
 import type { UserDto, UpdateUserRequest, DeleteAccountRequest } from "../types/user";
+import type { ForgotPasswordRequest } from "../types/auth";
 
 /**
  * Generic fetch helper with JWT authentication
@@ -116,6 +117,18 @@ export async function updateUser(data: UpdateUserRequest): Promise<UserDto> {
 export async function deleteAccount(data: DeleteAccountRequest): Promise<void> {
   return fetchDataNoResponse("/users/me", {
     method: "DELETE",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Send a forgot password request
+ * @param data Forgot password request data
+ * @returns Promise that resolves when request is sent
+ */
+export async function forgotPassword(data: ForgotPasswordRequest): Promise<void> {
+  return fetchDataNoResponse("/auth/forgot-password", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }

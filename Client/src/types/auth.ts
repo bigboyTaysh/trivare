@@ -30,6 +30,14 @@ export interface RegisterResponse {
   createdAt: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ForgotPasswordFormViewModel {
+  email: string;
+}
+
 // ViewModel for form validation
 export const LoginViewModel = z.object({
   email: z
