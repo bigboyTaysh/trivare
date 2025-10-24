@@ -58,6 +58,16 @@ public class TripRepository : ITripRepository
     }
 
     /// <summary>
+    /// Gets a trip by its ID including the accommodation details.
+    /// </summary>
+    public async Task<Trip?> GetByIdWithAccommodationAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Trips
+            .Include(t => t.Accommodation)
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+    }
+
+    /// <summary>
     /// Updates an existing trip
     /// </summary>
     public async Task<Trip> UpdateAsync(Trip trip, CancellationToken cancellationToken = default)
@@ -80,8 +90,8 @@ public class TripRepository : ITripRepository
         if (!string.IsNullOrWhiteSpace(search))
         {
             var searchTerm = search.Trim();
-            query = query.Where(t => 
-                t.Name.Contains(searchTerm) || 
+            query = query.Where(t =>
+                t.Name.Contains(searchTerm) ||
                 (t.Destination != null && t.Destination.Contains(searchTerm)) ||
                 (t.Notes != null && t.Notes.Contains(searchTerm)) ||
                 t.StartDate.ToString().Contains(searchTerm) ||

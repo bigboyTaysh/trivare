@@ -73,6 +73,31 @@ public class TripsController : ControllerBase
     }
 
     /// <summary>
+    /// Get detailed information for a specific trip
+    /// </summary>
+    /// <param name="tripId">The ID of the trip to retrieve</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Detailed trip information</returns>
+    /// <response code="200">Trip retrieved successfully</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="403">Forbidden - trip belongs to another user</response>
+    /// <response code="404">Trip not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("{tripId}")]
+    [ProducesResponseType(typeof(TripDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<TripDetailDto>> GetTrip(Guid tripId, CancellationToken cancellationToken)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _tripService.GetTripByIdAsync(tripId, userId, cancellationToken);
+
+        return this.HandleResult(result);
+    }
+
+    /// <summary>
     /// Update an existing trip
     /// </summary>
     /// <param name="tripId">The ID of the trip to update</param>

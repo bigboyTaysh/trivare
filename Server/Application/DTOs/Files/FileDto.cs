@@ -57,4 +57,14 @@ public record FileDto
     /// Computed property, not from entity
     /// </summary>
     public required string DownloadUrl { get; init; }
+
+    /// <summary>
+    /// Storage path of the uploaded file
+    /// </summary>
+    public required string FilePath { get; init; }
+
+    /// <summary>
+    /// URL for previewing the file (if applicable)
+    /// </summary>
+    public required string PreviewUrl { get; init; }
 }

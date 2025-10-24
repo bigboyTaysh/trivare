@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Trivare.Application.DTOs.Accommodation;
 using Trivare.Application.DTOs.Common;
 using Trivare.Application.DTOs.Transport;
 using Trivare.Application.DTOs.Trips;
@@ -206,5 +207,48 @@ public class TripService : ITripService
         };
 
         return response;
+    }
+
+    /// <summary>
+    /// Retrieves a single trip by its ID for the authenticated user.
+    /// </summary>
+    public async Task<Result<TripDetailDto>> GetTripByIdAsync(Guid tripId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        var trip = await _tripRepository.GetByIdWithAccommodationAsync(tripId, cancellationToken);
+
+        if (trip == null)
+        {
+            _logger.LogWarning("Trip with ID {TripId} not found for user {UserId}", tripId, userId);
+            return new ErrorResponse { Error = TripErrorCodes.TripNotFound, Message = "Trip not found." };
+        }
+
+        if (trip.UserId != userId)
+        {
+            _logger.LogWarning("User {UserId} attempted to access trip {TripId} owned by another user", userId, tripId);
+            return new ErrorResponse { Error = TripErrorCodes.TripAccessDenied, Message = "You do not have permission to access this trip." };
+        }
+
+        var tripDto = new TripDetailDto
+        {
+            Id = trip.Id,
+            Name = trip.Name,
+            Destination = trip.Destination,
+            StartDate = trip.StartDate,
+            EndDate = trip.EndDate,
+            Notes = trip.Notes,
+            CreatedAt = trip.CreatedAt,
+            Accommodation = trip.Accommodation == null ? null : new AccommodationDto
+            {
+                Id = trip.Accommodation.Id,
+                TripId = trip.Id,
+                Name = trip.Accommodation.Name,
+                Address = trip.Accommodation.Address,
+                CheckInDate = trip.Accommodation.CheckInDate,
+                CheckOutDate = trip.Accommodation.CheckOutDate,
+                Notes = trip.Accommodation.Notes
+            }
+        };
+
+        return tripDto;
     }
 }

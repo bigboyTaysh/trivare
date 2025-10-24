@@ -7,4 +7,5 @@ public static class TripErrorCodes
     public const string InvalidTripData = "InvalidTripData";
     public const string TripNotFound = "TripNotFound";
     public const string TripNotOwned = "TripNotOwned";
+    public const string TripAccessDenied = "TripAccessDenied";
 }
