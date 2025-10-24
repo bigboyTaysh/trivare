@@ -1,5 +1,13 @@
 import { API_BASE_URL } from "../config/api";
-import type { TripListResponse, CreateTripRequest, CreateTripResponse } from "../types/trips";
+import type {
+  TripListResponse,
+  CreateTripRequest,
+  CreateTripResponse,
+  TripDetailDto,
+  UpdateTripRequest,
+  FileListResponse,
+  FileUploadResponse,
+} from "../types/trips";
 import type { UserDto, UpdateUserRequest, DeleteAccountRequest } from "../types/user";
 import type { ForgotPasswordRequest, ResetPasswordRequest } from "../types/auth";
 
@@ -150,6 +158,96 @@ export async function resetPassword(data: ResetPasswordRequest): Promise<{ succe
   }
 }
 
+/**
+ * Fetch a specific trip by ID
+ * @param tripId Trip identifier
+ * @returns Promise with trip details
+ */
+export async function getTrip(tripId: string): Promise<TripDetailDto> {
+  return fetchData<TripDetailDto>(`/trips/${tripId}`);
+}
+
+/**
+ * Update a specific trip
+ * @param tripId Trip identifier
+ * @param data Trip update data
+ * @returns Promise with updated trip details
+ */
+export async function updateTrip(tripId: string, data: UpdateTripRequest): Promise<TripDetailDto> {
+  return fetchData<TripDetailDto>(`/trips/${tripId}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Delete a specific trip
+ * @param tripId Trip identifier
+ * @returns Promise that resolves when trip is deleted
+ */
+export async function deleteTrip(tripId: string): Promise<void> {
+  return fetchDataNoResponse(`/trips/${tripId}`, {
+    method: "DELETE",
+  });
+}
+
+/**
+ * Fetch files for a specific trip
+ * @param tripId Trip identifier
+ * @returns Promise with file list response
+ */
+export async function getTripFiles(tripId: string): Promise<FileListResponse> {
+  return fetchData<FileListResponse>(`/trips/${tripId}/files`);
+}
+
+/**
+ * Upload a file for a specific trip
+ * @param tripId Trip identifier
+ * @param file File to upload
+ * @returns Promise with upload response
+ */
+export async function uploadTripFile(tripId: string, file: File): Promise<FileUploadResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const accessToken = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+
+  const response = await fetch(`${API_BASE_URL}/trips/${tripId}/files`, {
+    method: "POST",
+    headers: {
+      ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+    },
+    body: formData,
+  });
+
+  if (response.status === 401) {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
+    }
+    throw new Error("Unauthorized");
+  }
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Delete a specific file
+ * @param fileId File identifier
+ * @returns Promise that resolves when file is deleted
+ */
+export async function deleteFile(fileId: string): Promise<void> {
+  return fetchDataNoResponse(`/files/${fileId}`, {
+    method: "DELETE",
+  });
+}
+
 export const api = {
   getData: () => fetchData("/data"),
   getDataById: (id: number) => fetchData(`/data/${id}`),
@@ -160,6 +258,12 @@ export const api = {
     }),
   // Trip-related endpoints
   getTrips,
+  getTrip,
+  updateTrip,
+  deleteTrip,
+  getTripFiles,
+  uploadTripFile,
+  deleteFile,
   // User-related endpoints
   getMe,
   updateUser,

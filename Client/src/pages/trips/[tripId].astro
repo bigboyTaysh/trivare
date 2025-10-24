@@ -1,0 +1,16 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import TripDetailsPage from "@/components/pages/TripDetailsPage";
+
+export const prerender = false;
+
+const { tripId } = Astro.params;
+
+if (!tripId) {
+  return Astro.redirect("/trips");
+}
+---
+
+<Layout title="Trip Details">
+  <TripDetailsPage client:load tripId={tripId} />
+</Layout>

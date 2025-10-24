@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 // API DTOs (Expected from Backend)
 
 /**
@@ -51,6 +53,90 @@ export interface CreateTripResponse {
   createdAt: string; // ISO 8601 DateTime string
 }
 
+/**
+ * Corresponds to UpdateTripRequest.cs
+ */
+export interface UpdateTripRequest {
+  name?: string;
+  destination?: string;
+  startDate?: string; // Format: "YYYY-MM-DD"
+  endDate?: string; // Format: "YYYY-MM-DD"
+  notes?: string;
+}
+
+/**
+ * Corresponds to TripDetailDto.cs
+ */
+export interface TripDetailDto {
+  id: string; // Guid
+  name: string;
+  destination?: string;
+  startDate: string; // DateOnly as string "YYYY-MM-DD"
+  endDate: string; // DateOnly as string "YYYY-MM-DD"
+  notes?: string;
+  createdAt: string; // ISO 8601 DateTime string
+  transport?: unknown; // TransportDto - to be defined later
+  accommodation?: AccommodationDto;
+  days?: unknown[]; // DayDto[] - to be defined later
+  files?: FileDto[];
+}
+
+/**
+ * Corresponds to FileDto.cs
+ */
+export interface FileDto {
+  id: string; // Guid
+  fileName: string;
+  fileSize: number; // long as number
+  fileType: string;
+  tripId?: string;
+  transportId?: string;
+  accommodationId?: string;
+  dayId?: string;
+  createdAt: string; // ISO 8601 DateTime string
+  downloadUrl: string;
+  filePath: string;
+  previewUrl: string;
+}
+
+/**
+ * Corresponds to FileListResponse.cs
+ */
+export interface FileListResponse {
+  data: FileDto[];
+}
+
+/**
+ * Corresponds to FileUploadResponse.cs
+ */
+export interface FileUploadResponse {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  fileType: string;
+  tripId?: string;
+  transportId?: string;
+  accommodationId?: string;
+  dayId?: string;
+  createdAt: string;
+  downloadUrl: string;
+  filePath: string;
+  previewUrl: string;
+}
+
+/**
+ * Corresponds to AccommodationDto.cs
+ */
+export interface AccommodationDto {
+  id: string; // Guid
+  tripId: string; // Guid
+  name?: string;
+  address?: string;
+  checkInDate?: string; // ISO 8601 DateTime string
+  checkOutDate?: string; // ISO 8601 DateTime string
+  notes?: string;
+}
+
 // ViewModels (Frontend-specific state)
 
 /**
@@ -69,3 +155,59 @@ export interface DashboardViewModel {
   isLoading: boolean;
   error: Error | null;
 }
+
+/**
+ * Frontend view model for Trip Details view
+ */
+export interface TripDetailViewModel {
+  id: string;
+  name: string;
+  destination: string;
+  startDate: string;
+  endDate: string;
+  notes?: string;
+  accommodation?: {
+    id: string;
+    name: string;
+    address?: string;
+    checkInDate?: string;
+    checkOutDate?: string;
+    notes?: string;
+  };
+}
+
+/**
+ * Frontend view model for file data
+ */
+export interface FileViewModel {
+  id: string;
+  fileName: string;
+  fileSize: number; // in bytes
+  fileType: string;
+  uploadedAt: string;
+  previewUrl: string;
+  downloadUrl: string;
+}
+
+/**
+ * Corresponds to UpdateTripRequest.cs - Validation Schema
+ */
+// ... existing code ...
+
+export const UpdateTripViewModel = z
+  .object({
+    name: z
+      .string()
+      .min(1, { message: "Trip name is required" })
+      .max(255, { message: "Trip name cannot exceed 255 characters" }),
+    destination: z.string().max(255, { message: "Destination cannot exceed 255 characters" }).optional(),
+    startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Start date must be in YYYY-MM-DD format" }),
+    endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "End date must be in YYYY-MM-DD format" }),
+    notes: z.string().max(2000, { message: "Notes cannot exceed 2000 characters" }).optional(),
+  })
+  .refine((data) => new Date(data.endDate) >= new Date(data.startDate), {
+    message: "End date must be on or after start date",
+    path: ["endDate"],
+  });
+
+export type UpdateTripViewModel = z.infer<typeof UpdateTripViewModel>;
