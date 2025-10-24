@@ -1,4 +1,5 @@
 ---
+import { Nav } from "@/components/navigation/Nav";
 import { Toaster } from "@/components/ui/sonner";
 import "@/styles/global.css";
 ---
@@ -13,6 +14,7 @@ import "@/styles/global.css";
     <title>{Astro.props.title}</title>
   </head>
   <body>
+    <Nav client:load />
     <slot />
     <Toaster client:load />
   </body>
