@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { api } from "@/services/api";
 import type { FileDto } from "@/types/trips";
 import { toast } from "sonner";
@@ -14,6 +15,8 @@ const FilesSection: React.FC<FilesSectionProps> = ({ tripId }) => {
   const [files, setFiles] = useState<FileDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadFiles = useCallback(async () => {
     setIsLoading(true);
@@ -55,14 +58,22 @@ const FilesSection: React.FC<FilesSectionProps> = ({ tripId }) => {
     }
 
     setIsUploading(true);
+    setUploadProgress(0);
     try {
-      await api.uploadTripFile(tripId, file);
+      await api.uploadTripFile(tripId, file, (progress) => {
+        setUploadProgress(progress);
+      });
       toast.success("File uploaded successfully");
       loadFiles(); // Refresh list
     } catch {
       toast.error("Failed to upload file");
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
+      // Reset the file input to allow uploading the same file again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -91,14 +102,40 @@ const FilesSection: React.FC<FilesSectionProps> = ({ tripId }) => {
               disabled={isUploading || files.length >= 10}
               className="hidden"
               id="file-upload"
+              ref={fileInputRef}
             />
-            <label htmlFor="file-upload" className="cursor-pointer">
-              <Button asChild disabled={isUploading || files.length >= 10}>
-                <span>{isUploading ? "Uploading..." : "Upload File"}</span>
+            <label
+              htmlFor="file-upload"
+              className={isUploading || files.length >= 10 ? "cursor-not-allowed" : "cursor-pointer"}
+            >
+              <Button
+                asChild
+                disabled={isUploading || files.length >= 10}
+                className={files.length >= 10 ? "opacity-50 bg-gray-100 hover:bg-gray-100 text-gray-500" : ""}
+              >
+                <span>{isUploading ? "Uploading..." : files.length >= 10 ? "File Limit Reached" : "Upload File"}</span>
               </Button>
               <span className="sr-only">Upload trip file</span>
             </label>
-            <p className="text-sm text-muted-foreground mt-1">PNG, JPEG, PDF up to 5MB. Max 10 files.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              PNG, JPEG, PDF up to 5MB. {files.length}/10 files uploaded.
+            </p>
+            {files.length >= 8 && files.length < 10 && (
+              <p className="text-sm text-amber-600 mt-1">
+                Approaching file limit ({files.length}/10). Consider deleting unused files.
+              </p>
+            )}
+            {files.length >= 10 && (
+              <p className="text-sm text-amber-600 mt-1">
+                Maximum file limit reached. Delete some files to upload more.
+              </p>
+            )}
+            {isUploading && (
+              <div className="mt-2">
+                <Progress value={uploadProgress} className="w-full" />
+                <p className="text-sm text-muted-foreground mt-1">{uploadProgress}% uploaded</p>
+              </div>
+            )}
           </div>
 
           {isLoading ? (

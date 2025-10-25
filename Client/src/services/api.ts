@@ -201,40 +201,66 @@ export async function getTripFiles(tripId: string): Promise<FileListResponse> {
 }
 
 /**
- * Upload a file for a specific trip
+ * Upload a file to a trip with progress tracking
  * @param tripId Trip identifier
  * @param file File to upload
+ * @param onProgress Optional progress callback (0-100)
  * @returns Promise with upload response
  */
-export async function uploadTripFile(tripId: string, file: File): Promise<FileUploadResponse> {
-  const formData = new FormData();
-  formData.append("file", file);
+export async function uploadTripFile(
+  tripId: string,
+  file: File,
+  onProgress?: (progress: number) => void
+): Promise<FileUploadResponse> {
+  return new Promise((resolve, reject) => {
+    const formData = new FormData();
+    formData.append("file", file);
 
-  const accessToken = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+    const accessToken = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
-  const response = await fetch(`${API_BASE_URL}/trips/${tripId}/files`, {
-    method: "POST",
-    headers: {
-      ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-    },
-    body: formData,
-  });
+    const xhr = new XMLHttpRequest();
 
-  if (response.status === 401) {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("user");
-      window.location.href = "/login";
+    xhr.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable && onProgress) {
+        const progress = Math.round((event.loaded / event.total) * 100);
+        onProgress(progress);
+      }
+    });
+
+    xhr.addEventListener("load", () => {
+      if (xhr.status === 401) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("user");
+          window.location.href = "/login";
+        }
+        reject(new Error("Unauthorized"));
+        return;
+      }
+
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          resolve(response);
+        } catch {
+          reject(new Error("Invalid response format"));
+        }
+      } else {
+        reject(new Error(`API error: ${xhr.statusText}`));
+      }
+    });
+
+    xhr.addEventListener("error", () => {
+      reject(new Error("Network error"));
+    });
+
+    xhr.open("POST", `${API_BASE_URL}/trips/${tripId}/files`);
+    if (accessToken) {
+      xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`);
     }
-    throw new Error("Unauthorized");
-  }
-
-  if (!response.ok) {
-    throw new Error(`API error: ${response.statusText}`);
-  }
-
-  return response.json();
+    xhr.send(formData);
+  });
 }
 
 /**
