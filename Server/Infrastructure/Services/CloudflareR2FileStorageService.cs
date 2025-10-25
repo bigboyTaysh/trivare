@@ -107,6 +107,38 @@ public class CloudflareR2FileStorageService : IFileStorageService
     }
 
     /// <summary>
+    /// Deletes a file from Cloudflare R2 storage
+    /// </summary>
+    public async Task DeleteAsync(string filePath, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            ValidateFilePath(filePath);
+
+            var request = new DeleteObjectRequest
+            {
+                BucketName = _settings.BucketName,
+                Key = filePath
+            };
+
+            var response = await _s3Client.DeleteObjectAsync(request, cancellationToken);
+
+            if (response.HttpStatusCode != System.Net.HttpStatusCode.NoContent &&
+                response.HttpStatusCode != System.Net.HttpStatusCode.OK)
+            {
+                throw new InvalidOperationException($"Failed to delete file from R2. Status: {response.HttpStatusCode}");
+            }
+
+            _logger.LogInformation("Successfully deleted file from R2: {FilePath}", filePath);
+        }
+        catch (AmazonS3Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting file from R2: {FilePath}", filePath);
+            throw new InvalidOperationException($"Failed to delete file from R2: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
     /// Validates file path to prevent path traversal and injection attacks
     /// </summary>
     private void ValidateFilePath(string filePath)

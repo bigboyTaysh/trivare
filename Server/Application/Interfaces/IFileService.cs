@@ -60,4 +60,13 @@ public interface IFileService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of files with presigned URLs</returns>
     Task<Result<IEnumerable<FileUploadResponse>>> GetTripFilesAsync(Guid tripId, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a file from storage and database
+    /// </summary>
+    /// <param name="fileId">The ID of the file to delete</param>
+    /// <param name="userId">The ID of the authenticated user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Success result or an error</returns>
+    Task<Result<bool>> DeleteFileAsync(Guid fileId, Guid userId, CancellationToken cancellationToken = default);
 }

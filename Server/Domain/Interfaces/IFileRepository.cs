@@ -40,4 +40,12 @@ public interface IFileRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Collection of files for the trip</returns>
     Task<IEnumerable<Trivare.Domain.Entities.File>> GetFilesByTripIdAsync(Guid tripId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a file from the database
+    /// </summary>
+    /// <param name="file">The file entity to delete</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Task representing the delete operation</returns>
+    Task DeleteAsync(Trivare.Domain.Entities.File file, CancellationToken cancellationToken = default);
 }

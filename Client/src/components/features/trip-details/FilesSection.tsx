@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/services/api";
 import type { FileDto } from "@/types/trips";
 import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 
 interface FilesSectionProps {
   tripId: string;
@@ -116,8 +117,9 @@ const FilesSection: React.FC<FilesSectionProps> = ({ tripId }) => {
                     <Button size="sm" variant="outline" onClick={() => window.open(file.downloadUrl, "_blank")}>
                       Download
                     </Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleFileDelete(file.id)}>
-                      Delete
+                    <Button size="icon" variant="ghost" onClick={() => handleFileDelete(file.id)} className="h-8 w-8">
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Delete file</span>
                     </Button>
                   </div>
                 </div>

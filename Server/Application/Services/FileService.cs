@@ -259,4 +259,33 @@ public class FileService : IFileService
         if (dayId.HasValue) return $"day {dayId}";
         return "unknown entity";
     }
+
+    /// <summary>
+    /// Deletes a file from storage and database
+    /// </summary>
+    public async Task<Result<bool>> DeleteFileAsync(Guid fileId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Get the file from database
+            var file = await _fileRepository.GetByIdAsync(fileId, cancellationToken);
+            if (file == null)
+            {
+                return new ErrorResponse { Error = FileErrorCodes.FileNotFound, Message = "File not found" };
+            }
+
+            // Delete from storage first
+            await _fileStorageService.DeleteAsync(file.FilePath, cancellationToken);
+
+            // Delete from database
+            await _fileRepository.DeleteAsync(file, cancellationToken);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting file {FileId} for user {UserId}", fileId, userId);
+            return new ErrorResponse { Error = FileErrorCodes.FileDeleteFailed, Message = "Failed to delete file" };
+        }
+    }
 }

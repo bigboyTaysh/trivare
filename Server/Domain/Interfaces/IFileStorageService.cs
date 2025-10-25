@@ -30,4 +30,12 @@ public interface IFileStorageService
     /// <param name="expirationMinutes">Optional custom expiration time in minutes</param>
     /// <returns>The presigned preview URL</returns>
     Task<string> GetPresignedPreviewUrlAsync(string filePath, int? expirationMinutes = null);
+
+    /// <summary>
+    /// Deletes a file from storage
+    /// </summary>
+    /// <param name="filePath">The storage path of the file to delete</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Task representing the delete operation</returns>
+    Task DeleteAsync(string filePath, CancellationToken cancellationToken = default);
 }

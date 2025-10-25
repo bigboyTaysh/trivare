@@ -203,4 +203,29 @@ public class FilesController : ControllerBase
 
         return this.HandleResult(result);
     }
+
+    /// <summary>
+    /// Delete a file from storage and database
+    /// </summary>
+    /// <param name="fileId">The unique identifier of the file</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>No content on success</returns>
+    /// <response code="204">File deleted successfully</response>
+    /// <response code="403">User does not own the file</response>
+    /// <response code="404">File not found</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="500">Internal server error</response>
+    [HttpDelete("files/{fileId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeleteFile(Guid fileId, CancellationToken cancellationToken)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _fileService.DeleteFileAsync(fileId, userId, cancellationToken);
+
+        return this.HandleResult(result, StatusCodes.Status204NoContent);
+    }
 }

@@ -65,4 +65,13 @@ public class FileRepository : IFileRepository
                 (f.DayId.HasValue && _context.Days.Any(d => d.Id == f.DayId && d.TripId == tripId)))
             .ToListAsync(cancellationToken);
     }
+
+    /// <summary>
+    /// Deletes a file from the database
+    /// </summary>
+    public async Task DeleteAsync(Trivare.Domain.Entities.File file, CancellationToken cancellationToken = default)
+    {
+        _context.Files.Remove(file);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }
