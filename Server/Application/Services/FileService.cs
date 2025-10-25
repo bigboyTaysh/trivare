@@ -15,6 +15,9 @@ public class FileService : IFileService
     private readonly IFileRepository _fileRepository;
     private readonly IAuditLogRepository _auditLogRepository;
     private readonly IFileStorageService _fileStorageService;
+    private readonly ITransportRepository _transportRepository;
+    private readonly IAccommodationRepository _accommodationRepository;
+    private readonly IDayRepository _dayRepository;
     private readonly ILogger<FileService> _logger;
 
     // Allowed MIME types
@@ -32,11 +35,17 @@ public class FileService : IFileService
         IFileRepository fileRepository,
         IAuditLogRepository auditLogRepository,
         IFileStorageService fileStorageService,
+        ITransportRepository transportRepository,
+        IAccommodationRepository accommodationRepository,
+        IDayRepository dayRepository,
         ILogger<FileService> logger)
     {
         _fileRepository = fileRepository;
         _auditLogRepository = auditLogRepository;
         _fileStorageService = fileStorageService;
+        _transportRepository = transportRepository;
+        _accommodationRepository = accommodationRepository;
+        _dayRepository = dayRepository;
         _logger = logger;
     }
 
@@ -130,8 +139,8 @@ public class FileService : IFileService
             // Save to database
             await _fileRepository.AddAsync(file, cancellationToken);
 
-            
-            // Create response
+
+            // Create response with secure presigned URLs
             var response = new FileUploadResponse
             {
                 Id = file.Id,
@@ -143,9 +152,9 @@ public class FileService : IFileService
                 AccommodationId = file.AccommodationId,
                 DayId = file.DayId,
                 CreatedAt = file.CreatedAt,
-                DownloadUrl = _fileStorageService.GetDownloadUrl(filePath),
+                DownloadUrl = await _fileStorageService.GetPresignedDownloadUrlAsync(filePath),
                 FilePath = filePath,
-                PreviewUrl = _fileStorageService.GetPreviewUrl(filePath)
+                PreviewUrl = await _fileStorageService.GetPresignedPreviewUrlAsync(filePath)
             };
 
             return response;
@@ -180,10 +189,66 @@ public class FileService : IFileService
 
     private async Task<Guid?> GetTripIdFromEntityAsync(Guid? transportId, Guid? accommodationId, Guid? dayId, CancellationToken cancellationToken)
     {
-        // This is a placeholder - in real implementation, query the database to get trip ID from entity
-        // For now, assume it's handled by RLS and return a dummy value
-        // TODO: Implement proper trip ID resolution
-        return Guid.NewGuid(); // Placeholder
+        if (transportId.HasValue)
+        {
+            var transport = await _transportRepository.GetByIdAsync(transportId.Value, cancellationToken);
+            return transport?.TripId;
+        }
+
+        if (accommodationId.HasValue)
+        {
+            var accommodation = await _accommodationRepository.GetByIdAsync(accommodationId.Value, cancellationToken);
+            return accommodation?.TripId;
+        }
+
+        if (dayId.HasValue)
+        {
+            var day = await _dayRepository.GetByIdAsync(dayId.Value, cancellationToken);
+            return day?.TripId;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets all files for a trip with secure presigned URLs
+    /// </summary>
+    public async Task<Result<IEnumerable<FileUploadResponse>>> GetTripFilesAsync(Guid tripId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Get all files for the trip
+            var files = await _fileRepository.GetFilesByTripIdAsync(tripId, cancellationToken);
+
+            // Generate presigned URLs for each file
+            var fileResponses = new List<FileUploadResponse>();
+            foreach (var file in files)
+            {
+                var response = new FileUploadResponse
+                {
+                    Id = file.Id,
+                    FileName = file.FileName,
+                    FileSize = file.FileSize,
+                    FileType = file.FileType,
+                    TripId = file.TripId,
+                    TransportId = file.TransportId,
+                    AccommodationId = file.AccommodationId,
+                    DayId = file.DayId,
+                    CreatedAt = file.CreatedAt,
+                    FilePath = file.FilePath,
+                    DownloadUrl = await _fileStorageService.GetPresignedDownloadUrlAsync(file.FilePath),
+                    PreviewUrl = await _fileStorageService.GetPresignedPreviewUrlAsync(file.FilePath)
+                };
+                fileResponses.Add(response);
+            }
+
+            return fileResponses;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving files for trip {TripId}", tripId);
+            return new ErrorResponse { Error = "FileRetrievalFailed", Message = "Failed to retrieve trip files" };
+        }
     }
 
     private string GetEntityDescription(Guid? tripId, Guid? transportId, Guid? accommodationId, Guid? dayId)

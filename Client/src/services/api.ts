@@ -194,7 +194,7 @@ export async function deleteTrip(tripId: string): Promise<void> {
 /**
  * Fetch files for a specific trip
  * @param tripId Trip identifier
- * @returns Promise with file list response
+ * @returns Promise with array of files
  */
 export async function getTripFiles(tripId: string): Promise<FileListResponse> {
   return fetchData<FileListResponse>(`/trips/${tripId}/files`);

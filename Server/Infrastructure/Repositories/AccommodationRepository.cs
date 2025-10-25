@@ -28,6 +28,15 @@ public class AccommodationRepository : IAccommodationRepository
     }
 
     /// <summary>
+    /// Gets an accommodation by its ID
+    /// </summary>
+    public async Task<Accommodation?> GetByIdAsync(Guid accommodationId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Accommodations
+            .FirstOrDefaultAsync(a => a.Id == accommodationId, cancellationToken);
+    }
+
+    /// <summary>
     /// Gets an accommodation by trip ID
     /// </summary>
     public async Task<Accommodation?> GetByTripIdAsync(Guid tripId, CancellationToken cancellationToken = default)

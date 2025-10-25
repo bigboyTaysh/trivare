@@ -16,16 +16,18 @@ public interface IFileStorageService
     Task UploadAsync(Stream content, string filePath, string contentType, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Generates a download URL for a file
+    /// Generates a secure presigned download URL for a file with time-limited access
     /// </summary>
     /// <param name="filePath">The storage path of the file</param>
-    /// <returns>The download URL</returns>
-    string GetDownloadUrl(string filePath);
+    /// <param name="expirationMinutes">Optional custom expiration time in minutes</param>
+    /// <returns>The presigned download URL</returns>
+    Task<string> GetPresignedDownloadUrlAsync(string filePath, int? expirationMinutes = null);
 
     /// <summary>
-    /// Generates a preview URL for a file (if applicable)
+    /// Generates a secure presigned preview URL for a file with time-limited access
     /// </summary>
     /// <param name="filePath">The storage path of the file</param>
-    /// <returns>The preview URL</returns>
-    string GetPreviewUrl(string filePath);
+    /// <param name="expirationMinutes">Optional custom expiration time in minutes</param>
+    /// <returns>The presigned preview URL</returns>
+    Task<string> GetPresignedPreviewUrlAsync(string filePath, int? expirationMinutes = null);
 }

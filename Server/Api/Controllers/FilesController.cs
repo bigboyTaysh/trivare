@@ -178,4 +178,29 @@ public class FilesController : ControllerBase
 
         return this.HandleResult(result, StatusCodes.Status201Created);
     }
+
+    /// <summary>
+    /// Get all files associated with a trip (with secure presigned URLs)
+    /// </summary>
+    /// <param name="tripId">The unique identifier of the trip</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of files with time-limited secure URLs</returns>
+    /// <response code="200">Files retrieved successfully with presigned URLs</response>
+    /// <response code="403">User does not own the trip</response>
+    /// <response code="404">Trip not found</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("trips/{tripId}/files")]
+    [ProducesResponseType(typeof(IEnumerable<FileUploadResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<FileUploadResponse>>> GetTripFiles(Guid tripId, CancellationToken cancellationToken)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _fileService.GetTripFilesAsync(tripId, userId, cancellationToken);
+
+        return this.HandleResult(result);
+    }
 }

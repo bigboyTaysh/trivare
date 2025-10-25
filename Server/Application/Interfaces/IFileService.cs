@@ -51,4 +51,13 @@ public interface IFileService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The file upload response or an error</returns>
     Task<Result<FileUploadResponse>> UploadDayFileAsync(Guid dayId, FileUploadData file, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all files for a trip with secure presigned URLs
+    /// </summary>
+    /// <param name="tripId">The ID of the trip</param>
+    /// <param name="userId">The ID of the authenticated user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of files with presigned URLs</returns>
+    Task<Result<IEnumerable<FileUploadResponse>>> GetTripFilesAsync(Guid tripId, Guid userId, CancellationToken cancellationToken = default);
 }

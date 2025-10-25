@@ -26,7 +26,7 @@ public class CloudflareR2Settings
     public required string BucketName { get; set; }
 
     /// <summary>
-    /// Public URL base for accessing files
+    /// Presigned URL expiration in minutes (default: 60)
     /// </summary>
-    public required string PublicUrlBase { get; set; }
+    public int PresignedUrlExpirationMinutes { get; set; } = 60;
 }

@@ -100,11 +100,10 @@ export interface FileDto {
 }
 
 /**
- * Corresponds to FileListResponse.cs
+ * Response from GET /api/trips/{tripId}/files
+ * Backend returns array directly
  */
-export interface FileListResponse {
-  data: FileDto[];
-}
+export type FileListResponse = FileDto[];
 
 /**
  * Corresponds to FileUploadResponse.cs

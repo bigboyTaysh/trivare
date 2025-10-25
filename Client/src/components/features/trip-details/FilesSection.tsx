@@ -17,10 +17,11 @@ const FilesSection: React.FC<FilesSectionProps> = ({ tripId }) => {
   const loadFiles = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await api.getTripFiles(tripId);
-      setFiles(response.data);
+      const files = await api.getTripFiles(tripId);
+      setFiles(files);
     } catch {
       toast.error("Failed to load files");
+      setFiles([]); // Set empty array on error
     } finally {
       setIsLoading(false);
     }

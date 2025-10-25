@@ -24,5 +24,12 @@
     "SenderEmail": "your-email@mail.com",
     "Username": "your-email@mail.com",
     "Password": "your-app-password"
+  },
+  "CloudflareR2": {
+    "AccountId": "your-cloudflare-account-id",
+    "AccessKeyId": "your-r2-access-key-id",
+    "SecretAccessKey": "your-r2-secret-access-key",
+    "BucketName": "trivare-files",
+    "PresignedUrlExpirationMinutes": 60
   }
 }

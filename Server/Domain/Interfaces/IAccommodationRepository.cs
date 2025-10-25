@@ -16,6 +16,14 @@ public interface IAccommodationRepository
     Task<Accommodation> AddAsync(Accommodation accommodation, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets an accommodation by its ID
+    /// </summary>
+    /// <param name="accommodationId">The accommodation ID to retrieve</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The accommodation entity or null if not found</returns>
+    Task<Accommodation?> GetByIdAsync(Guid accommodationId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets an accommodation by trip ID
     /// </summary>
     /// <param name="tripId">The trip ID to retrieve accommodation for</param>
