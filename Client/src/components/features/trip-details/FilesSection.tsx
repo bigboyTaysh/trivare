@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { api } from "@/services/api";
 import type { FileDto } from "@/types/trips";
@@ -89,11 +89,8 @@ const FilesSection: React.FC<FilesSectionProps> = ({ tripId }) => {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Files</CardTitle>
-      </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-2">
           <div>
             <input
               type="file"

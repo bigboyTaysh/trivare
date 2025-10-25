@@ -1,11 +1,9 @@
-import { useState } from "react";
-import { getCurrentUser } from "@/lib/auth";
-import type { UserDto } from "@/types/user";
+import { useCurrentUser } from "@/hooks/useAuth";
 import { ProfileDropdown } from "./ProfileDropdown";
 import { MobileNav } from "./MobileNav";
 
 export function Nav() {
-  const [user] = useState<UserDto | null>(() => getCurrentUser());
+  const user = useCurrentUser();
 
   return (
     <nav className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

@@ -53,6 +53,10 @@ export function LoginForm() {
       localStorage.setItem("refreshToken", loginResponse.refreshToken);
       localStorage.setItem("user", JSON.stringify(loginResponse.user));
 
+      // Notify auth hooks of the change
+      const { notifyAuthChange } = await import("@/hooks/useAuth");
+      notifyAuthChange();
+
       toast.success("Login successful! Redirecting...");
 
       // Redirect to the stored path or dashboard

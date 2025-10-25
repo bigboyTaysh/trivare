@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { isAuthenticated } from "@/lib/auth";
+import { useEffect } from "react";
+import { useIsAuthenticated } from "@/hooks/useAuth";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,33 +12,23 @@ interface ProtectedRouteProps {
  * Redirects to login if user is not authenticated.
  */
 export function ProtectedRoute({ children, redirectTo = "/login", fallback = null }: ProtectedRouteProps) {
-  const [isChecking, setIsChecking] = useState(true);
-  const [isAuthed, setIsAuthed] = useState(false);
+  const isAuthed = useIsAuthenticated();
 
   useEffect(() => {
-    const checkAuth = () => {
-      const authed = isAuthenticated();
-      setIsAuthed(authed);
-      setIsChecking(false);
-
-      if (!authed) {
-        // Store the current path to redirect back after login
-        const currentPath = window.location.pathname;
-        if (currentPath !== "/login") {
-          sessionStorage.setItem("redirectAfterLogin", currentPath);
-        }
-        window.location.href = redirectTo;
+    if (!isAuthed) {
+      // Store the current path to redirect back after login
+      const currentPath = window.location.pathname;
+      if (currentPath !== "/login") {
+        sessionStorage.setItem("redirectAfterLogin", currentPath);
       }
-    };
+      window.location.href = redirectTo;
+    }
+  }, [isAuthed, redirectTo]);
 
-    checkAuth();
-  }, [redirectTo]);
-
-  // Show fallback while checking authentication
-  if (isChecking) {
+  // Show fallback while not authenticated (before redirect happens)
+  if (!isAuthed) {
     return <>{fallback}</>;
   }
 
-  // Only render children if authenticated
-  return isAuthed ? <>{children}</> : null;
+  return <>{children}</>;
 }

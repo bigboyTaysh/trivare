@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { isAuthenticated } from "@/lib/auth";
+import { useEffect } from "react";
+import { useIsAuthenticated } from "@/hooks/useAuth";
 
 interface PublicRouteProps {
   children: React.ReactNode;
@@ -18,30 +18,18 @@ export function PublicRoute({
   redirectIfAuthenticated = true,
   fallback = null,
 }: PublicRouteProps) {
-  const [isChecking, setIsChecking] = useState(true);
-  const [shouldRender, setShouldRender] = useState(false);
+  const isAuthed = useIsAuthenticated();
 
   useEffect(() => {
-    const checkAuth = () => {
-      const authed = isAuthenticated();
-      setIsChecking(false);
+    if (isAuthed && redirectIfAuthenticated) {
+      window.location.href = redirectTo;
+    }
+  }, [isAuthed, redirectTo, redirectIfAuthenticated]);
 
-      if (authed && redirectIfAuthenticated) {
-        window.location.href = redirectTo;
-        return;
-      }
-
-      setShouldRender(true);
-    };
-
-    checkAuth();
-  }, [redirectTo, redirectIfAuthenticated]);
-
-  // Show fallback while checking authentication
-  if (isChecking) {
+  // Show fallback if authenticated and about to redirect
+  if (isAuthed && redirectIfAuthenticated) {
     return <>{fallback}</>;
   }
 
-  // Render children if should render
-  return shouldRender ? <>{children}</> : null;
+  return <>{children}</>;
 }

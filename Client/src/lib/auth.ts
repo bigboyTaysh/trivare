@@ -43,6 +43,13 @@ export function clearAuthData(): void {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("user");
+
+  // Notify auth hooks of the change
+  if (typeof window !== "undefined") {
+    import("@/hooks/useAuth").then(({ notifyAuthChange }) => {
+      notifyAuthChange();
+    });
+  }
 }
 
 /**

@@ -90,6 +90,28 @@ const TripDetailsPage: React.FC<TripDetailsPageProps> = ({ tripId }) => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <div className="mb-6">
+        <button
+          onClick={() => (window.location.href = "/")}
+          className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="m15 18-6-6 6-6"></path>
+          </svg>
+          Back to Dashboard
+        </button>
+      </div>
+
       <TripHeader trip={trip} onUpdate={updateTrip} onDelete={deleteTrip} />
       <TripContent tripId={tripId} />
     </div>
