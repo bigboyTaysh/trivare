@@ -117,4 +117,12 @@
   body {
     @apply bg-background text-foreground;
   }
+  button,
+  a,
+  input[type="submit"],
+  input[type="button"],
+  select,
+  [role="button"] {
+    cursor: pointer;
+  }
 }
