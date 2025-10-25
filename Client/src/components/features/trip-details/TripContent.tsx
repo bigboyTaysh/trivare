@@ -11,24 +11,24 @@ interface TripContentProps {
 }
 
 const TripContent: React.FC<TripContentProps> = ({ tripId }) => {
-  const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<string | null>("accommodation");
 
   return (
     <>
       {/* Desktop: Tabs */}
       <div className="hidden md:block">
-        <Tabs value={activeSection || ""} onValueChange={setActiveSection}>
+        <Tabs value={activeSection || "accommodation"} onValueChange={setActiveSection}>
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="transport">Transport</TabsTrigger>
             <TabsTrigger value="accommodation">Accommodation</TabsTrigger>
+            <TabsTrigger value="transport">Transport</TabsTrigger>
             <TabsTrigger value="days">Days</TabsTrigger>
             <TabsTrigger value="files">Files</TabsTrigger>
           </TabsList>
-          <TabsContent value="transport" className="mt-6">
-            {activeSection === "transport" && <TransportSection tripId={tripId} />}
-          </TabsContent>
           <TabsContent value="accommodation" className="mt-6">
             {activeSection === "accommodation" && <AccommodationSection tripId={tripId} />}
+          </TabsContent>
+          <TabsContent value="transport" className="mt-6">
+            {activeSection === "transport" && <TransportSection tripId={tripId} />}
           </TabsContent>
           <TabsContent value="days" className="mt-6">
             {activeSection === "days" && <DaysSection tripId={tripId} />}
@@ -41,17 +41,17 @@ const TripContent: React.FC<TripContentProps> = ({ tripId }) => {
 
       {/* Mobile: Accordion */}
       <div className="md:hidden">
-        <Accordion type="single" collapsible value={activeSection || ""} onValueChange={setActiveSection}>
-          <AccordionItem value="transport">
-            <AccordionTrigger>Transport</AccordionTrigger>
-            <AccordionContent className="px-4 py-2">
-              {activeSection === "transport" && <TransportSection tripId={tripId} />}
-            </AccordionContent>
-          </AccordionItem>
+        <Accordion type="single" collapsible value={activeSection || "accommodation"} onValueChange={setActiveSection}>
           <AccordionItem value="accommodation">
             <AccordionTrigger>Accommodation</AccordionTrigger>
             <AccordionContent className="px-4 py-2">
               {activeSection === "accommodation" && <AccommodationSection tripId={tripId} />}
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="transport">
+            <AccordionTrigger>Transport</AccordionTrigger>
+            <AccordionContent className="px-4 py-2">
+              {activeSection === "transport" && <TransportSection tripId={tripId} />}
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="days">
