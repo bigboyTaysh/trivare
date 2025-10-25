@@ -38,4 +38,11 @@ public interface IAccommodationRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated accommodation entity</returns>
     Task<Accommodation> UpdateAsync(Accommodation accommodation, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes an accommodation
+    /// </summary>
+    /// <param name="accommodation">The accommodation entity to delete</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    Task DeleteAsync(Accommodation accommodation, CancellationToken cancellationToken = default);
 }

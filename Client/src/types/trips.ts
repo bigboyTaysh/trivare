@@ -136,6 +136,28 @@ export interface AccommodationDto {
   notes?: string;
 }
 
+/**
+ * Request to add accommodation to a trip
+ */
+export interface AddAccommodationRequest {
+  name?: string;
+  address?: string;
+  checkInDate?: string | null; // ISO 8601 DateTime string or null
+  checkOutDate?: string | null; // ISO 8601 DateTime string or null
+  notes?: string;
+}
+
+/**
+ * Request to update accommodation
+ */
+export interface UpdateAccommodationRequest {
+  name?: string;
+  address?: string;
+  checkInDate?: string | null; // ISO 8601 DateTime string or null to clear
+  checkOutDate?: string | null; // ISO 8601 DateTime string or null to clear
+  notes?: string;
+}
+
 // ViewModels (Frontend-specific state)
 
 /**
@@ -210,3 +232,55 @@ export const UpdateTripViewModel = z
   });
 
 export type UpdateTripViewModel = z.infer<typeof UpdateTripViewModel>;
+
+/**
+ * Validation schema for adding accommodation
+ */
+export const AddAccommodationViewModel = z
+  .object({
+    name: z.string().max(255, { message: "Name cannot exceed 255 characters" }).optional(),
+    address: z.string().max(500, { message: "Address cannot exceed 500 characters" }).optional(),
+    checkInDate: z.string().optional(),
+    checkOutDate: z.string().optional(),
+    notes: z.string().max(2000, { message: "Notes cannot exceed 2000 characters" }).optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.checkInDate && data.checkOutDate) {
+        return new Date(data.checkOutDate) >= new Date(data.checkInDate);
+      }
+      return true;
+    },
+    {
+      message: "Check-out date must be on or after check-in date",
+      path: ["checkOutDate"],
+    }
+  );
+
+export type AddAccommodationViewModel = z.infer<typeof AddAccommodationViewModel>;
+
+/**
+ * Validation schema for updating accommodation
+ */
+export const UpdateAccommodationViewModel = z
+  .object({
+    name: z.string().max(255, { message: "Name cannot exceed 255 characters" }).optional(),
+    address: z.string().max(500, { message: "Address cannot exceed 500 characters" }).optional(),
+    checkInDate: z.string().optional(),
+    checkOutDate: z.string().optional(),
+    notes: z.string().max(2000, { message: "Notes cannot exceed 2000 characters" }).optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.checkInDate && data.checkOutDate) {
+        return new Date(data.checkOutDate) >= new Date(data.checkInDate);
+      }
+      return true;
+    },
+    {
+      message: "Check-out date must be on or after check-in date",
+      path: ["checkOutDate"],
+    }
+  );
+
+export type UpdateAccommodationViewModel = z.infer<typeof UpdateAccommodationViewModel>;

@@ -127,11 +127,11 @@ public class AccommodationService : IAccommodationService
         }
 
         // Apply partial updates
-        if (request.Name != null) accommodation.Name = request.Name;
-        if (request.Address != null) accommodation.Address = request.Address;
-        if (request.CheckInDate.HasValue) accommodation.CheckInDate = request.CheckInDate;
-        if (request.CheckOutDate.HasValue) accommodation.CheckOutDate = request.CheckOutDate;
-        if (request.Notes != null) accommodation.Notes = request.Notes;
+        if (request.Name != null) accommodation.Name = string.IsNullOrWhiteSpace(request.Name) ? null : request.Name;
+        if (request.Address != null) accommodation.Address = string.IsNullOrWhiteSpace(request.Address) ? null : request.Address;
+        if (request.CheckInDate != null) accommodation.CheckInDate = request.CheckInDate;
+        if (request.CheckOutDate != null) accommodation.CheckOutDate = request.CheckOutDate;
+        if (request.Notes != null) accommodation.Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes;
 
         // Update in repository
         var updatedAccommodation = await _accommodationRepository.UpdateAsync(accommodation, cancellationToken);
@@ -149,5 +149,40 @@ public class AccommodationService : IAccommodationService
         };
 
         return response;
+    }
+
+    /// <summary>
+    /// Deletes accommodation from a trip for the authenticated user
+    /// Validates trip ownership and accommodation existence
+    /// </summary>
+    public async Task<Result<bool>> DeleteAccommodationAsync(Guid tripId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        // Check if trip exists and belongs to user
+        var trip = await _tripRepository.GetByIdAsync(tripId, cancellationToken);
+        if (trip == null)
+        {
+            _logger.LogWarning("Accommodation deletion failed for user {UserId}: Trip {TripId} not found", userId, tripId);
+            return new ErrorResponse { Error = "TripNotFound", Message = "The specified trip does not exist." };
+        }
+
+        if (trip.UserId != userId)
+        {
+            _logger.LogWarning("Accommodation deletion failed for user {UserId}: Trip {TripId} belongs to another user", userId, tripId);
+            return new ErrorResponse { Error = "TripForbidden", Message = "You do not have permission to modify this trip." };
+        }
+
+        // Check if accommodation exists for this trip
+        var accommodation = await _accommodationRepository.GetByTripIdAsync(tripId, cancellationToken);
+        if (accommodation == null)
+        {
+            _logger.LogWarning("Accommodation deletion failed for user {UserId}: Accommodation not found for trip {TripId}", userId, tripId);
+            return new ErrorResponse { Error = "AccommodationNotFound", Message = "No accommodation found for this trip." };
+        }
+
+        // Delete the accommodation
+        await _accommodationRepository.DeleteAsync(accommodation, cancellationToken);
+
+        _logger.LogInformation("Accommodation deleted successfully for user {UserId}, trip {TripId}", userId, tripId);
+        return true;
     }
 }

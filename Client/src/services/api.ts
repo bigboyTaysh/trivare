@@ -7,6 +7,9 @@ import type {
   UpdateTripRequest,
   FileListResponse,
   FileUploadResponse,
+  AccommodationDto,
+  AddAccommodationRequest,
+  UpdateAccommodationRequest,
 } from "../types/trips";
 import type { UserDto, UpdateUserRequest, DeleteAccountRequest } from "../types/user";
 import type { ForgotPasswordRequest, ResetPasswordRequest } from "../types/auth";
@@ -192,6 +195,43 @@ export async function deleteTrip(tripId: string): Promise<void> {
 }
 
 /**
+ * Add accommodation to a trip
+ * @param tripId Trip identifier
+ * @param data Accommodation data
+ * @returns Promise with created accommodation details
+ */
+export async function addAccommodation(tripId: string, data: AddAccommodationRequest): Promise<AccommodationDto> {
+  return fetchData<AccommodationDto>(`/trips/${tripId}/accommodation`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Update accommodation for a trip
+ * @param tripId Trip identifier
+ * @param data Accommodation update data
+ * @returns Promise with updated accommodation details
+ */
+export async function updateAccommodation(tripId: string, data: UpdateAccommodationRequest): Promise<AccommodationDto> {
+  return fetchData<AccommodationDto>(`/trips/${tripId}/accommodation`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Delete accommodation from a trip
+ * @param tripId Trip identifier
+ * @returns Promise that resolves when accommodation is deleted
+ */
+export async function deleteAccommodation(tripId: string): Promise<void> {
+  return fetchDataNoResponse(`/trips/${tripId}/accommodation`, {
+    method: "DELETE",
+  });
+}
+
+/**
  * Fetch files for a specific trip
  * @param tripId Trip identifier
  * @returns Promise with array of files
@@ -287,6 +327,9 @@ export const api = {
   getTrip,
   updateTrip,
   deleteTrip,
+  addAccommodation,
+  updateAccommodation,
+  deleteAccommodation,
   getTripFiles,
   uploadTripFile,
   deleteFile,

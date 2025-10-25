@@ -54,4 +54,13 @@ public class AccommodationRepository : IAccommodationRepository
         await _context.SaveChangesAsync(cancellationToken);
         return accommodation;
     }
+
+    /// <summary>
+    /// Deletes an accommodation
+    /// </summary>
+    public async Task DeleteAsync(Accommodation accommodation, CancellationToken cancellationToken = default)
+    {
+        _context.Accommodations.Remove(accommodation);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }
