@@ -8,10 +8,12 @@ import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 
 interface FilesSectionProps {
-  tripId: string;
+  entityId: string;
+  entityType: "trip" | "accommodation" | "transport" | "day";
+  title?: string;
 }
 
-const FilesSection: React.FC<FilesSectionProps> = ({ tripId }) => {
+const FilesSection: React.FC<FilesSectionProps> = ({ entityId, entityType, title = "Files" }) => {
   const [files, setFiles] = useState<FileDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -21,15 +23,33 @@ const FilesSection: React.FC<FilesSectionProps> = ({ tripId }) => {
   const loadFiles = useCallback(async () => {
     setIsLoading(true);
     try {
-      const files = await api.getTripFiles(tripId);
+      let files: FileDto[];
+      switch (entityType) {
+        case "trip":
+          files = await api.getTripFiles(entityId);
+          break;
+        case "accommodation":
+          files = await api.getAccommodationFiles(entityId);
+          break;
+        case "transport":
+          // TODO: Implement when transport files are added
+          files = [];
+          break;
+        case "day":
+          // TODO: Implement when day files are added
+          files = [];
+          break;
+        default:
+          files = [];
+      }
       setFiles(files);
     } catch {
-      toast.error("Failed to load files");
-      setFiles([]); // Set empty array on error
+      toast.error(`Failed to load ${title.toLowerCase()}`);
+      setFiles([]);
     } finally {
       setIsLoading(false);
     }
-  }, [tripId]);
+  }, [entityId, entityType, title]);
 
   useEffect(() => {
     loadFiles();
@@ -47,22 +67,38 @@ const FilesSection: React.FC<FilesSectionProps> = ({ tripId }) => {
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      // 5MB
       toast.error("File size must be less than 5MB");
       return;
     }
 
     if (files.length >= 10) {
-      toast.error("Maximum 10 files per trip");
+      toast.error(`Maximum 10 files per ${entityType}`);
       return;
     }
 
     setIsUploading(true);
     setUploadProgress(0);
     try {
-      await api.uploadTripFile(tripId, file, (progress) => {
-        setUploadProgress(progress);
-      });
+      switch (entityType) {
+        case "trip":
+          await api.uploadTripFile(entityId, file, (progress) => {
+            setUploadProgress(progress);
+          });
+          break;
+        case "accommodation":
+          await api.uploadAccommodationFile(entityId, file, (progress) => {
+            setUploadProgress(progress);
+          });
+          break;
+        case "transport":
+          // TODO: Implement when transport files are added
+          throw new Error("Transport file upload not implemented");
+        case "day":
+          // TODO: Implement when day files are added
+          throw new Error("Day file upload not implemented");
+        default:
+          throw new Error("Unknown entity type");
+      }
       toast.success("File uploaded successfully");
       loadFiles(); // Refresh list
     } catch {
@@ -98,11 +134,11 @@ const FilesSection: React.FC<FilesSectionProps> = ({ tripId }) => {
               onChange={handleFileUpload}
               disabled={isUploading || files.length >= 10}
               className="hidden"
-              id="file-upload"
+              id={`file-upload-${entityType}-${entityId}`}
               ref={fileInputRef}
             />
             <label
-              htmlFor="file-upload"
+              htmlFor={`file-upload-${entityType}-${entityId}`}
               className={isUploading || files.length >= 10 ? "cursor-not-allowed" : "cursor-pointer"}
             >
               <Button
@@ -112,7 +148,7 @@ const FilesSection: React.FC<FilesSectionProps> = ({ tripId }) => {
               >
                 <span>{isUploading ? "Uploading..." : files.length >= 10 ? "File Limit Reached" : "Upload File"}</span>
               </Button>
-              <span className="sr-only">Upload trip file</span>
+              <span className="sr-only">Upload {entityType} file</span>
             </label>
             <p className="text-sm text-muted-foreground mt-1">
               PNG, JPEG, PDF up to 5MB. {files.length}/10 files uploaded.

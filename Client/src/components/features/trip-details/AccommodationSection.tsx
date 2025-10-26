@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Edit, Trash2, MapPin, Calendar, FileText } from "lucide-react";
 import { useAccommodation } from "@/hooks/useAccommodation";
 import { AccommodationForm } from "@/components/forms/AccommodationForm";
+import FilesSection from "@/components/common/FilesSection";
 import type { AddAccommodationRequest, UpdateAccommodationRequest } from "@/types/trips";
 
 interface AccommodationSectionProps {
@@ -196,6 +197,11 @@ const AccommodationSection: React.FC<AccommodationSectionProps> = ({ tripId }) =
                 <p className="text-sm text-muted-foreground">{accommodation.notes}</p>
               </div>
             )}
+
+            {/* Files Section */}
+            <div className="pt-4 border-t">
+              <FilesSection entityId={accommodation.id} entityType="accommodation" title="Accommodation Files" />
+            </div>
           </div>
         ) : (
           <div className="text-center py-8">

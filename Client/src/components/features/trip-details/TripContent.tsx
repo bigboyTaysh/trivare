@@ -4,7 +4,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import TransportSection from "./TransportSection";
 import AccommodationSection from "./AccommodationSection";
 import DaysSection from "./DaysSection";
-import FilesSection from "./FilesSection";
+import FilesSection from "@/components/common/FilesSection";
 
 interface TripContentProps {
   tripId: string;
@@ -17,7 +17,7 @@ const TripContent: React.FC<TripContentProps> = ({ tripId }) => {
     <>
       {/* Desktop: Tabs */}
       <div className="hidden md:block">
-        <Tabs value={activeSection || "accommodation"} onValueChange={setActiveSection}>
+        <Tabs value={activeSection || ""} onValueChange={setActiveSection}>
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="accommodation">Accommodation</TabsTrigger>
             <TabsTrigger value="transport">Transport</TabsTrigger>
@@ -34,14 +34,14 @@ const TripContent: React.FC<TripContentProps> = ({ tripId }) => {
             {activeSection === "days" && <DaysSection tripId={tripId} />}
           </TabsContent>
           <TabsContent value="files" className="mt-6">
-            {activeSection === "files" && <FilesSection tripId={tripId} />}
+            {activeSection === "files" && <FilesSection entityId={tripId} entityType="trip" title="Trip Files" />}
           </TabsContent>
         </Tabs>
       </div>
 
       {/* Mobile: Accordion */}
       <div className="md:hidden">
-        <Accordion type="single" collapsible value={activeSection || "accommodation"} onValueChange={setActiveSection}>
+        <Accordion type="single" collapsible value={activeSection || ""} onValueChange={setActiveSection}>
           <AccordionItem value="accommodation">
             <AccordionTrigger>Accommodation</AccordionTrigger>
             <AccordionContent className="px-4 py-2">
@@ -63,7 +63,7 @@ const TripContent: React.FC<TripContentProps> = ({ tripId }) => {
           <AccordionItem value="files">
             <AccordionTrigger>Files</AccordionTrigger>
             <AccordionContent className="px-4 py-2">
-              {activeSection === "files" && <FilesSection tripId={tripId} />}
+              {activeSection === "files" && <FilesSection entityId={tripId} entityType="trip" title="Trip Files" />}
             </AccordionContent>
           </AccordionItem>
         </Accordion>

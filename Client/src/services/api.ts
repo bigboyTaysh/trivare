@@ -314,6 +314,78 @@ export async function deleteFile(fileId: string): Promise<void> {
   });
 }
 
+/**
+ * Fetch files for a specific accommodation
+ * @param accommodationId Accommodation identifier
+ * @returns Promise with array of files
+ */
+export async function getAccommodationFiles(accommodationId: string): Promise<FileListResponse> {
+  return fetchData<FileListResponse>(`/accommodations/${accommodationId}/files`);
+}
+
+/**
+ * Upload a file to an accommodation with progress tracking
+ * @param accommodationId Accommodation identifier
+ * @param file File to upload
+ * @param onProgress Optional progress callback (0-100)
+ * @returns Promise with upload response
+ */
+export async function uploadAccommodationFile(
+  accommodationId: string,
+  file: File,
+  onProgress?: (progress: number) => void
+): Promise<FileUploadResponse> {
+  return new Promise((resolve, reject) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const accessToken = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable && onProgress) {
+        const progress = Math.round((event.loaded / event.total) * 100);
+        onProgress(progress);
+      }
+    });
+
+    xhr.addEventListener("load", () => {
+      if (xhr.status === 401) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("user");
+          window.location.href = "/login";
+        }
+        reject(new Error("Unauthorized"));
+        return;
+      }
+
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          resolve(response);
+        } catch {
+          reject(new Error("Invalid response format"));
+        }
+      } else {
+        reject(new Error(`API error: ${xhr.statusText}`));
+      }
+    });
+
+    xhr.addEventListener("error", () => {
+      reject(new Error("Network error"));
+    });
+
+    xhr.open("POST", `${API_BASE_URL}/accommodations/${accommodationId}/files`);
+    if (accessToken) {
+      xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`);
+    }
+    xhr.send(formData);
+  });
+}
+
 export const api = {
   getData: () => fetchData("/data"),
   getDataById: (id: number) => fetchData(`/data/${id}`),
@@ -332,6 +404,8 @@ export const api = {
   deleteAccommodation,
   getTripFiles,
   uploadTripFile,
+  getAccommodationFiles,
+  uploadAccommodationFile,
   deleteFile,
   // User-related endpoints
   getMe,

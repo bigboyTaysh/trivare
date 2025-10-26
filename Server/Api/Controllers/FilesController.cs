@@ -205,6 +205,31 @@ public class FilesController : ControllerBase
     }
 
     /// <summary>
+    /// Get all files associated with an accommodation (with secure presigned URLs)
+    /// </summary>
+    /// <param name="accommodationId">The unique identifier of the accommodation</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of files with time-limited secure URLs</returns>
+    /// <response code="200">Files retrieved successfully with presigned URLs</response>
+    /// <response code="403">User does not own the accommodation</response>
+    /// <response code="404">Accommodation not found</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("accommodations/{accommodationId}/files")]
+    [ProducesResponseType(typeof(IEnumerable<FileUploadResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<FileUploadResponse>>> GetAccommodationFiles(Guid accommodationId, CancellationToken cancellationToken)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _fileService.GetAccommodationFilesAsync(accommodationId, userId, cancellationToken);
+
+        return this.HandleResult(result);
+    }
+
+    /// <summary>
     /// Delete a file from storage and database
     /// </summary>
     /// <param name="fileId">The unique identifier of the file</param>

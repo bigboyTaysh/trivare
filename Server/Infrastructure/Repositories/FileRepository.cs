@@ -67,6 +67,26 @@ public class FileRepository : IFileRepository
     }
 
     /// <summary>
+    /// Gets all files directly associated with a trip (trip-level files only)
+    /// </summary>
+    public async Task<IEnumerable<Trivare.Domain.Entities.File>> GetTripLevelFilesByTripIdAsync(Guid tripId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Files
+            .Where(f => f.TripId == tripId && f.AccommodationId == null && f.TransportId == null && f.DayId == null)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets all files associated with an accommodation
+    /// </summary>
+    public async Task<IEnumerable<Trivare.Domain.Entities.File>> GetFilesByAccommodationIdAsync(Guid accommodationId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Files
+            .Where(f => f.AccommodationId == accommodationId)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
     /// Deletes a file from the database
     /// </summary>
     public async Task DeleteAsync(Trivare.Domain.Entities.File file, CancellationToken cancellationToken = default)

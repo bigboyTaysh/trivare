@@ -130,7 +130,7 @@ public class FileService : IFileService
                 FileSize = fileData.Length,
                 FileType = fileData.ContentType,
                 CreatedAt = DateTime.UtcNow,
-                TripId = tripId,
+                TripId = targetTripId,
                 TransportId = transportId,
                 AccommodationId = accommodationId,
                 DayId = dayId
@@ -217,8 +217,8 @@ public class FileService : IFileService
     {
         try
         {
-            // Get all files for the trip
-            var files = await _fileRepository.GetFilesByTripIdAsync(tripId, cancellationToken);
+            // Get trip-level files only
+            var files = await _fileRepository.GetTripLevelFilesByTripIdAsync(tripId, cancellationToken);
 
             // Generate presigned URLs for each file
             var fileResponses = new List<FileUploadResponse>();
@@ -248,6 +248,47 @@ public class FileService : IFileService
         {
             _logger.LogError(ex, "Error retrieving files for trip {TripId}", tripId);
             return new ErrorResponse { Error = "FileRetrievalFailed", Message = "Failed to retrieve trip files" };
+        }
+    }
+
+    /// <summary>
+    /// Gets all files for an accommodation with secure presigned URLs
+    /// </summary>
+    public async Task<Result<IEnumerable<FileUploadResponse>>> GetAccommodationFilesAsync(Guid accommodationId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Get all files for the accommodation
+            var files = await _fileRepository.GetFilesByAccommodationIdAsync(accommodationId, cancellationToken);
+
+            // Generate presigned URLs for each file
+            var fileResponses = new List<FileUploadResponse>();
+            foreach (var file in files)
+            {
+                var response = new FileUploadResponse
+                {
+                    Id = file.Id,
+                    FileName = file.FileName,
+                    FileSize = file.FileSize,
+                    FileType = file.FileType,
+                    TripId = file.TripId,
+                    TransportId = file.TransportId,
+                    AccommodationId = file.AccommodationId,
+                    DayId = file.DayId,
+                    CreatedAt = file.CreatedAt,
+                    FilePath = file.FilePath,
+                    DownloadUrl = await _fileStorageService.GetPresignedDownloadUrlAsync(file.FilePath),
+                    PreviewUrl = await _fileStorageService.GetPresignedPreviewUrlAsync(file.FilePath)
+                };
+                fileResponses.Add(response);
+            }
+
+            return fileResponses;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving files for accommodation {AccommodationId}", accommodationId);
+            return new ErrorResponse { Error = "FileRetrievalFailed", Message = "Failed to retrieve accommodation files" };
         }
     }
 
