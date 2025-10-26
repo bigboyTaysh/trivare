@@ -14,12 +14,14 @@ public class AccommodationService : IAccommodationService
 {
     private readonly IAccommodationRepository _accommodationRepository;
     private readonly ITripRepository _tripRepository;
+    private readonly IFileService _fileService;
     private readonly ILogger<AccommodationService> _logger;
 
-    public AccommodationService(IAccommodationRepository accommodationRepository, ITripRepository tripRepository, ILogger<AccommodationService> logger)
+    public AccommodationService(IAccommodationRepository accommodationRepository, ITripRepository tripRepository, IFileService fileService, ILogger<AccommodationService> logger)
     {
         _accommodationRepository = accommodationRepository;
         _tripRepository = tripRepository;
+        _fileService = fileService;
         _logger = logger;
     }
 
@@ -177,6 +179,26 @@ public class AccommodationService : IAccommodationService
         {
             _logger.LogWarning("Accommodation deletion failed for user {UserId}: Accommodation not found for trip {TripId}", userId, tripId);
             return new ErrorResponse { Error = "AccommodationNotFound", Message = "No accommodation found for this trip." };
+        }
+
+        // Delete all files associated with this accommodation first
+        var filesResult = await _fileService.GetAccommodationFilesAsync(accommodation.Id, userId, cancellationToken);
+        if (filesResult.IsSuccess && filesResult.Value != null)
+        {
+            foreach (var file in filesResult.Value)
+            {
+                var deleteResult = await _fileService.DeleteFileAsync(file.Id, userId, cancellationToken);
+                if (!deleteResult.IsSuccess)
+                {
+                    _logger.LogError("Failed to delete file {FileId} associated with accommodation {AccommodationId}: {Error}", file.Id, accommodation.Id, deleteResult.Error?.Message);
+                    return new ErrorResponse { Error = "FileDeletionFailed", Message = $"Failed to delete associated file: {deleteResult.Error?.Message}" };
+                }
+            }
+        }
+        else if (!filesResult.IsSuccess)
+        {
+            _logger.LogError("Failed to retrieve files for accommodation {AccommodationId}: {Error}", accommodation.Id, filesResult.Error?.Message);
+            return new ErrorResponse { Error = "FileRetrievalFailed", Message = $"Failed to retrieve associated files: {filesResult.Error?.Message}" };
         }
 
         // Delete the accommodation
