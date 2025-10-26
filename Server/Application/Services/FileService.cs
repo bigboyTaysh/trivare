@@ -292,6 +292,47 @@ public class FileService : IFileService
         }
     }
 
+    /// <summary>
+    /// Gets all files for a transport with secure presigned URLs
+    /// </summary>
+    public async Task<Result<IEnumerable<FileUploadResponse>>> GetTransportFilesAsync(Guid transportId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Get all files for the transport
+            var files = await _fileRepository.GetFilesByTransportIdAsync(transportId, cancellationToken);
+
+            // Generate presigned URLs for each file
+            var fileResponses = new List<FileUploadResponse>();
+            foreach (var file in files)
+            {
+                var response = new FileUploadResponse
+                {
+                    Id = file.Id,
+                    FileName = file.FileName,
+                    FileSize = file.FileSize,
+                    FileType = file.FileType,
+                    TripId = file.TripId,
+                    TransportId = file.TransportId,
+                    AccommodationId = file.AccommodationId,
+                    DayId = file.DayId,
+                    CreatedAt = file.CreatedAt,
+                    FilePath = file.FilePath,
+                    DownloadUrl = await _fileStorageService.GetPresignedDownloadUrlAsync(file.FilePath),
+                    PreviewUrl = await _fileStorageService.GetPresignedPreviewUrlAsync(file.FilePath)
+                };
+                fileResponses.Add(response);
+            }
+
+            return fileResponses;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving files for transport {TransportId}", transportId);
+            return new ErrorResponse { Error = "FileRetrievalFailed", Message = "Failed to retrieve transport files" };
+        }
+    }
+
     private string GetEntityDescription(Guid? tripId, Guid? transportId, Guid? accommodationId, Guid? dayId)
     {
         if (tripId.HasValue) return $"trip {tripId}";

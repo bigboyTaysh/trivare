@@ -15,12 +15,14 @@ namespace Trivare.Application.Services;
 public class TripService : ITripService
 {
     private readonly ITripRepository _tripRepository;
+    private readonly ITransportRepository _transportRepository;
     private readonly IAuditLogRepository _auditLogRepository;
     private readonly ILogger<TripService> _logger;
 
-    public TripService(ITripRepository tripRepository, IAuditLogRepository auditLogRepository, ILogger<TripService> logger)
+    public TripService(ITripRepository tripRepository, ITransportRepository transportRepository, IAuditLogRepository auditLogRepository, ILogger<TripService> logger)
     {
         _tripRepository = tripRepository;
+        _transportRepository = transportRepository;
         _auditLogRepository = auditLogRepository;
         _logger = logger;
     }
@@ -228,6 +230,9 @@ public class TripService : ITripService
             return new ErrorResponse { Error = TripErrorCodes.TripAccessDenied, Message = "You do not have permission to access this trip." };
         }
 
+        // Get transports for this trip
+        var transports = await _transportRepository.GetByTripIdAsync(tripId, cancellationToken);
+
         var tripDto = new TripDetailDto
         {
             Id = trip.Id,
@@ -237,6 +242,17 @@ public class TripService : ITripService
             EndDate = trip.EndDate,
             Notes = trip.Notes,
             CreatedAt = trip.CreatedAt,
+            Transports = transports.Select(t => new TransportDto
+            {
+                Id = t.Id,
+                TripId = t.TripId,
+                Type = t.Type,
+                DepartureLocation = t.DepartureLocation,
+                ArrivalLocation = t.ArrivalLocation,
+                DepartureTime = t.DepartureTime,
+                ArrivalTime = t.ArrivalTime,
+                Notes = t.Notes
+            }),
             Accommodation = trip.Accommodation == null ? null : new AccommodationDto
             {
                 Id = trip.Accommodation.Id,

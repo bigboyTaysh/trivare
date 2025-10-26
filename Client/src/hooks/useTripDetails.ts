@@ -29,6 +29,16 @@ export const useTripDetails = (tripId: string): UseTripDetailsReturn => {
           startDate: response.startDate,
           endDate: response.endDate,
           notes: response.notes,
+          transports: response.transports?.map((t) => ({
+            id: t.id,
+            tripId: t.tripId,
+            type: t.type || "",
+            departureLocation: t.departureLocation,
+            arrivalLocation: t.arrivalLocation,
+            departureTime: t.departureTime,
+            arrivalTime: t.arrivalTime,
+            notes: t.notes,
+          })),
           accommodation:
             response.accommodation && response.accommodation.name
               ? {
@@ -66,6 +76,16 @@ export const useTripDetails = (tripId: string): UseTripDetailsReturn => {
         startDate: response.startDate,
         endDate: response.endDate,
         notes: response.notes,
+        transports: response.transports?.map((t) => ({
+          id: t.id,
+          tripId: t.tripId,
+          type: t.type || "",
+          departureLocation: t.departureLocation,
+          arrivalLocation: t.arrivalLocation,
+          departureTime: t.departureTime,
+          arrivalTime: t.arrivalTime,
+          notes: t.notes,
+        })),
         accommodation:
           response.accommodation && response.accommodation.name
             ? {

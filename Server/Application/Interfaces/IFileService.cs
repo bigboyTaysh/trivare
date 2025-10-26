@@ -71,6 +71,15 @@ public interface IFileService
     Task<Result<IEnumerable<FileUploadResponse>>> GetAccommodationFilesAsync(Guid accommodationId, Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets all files for a transport with secure presigned URLs
+    /// </summary>
+    /// <param name="transportId">The ID of the transport</param>
+    /// <param name="userId">The ID of the authenticated user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of files with presigned URLs</returns>
+    Task<Result<IEnumerable<FileUploadResponse>>> GetTransportFilesAsync(Guid transportId, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Deletes a file from storage and database
     /// </summary>
     /// <param name="fileId">The ID of the file to delete</param>

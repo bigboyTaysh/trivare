@@ -79,4 +79,54 @@ public class TransportController : ControllerBase
 
         return this.HandleResult(result);
     }
+
+    /// <summary>
+    /// Get all transports for a specific trip
+    /// </summary>
+    /// <param name="tripId">The ID of the trip to get transports for</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of transports for the trip</returns>
+    /// <response code="200">Transports retrieved successfully</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="403">Forbidden - trip belongs to another user</response>
+    /// <response code="404">Trip not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("~/api/trips/{tripId}/transports")]
+    [ProducesResponseType(typeof(IEnumerable<TransportResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<TransportResponse>>> GetTransports(Guid tripId, CancellationToken cancellationToken = default)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _transportService.GetTransportsAsync(tripId, userId, cancellationToken);
+
+        return this.HandleResult(result);
+    }
+
+    /// <summary>
+    /// Delete a transport record
+    /// </summary>
+    /// <param name="transportId">The ID of the transport to delete</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Success response</returns>
+    /// <response code="204">Transport deleted successfully</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="403">Forbidden - transport belongs to another user</response>
+    /// <response code="404">Transport not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpDelete("{transportId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeleteTransport(Guid transportId, CancellationToken cancellationToken = default)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _transportService.DeleteTransportAsync(transportId, userId, cancellationToken);
+
+        return result.IsSuccess ? NoContent() : this.HandleResult(result);
+    }
 }

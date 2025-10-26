@@ -230,6 +230,31 @@ public class FilesController : ControllerBase
     }
 
     /// <summary>
+    /// Get all files associated with a transport
+    /// </summary>
+    /// <param name="transportId">The unique identifier of the transport</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of files with presigned URLs</returns>
+    /// <response code="200">Files retrieved successfully</response>
+    /// <response code="403">User does not own the transport</response>
+    /// <response code="404">Transport not found</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("transports/{transportId}/files")]
+    [ProducesResponseType(typeof(IEnumerable<FileUploadResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<FileUploadResponse>>> GetTransportFiles(Guid transportId, CancellationToken cancellationToken)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _fileService.GetTransportFilesAsync(transportId, userId, cancellationToken);
+
+        return this.HandleResult(result);
+    }
+
+    /// <summary>
     /// Delete a file from storage and database
     /// </summary>
     /// <param name="fileId">The unique identifier of the file</param>

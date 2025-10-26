@@ -47,9 +47,9 @@ public record TripDetailDto
     public required DateTime CreatedAt { get; init; }
 
     /// <summary>
-    /// Transportation details from Trip.Transport (included when requested)
+    /// Transportation details from Trip.Transports (included when requested)
     /// </summary>
-    public TransportDto? Transport { get; init; }
+    public IEnumerable<TransportDto>? Transports { get; init; }
 
     /// <summary>
     /// Accommodation details from Trip.Accommodation (included when requested)

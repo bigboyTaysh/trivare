@@ -32,8 +32,7 @@ const FilesSection: React.FC<FilesSectionProps> = ({ entityId, entityType, title
           files = await api.getAccommodationFiles(entityId);
           break;
         case "transport":
-          // TODO: Implement when transport files are added
-          files = [];
+          files = await api.getTransportFiles(entityId);
           break;
         case "day":
           // TODO: Implement when day files are added
@@ -91,8 +90,10 @@ const FilesSection: React.FC<FilesSectionProps> = ({ entityId, entityType, title
           });
           break;
         case "transport":
-          // TODO: Implement when transport files are added
-          throw new Error("Transport file upload not implemented");
+          await api.uploadTransportFile(entityId, file, (progress) => {
+            setUploadProgress(progress);
+          });
+          break;
         case "day":
           // TODO: Implement when day files are added
           throw new Error("Day file upload not implemented");

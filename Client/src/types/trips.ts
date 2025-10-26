@@ -76,6 +76,7 @@ export interface TripDetailDto {
   notes?: string;
   createdAt: string; // ISO 8601 DateTime string
   transport?: unknown; // TransportDto - to be defined later
+  transports?: TransportDto[]; // TransportDto[] - multiple transports per trip
   accommodation?: AccommodationDto;
   days?: unknown[]; // DayDto[] - to be defined later
   files?: FileDto[];
@@ -98,6 +99,62 @@ export interface FileDto {
   filePath: string;
   previewUrl: string;
 }
+
+/**
+ * Corresponds to TransportDto.cs
+ */
+export interface TransportDto {
+  id: string; // Guid
+  tripId: string; // Guid
+  type?: string;
+  departureLocation?: string;
+  arrivalLocation?: string;
+  departureTime?: string; // ISO 8601 DateTime string
+  arrivalTime?: string; // ISO 8601 DateTime string
+  notes?: string;
+}
+
+/**
+ * Corresponds to TransportResponse.cs
+ */
+export interface TransportResponse {
+  id: string; // Guid
+  tripId: string; // Guid
+  type: string;
+  departureLocation?: string;
+  arrivalLocation?: string;
+  departureTime?: string; // ISO 8601 DateTime string
+  arrivalTime?: string; // ISO 8601 DateTime string
+  notes?: string;
+}
+
+/**
+ * Request to create a new transport
+ */
+export interface CreateTransportRequest {
+  type: string; // Required, max 100 chars
+  departureLocation?: string; // Optional, max 255 chars
+  arrivalLocation?: string; // Optional, max 255 chars
+  departureTime?: string; // Optional, ISO 8601 DateTime string
+  arrivalTime?: string; // Optional, ISO 8601 DateTime string, must be after departureTime
+  notes?: string; // Optional, max 2000 chars
+}
+
+/**
+ * Request to update an existing transport (partial update)
+ */
+export interface UpdateTransportRequest {
+  type?: string; // Optional, max 100 chars
+  departureLocation?: string; // Optional, max 255 chars
+  arrivalLocation?: string; // Optional, max 255 chars
+  departureTime?: string; // Optional, ISO 8601 DateTime string
+  arrivalTime?: string; // Optional, ISO 8601 DateTime string, must be after departureTime
+  notes?: string; // Optional, max 2000 chars
+}
+
+/**
+ * Corresponds to AccommodationDto.cs
+ */
 
 /**
  * Response from GET /api/trips/{tripId}/files
@@ -187,6 +244,7 @@ export interface TripDetailViewModel {
   startDate: string;
   endDate: string;
   notes?: string;
+  transports?: TransportViewModel[];
   accommodation?: {
     id: string;
     name: string;
@@ -198,8 +256,19 @@ export interface TripDetailViewModel {
 }
 
 /**
- * Frontend view model for file data
+ * Frontend view model for transport data
  */
+export interface TransportViewModel {
+  id: string;
+  tripId: string;
+  type: string;
+  departureLocation?: string;
+  arrivalLocation?: string;
+  departureTime?: string;
+  arrivalTime?: string;
+  notes?: string;
+}
+
 export interface FileViewModel {
   id: string;
   fileName: string;

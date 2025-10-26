@@ -87,6 +87,16 @@ public class FileRepository : IFileRepository
     }
 
     /// <summary>
+    /// Gets all files associated with a transport
+    /// </summary>
+    public async Task<IEnumerable<Trivare.Domain.Entities.File>> GetFilesByTransportIdAsync(Guid transportId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Files
+            .Where(f => f.TransportId == transportId)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
     /// Deletes a file from the database
     /// </summary>
     public async Task DeleteAsync(Trivare.Domain.Entities.File file, CancellationToken cancellationToken = default)

@@ -58,6 +58,14 @@ public interface IFileRepository
     Task<IEnumerable<Trivare.Domain.Entities.File>> GetFilesByAccommodationIdAsync(Guid accommodationId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets all files associated with a transport
+    /// </summary>
+    /// <param name="transportId">The transport ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Collection of files for the transport</returns>
+    Task<IEnumerable<Trivare.Domain.Entities.File>> GetFilesByTransportIdAsync(Guid transportId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Deletes a file from the database
     /// </summary>
     /// <param name="file">The file entity to delete</param>

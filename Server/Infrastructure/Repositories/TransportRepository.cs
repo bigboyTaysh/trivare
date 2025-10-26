@@ -57,4 +57,13 @@ public class TransportRepository : ITransportRepository
         await _context.SaveChangesAsync(cancellationToken);
         return transport;
     }
+
+    /// <summary>
+    /// Deletes a transport
+    /// </summary>
+    public async Task DeleteAsync(Transport transport, CancellationToken cancellationToken = default)
+    {
+        _context.Transport.Remove(transport);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }
