@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useTripDetails } from "@/hooks/useTripDetails";
+import { useTripFiles } from "@/hooks/useTripFiles";
 import TripHeader from "@/components/features/trip-details/TripHeader";
 import TripContent from "@/components/features/trip-details/TripContent";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +15,7 @@ interface TripDetailsPageProps {
 
 const TripDetailsPage: React.FC<TripDetailsPageProps> = ({ tripId }) => {
   const { trip, isLoading, error, updateTrip, deleteTrip } = useTripDetails(tripId);
+  const { totalFileCount, refreshFileCount } = useTripFiles(tripId);
 
   useEffect(() => {
     if (error) {
@@ -112,8 +114,14 @@ const TripDetailsPage: React.FC<TripDetailsPageProps> = ({ tripId }) => {
         </button>
       </div>
 
-      <TripHeader trip={trip} onUpdate={updateTrip} onDelete={deleteTrip} />
-      <TripContent tripId={tripId} />
+      <TripHeader
+        trip={trip}
+        onUpdate={updateTrip}
+        onDelete={deleteTrip}
+        totalFileCount={totalFileCount}
+        onFileChange={refreshFileCount}
+      />
+      <TripContent tripId={tripId} totalFileCount={totalFileCount} onFileChange={refreshFileCount} />
     </div>
   );
 };

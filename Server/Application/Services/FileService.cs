@@ -217,8 +217,8 @@ public class FileService : IFileService
     {
         try
         {
-            // Get trip-level files only
-            var files = await _fileRepository.GetTripLevelFilesByTripIdAsync(tripId, cancellationToken);
+            // Get all files associated with the trip (including files from transports, accommodations, and days)
+            var files = await _fileRepository.GetFilesByTripIdAsync(tripId, cancellationToken);
 
             // Generate presigned URLs for each file
             var fileResponses = new List<FileUploadResponse>();

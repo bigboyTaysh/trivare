@@ -11,9 +11,18 @@ interface FilesSectionProps {
   entityId: string;
   entityType: "trip" | "accommodation" | "transport" | "day";
   title?: string;
+  tripId: string;
+  totalFileCount: number;
+  onFileChange: () => void;
 }
 
-const FilesSection: React.FC<FilesSectionProps> = ({ entityId, entityType, title = "Files" }) => {
+const FilesSection: React.FC<FilesSectionProps> = ({
+  entityId,
+  entityType,
+  title = "Files",
+  totalFileCount,
+  onFileChange,
+}) => {
   const [files, setFiles] = useState<FileDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -25,9 +34,13 @@ const FilesSection: React.FC<FilesSectionProps> = ({ entityId, entityType, title
     try {
       let files: FileDto[];
       switch (entityType) {
-        case "trip":
-          files = await api.getTripFiles(entityId);
+        case "trip": {
+          // Get all trip files, but filter to show only trip-level files
+          // (files attached directly to trip, not to accommodation/transport/day)
+          const allTripFiles = await api.getTripFiles(entityId);
+          files = allTripFiles.filter((f) => f.tripId === entityId && !f.accommodationId && !f.transportId && !f.dayId);
           break;
+        }
         case "accommodation":
           files = await api.getAccommodationFiles(entityId);
           break;
@@ -70,8 +83,8 @@ const FilesSection: React.FC<FilesSectionProps> = ({ entityId, entityType, title
       return;
     }
 
-    if (files.length >= 10) {
-      toast.error(`Maximum 10 files per ${entityType}`);
+    if (totalFileCount >= 10) {
+      toast.error("Trip has reached the maximum of 10 files");
       return;
     }
 
@@ -102,6 +115,7 @@ const FilesSection: React.FC<FilesSectionProps> = ({ entityId, entityType, title
       }
       toast.success("File uploaded successfully");
       loadFiles(); // Refresh list
+      onFileChange(); // Notify parent to refresh global count
     } catch {
       toast.error("Failed to upload file");
     } finally {
@@ -119,6 +133,7 @@ const FilesSection: React.FC<FilesSectionProps> = ({ entityId, entityType, title
       await api.deleteFile(fileId);
       toast.success("File deleted successfully");
       setFiles(files.filter((f) => f.id !== fileId));
+      onFileChange(); // Notify parent to refresh global count
     } catch {
       toast.error("Failed to delete file");
     }
@@ -131,7 +146,9 @@ const FilesSection: React.FC<FilesSectionProps> = ({ entityId, entityType, title
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             <span className="text-sm font-medium">Files</span>
-            <span className="text-xs text-muted-foreground">({files.length}/10)</span>
+            <span className="text-xs text-muted-foreground">
+              ({totalFileCount}/10 for trip, {files.length} here)
+            </span>
           </div>
         </AccordionTrigger>
         <AccordionContent className="pb-2">
@@ -141,22 +158,22 @@ const FilesSection: React.FC<FilesSectionProps> = ({ entityId, entityType, title
                 type="file"
                 accept=".png,.jpg,.jpeg,.pdf"
                 onChange={handleFileUpload}
-                disabled={isUploading || files.length >= 10}
+                disabled={isUploading || totalFileCount >= 10}
                 className="hidden"
                 id={`file-upload-${entityType}-${entityId}`}
                 ref={fileInputRef}
               />
               <label
                 htmlFor={`file-upload-${entityType}-${entityId}`}
-                className={isUploading || files.length >= 10 ? "cursor-not-allowed" : "cursor-pointer"}
+                className={isUploading || totalFileCount >= 10 ? "cursor-not-allowed" : "cursor-pointer"}
               >
                 <Button
                   asChild
                   size="sm"
-                  disabled={isUploading || files.length >= 10}
-                  className={files.length >= 10 ? "opacity-50 bg-gray-100 hover:bg-gray-100 text-gray-500" : ""}
+                  disabled={isUploading || totalFileCount >= 10}
+                  className={totalFileCount >= 10 ? "opacity-50 bg-gray-100 hover:bg-gray-100 text-gray-500" : ""}
                 >
-                  <span>{isUploading ? "Uploading..." : files.length >= 10 ? "Limit Reached" : "Upload"}</span>
+                  <span>{isUploading ? "Uploading..." : totalFileCount >= 10 ? "Limit Reached" : "Upload"}</span>
                 </Button>
                 <span className="sr-only">Upload {entityType} file</span>
               </label>
@@ -170,7 +187,7 @@ const FilesSection: React.FC<FilesSectionProps> = ({ entityId, entityType, title
               </div>
             )}
 
-            {files.length >= 10 && <p className="text-xs text-amber-600">Delete files to upload more</p>}
+            {totalFileCount >= 10 && <p className="text-xs text-amber-600">Trip has reached maximum file limit</p>}
 
             {isLoading ? (
               <p className="text-xs text-muted-foreground">Loading...</p>

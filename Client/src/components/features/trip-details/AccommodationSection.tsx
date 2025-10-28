@@ -20,9 +20,11 @@ import { formatDateTime } from "@/lib/dateUtils";
 
 interface AccommodationSectionProps {
   tripId: string;
+  totalFileCount: number;
+  onFileChange: () => void;
 }
 
-const AccommodationSection: React.FC<AccommodationSectionProps> = ({ tripId }) => {
+const AccommodationSection: React.FC<AccommodationSectionProps> = ({ tripId, totalFileCount, onFileChange }) => {
   const { accommodation, isLoading, addAccommodation, updateAccommodation, deleteAccommodation } =
     useAccommodation(tripId);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -172,7 +174,14 @@ const AccommodationSection: React.FC<AccommodationSectionProps> = ({ tripId }) =
 
             {/* Files Section - pinned to bottom */}
             <div className="pt-1.5 border-t mt-auto">
-              <FilesSection entityId={accommodation.id} entityType="accommodation" title="Accommodation Files" />
+              <FilesSection
+                entityId={accommodation.id}
+                entityType="accommodation"
+                title="Accommodation Files"
+                tripId={tripId}
+                totalFileCount={totalFileCount}
+                onFileChange={onFileChange}
+              />
             </div>
           </CardContent>
         </Card>

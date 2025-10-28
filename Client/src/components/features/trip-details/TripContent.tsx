@@ -8,9 +8,11 @@ import { Calendar, Home, Plane } from "lucide-react";
 
 interface TripContentProps {
   tripId: string;
+  totalFileCount: number;
+  onFileChange: () => void;
 }
 
-const TripContent: React.FC<TripContentProps> = ({ tripId }) => {
+const TripContent: React.FC<TripContentProps> = ({ tripId, totalFileCount, onFileChange }) => {
   const [activeSection, setActiveSection] = useState<string | null>("days");
 
   return (
@@ -33,13 +35,19 @@ const TripContent: React.FC<TripContentProps> = ({ tripId }) => {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="days" className="mt-6">
-            {activeSection === "days" && <DaysSection tripId={tripId} />}
+            {activeSection === "days" && (
+              <DaysSection tripId={tripId} totalFileCount={totalFileCount} onFileChange={onFileChange} />
+            )}
           </TabsContent>
           <TabsContent value="accommodation" className="mt-6">
-            {activeSection === "accommodation" && <AccommodationSection tripId={tripId} />}
+            {activeSection === "accommodation" && (
+              <AccommodationSection tripId={tripId} totalFileCount={totalFileCount} onFileChange={onFileChange} />
+            )}
           </TabsContent>
           <TabsContent value="transport" className="mt-6">
-            {activeSection === "transport" && <TransportSection tripId={tripId} />}
+            {activeSection === "transport" && (
+              <TransportSection tripId={tripId} totalFileCount={totalFileCount} onFileChange={onFileChange} />
+            )}
           </TabsContent>
         </Tabs>
       </div>
@@ -55,7 +63,9 @@ const TripContent: React.FC<TripContentProps> = ({ tripId }) => {
               </span>
             </AccordionTrigger>
             <AccordionContent className="px-4 py-2">
-              {activeSection === "days" && <DaysSection tripId={tripId} />}
+              {activeSection === "days" && (
+                <DaysSection tripId={tripId} totalFileCount={totalFileCount} onFileChange={onFileChange} />
+              )}
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="accommodation">
@@ -66,7 +76,9 @@ const TripContent: React.FC<TripContentProps> = ({ tripId }) => {
               </span>
             </AccordionTrigger>
             <AccordionContent className="px-4 py-2">
-              {activeSection === "accommodation" && <AccommodationSection tripId={tripId} />}
+              {activeSection === "accommodation" && (
+                <AccommodationSection tripId={tripId} totalFileCount={totalFileCount} onFileChange={onFileChange} />
+              )}
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="transport">
@@ -77,7 +89,9 @@ const TripContent: React.FC<TripContentProps> = ({ tripId }) => {
               </span>
             </AccordionTrigger>
             <AccordionContent className="px-4 py-2">
-              {activeSection === "transport" && <TransportSection tripId={tripId} />}
+              {activeSection === "transport" && (
+                <TransportSection tripId={tripId} totalFileCount={totalFileCount} onFileChange={onFileChange} />
+              )}
             </AccordionContent>
           </AccordionItem>
         </Accordion>

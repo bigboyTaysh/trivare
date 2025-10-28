@@ -25,9 +25,11 @@ interface TripHeaderProps {
   trip: TripDetailViewModel;
   onUpdate: (data: UpdateTripRequest) => void;
   onDelete: () => void;
+  totalFileCount: number;
+  onFileChange: () => void;
 }
 
-const TripHeader: React.FC<TripHeaderProps> = ({ trip, onUpdate, onDelete }) => {
+const TripHeader: React.FC<TripHeaderProps> = ({ trip, onUpdate, onDelete, totalFileCount, onFileChange }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
 
@@ -213,7 +215,14 @@ const TripHeader: React.FC<TripHeaderProps> = ({ trip, onUpdate, onDelete }) => 
       {!isEditMode && (
         <CardContent className="pt-0">
           <div className="pt-3 border-t">
-            <FilesSection entityId={trip.id} entityType="trip" title="Trip Files" />
+            <FilesSection
+              entityId={trip.id}
+              entityType="trip"
+              title="Trip Files"
+              tripId={trip.id}
+              totalFileCount={totalFileCount}
+              onFileChange={onFileChange}
+            />
           </div>
         </CardContent>
       )}

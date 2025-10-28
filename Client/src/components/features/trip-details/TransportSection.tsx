@@ -21,9 +21,11 @@ import { formatDateTime } from "@/lib/dateUtils";
 
 interface TransportSectionProps {
   tripId: string;
+  totalFileCount: number;
+  onFileChange: () => void;
 }
 
-const TransportSection: React.FC<TransportSectionProps> = ({ tripId }) => {
+const TransportSection: React.FC<TransportSectionProps> = ({ tripId, totalFileCount, onFileChange }) => {
   const { trip, isLoading } = useTripDetails(tripId);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -218,7 +220,14 @@ const TransportSection: React.FC<TransportSectionProps> = ({ tripId }) => {
 
                 {/* Files Section - pinned to bottom */}
                 <div className="pt-1.5 border-t mt-auto">
-                  <FilesSection entityId={transport.id} entityType="transport" title="Transport Files" />
+                  <FilesSection
+                    entityId={transport.id}
+                    entityType="transport"
+                    title="Transport Files"
+                    tripId={tripId}
+                    totalFileCount={totalFileCount}
+                    onFileChange={onFileChange}
+                  />
                 </div>
               </CardContent>
             </Card>

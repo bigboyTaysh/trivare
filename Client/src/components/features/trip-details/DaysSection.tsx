@@ -2,6 +2,8 @@ import React from "react";
 
 interface DaysSectionProps {
   tripId: string;
+  totalFileCount: number;
+  onFileChange: () => void;
 }
 
 const DaysSection: React.FC<DaysSectionProps> = () => {
