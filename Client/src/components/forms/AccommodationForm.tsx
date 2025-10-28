@@ -15,11 +15,22 @@ interface AccommodationFormProps {
 export function AccommodationForm({ accommodation, onSubmit, onCancel, isSubmitting }: AccommodationFormProps) {
   const isEditing = !!accommodation;
 
+  // Helper function to convert UTC date to local datetime-local format
+  const toLocalDateTimeString = (dateString: string): string => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const [formData, setFormData] = useState({
     name: accommodation?.name || "",
     address: accommodation?.address || "",
-    checkInDate: accommodation?.checkInDate ? new Date(accommodation.checkInDate).toISOString().split("T")[0] : "",
-    checkOutDate: accommodation?.checkOutDate ? new Date(accommodation.checkOutDate).toISOString().split("T")[0] : "",
+    checkInDate: accommodation?.checkInDate ? toLocalDateTimeString(accommodation.checkInDate) : "",
+    checkOutDate: accommodation?.checkOutDate ? toLocalDateTimeString(accommodation.checkOutDate) : "",
     notes: accommodation?.notes || "",
   });
 
@@ -134,13 +145,13 @@ export function AccommodationForm({ accommodation, onSubmit, onCancel, isSubmitt
         {errors.address && <p className="text-sm text-destructive">{errors.address}</p>}
       </div>
 
-      {/* Check-in/Check-out Dates */}
+      {/* Check-in/Check-out Date and Time */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="checkInDate">Check-in Date</Label>
+          <Label htmlFor="checkInDate">Check-in Date & Time</Label>
           <Input
             id="checkInDate"
-            type="date"
+            type="datetime-local"
             value={formData.checkInDate}
             onChange={(e) => handleInputChange("checkInDate", e.target.value)}
             disabled={isSubmitting}
@@ -150,10 +161,10 @@ export function AccommodationForm({ accommodation, onSubmit, onCancel, isSubmitt
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="checkOutDate">Check-out Date</Label>
+          <Label htmlFor="checkOutDate">Check-out Date & Time</Label>
           <Input
             id="checkOutDate"
-            type="date"
+            type="datetime-local"
             value={formData.checkOutDate}
             onChange={(e) => handleInputChange("checkOutDate", e.target.value)}
             disabled={isSubmitting}

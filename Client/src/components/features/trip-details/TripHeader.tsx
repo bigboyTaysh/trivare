@@ -15,9 +15,11 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import FilesSection from "@/components/common/FilesSection";
 import type { TripDetailViewModel, UpdateTripRequest } from "@/types/trips";
 import { UpdateTripViewModel, type UpdateTripViewModel as UpdateTripFormData } from "@/types/trips";
 import { Edit, Trash2 } from "lucide-react";
+import { formatDate } from "@/lib/dateUtils";
 
 interface TripHeaderProps {
   trip: TripDetailViewModel;
@@ -162,19 +164,19 @@ const TripHeader: React.FC<TripHeaderProps> = ({ trip, onUpdate, onDelete }) => 
               </Form>
             ) : (
               <>
-                <CardTitle className="text-2xl">{trip.name}</CardTitle>
-                <p className="text-muted-foreground mt-2">
+                <CardTitle className="text-xl md:text-2xl">{trip.name}</CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
                   {trip.destination && <>{trip.destination} • </>}
-                  {trip.startDate} - {trip.endDate}
+                  {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
                 </p>
               </>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             {!isEditMode && (
               <Button variant="outline" size="sm" onClick={handleEdit}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
+                <Edit className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Edit</span>
               </Button>
             )}
             <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -204,8 +206,15 @@ const TripHeader: React.FC<TripHeaderProps> = ({ trip, onUpdate, onDelete }) => 
         </div>
       </CardHeader>
       {!isEditMode && trip.notes && (
-        <CardContent>
+        <CardContent className="pt-0">
           <p className="text-sm text-muted-foreground">{trip.notes}</p>
+        </CardContent>
+      )}
+      {!isEditMode && (
+        <CardContent className="pt-0">
+          <div className="pt-3 border-t">
+            <FilesSection entityId={trip.id} entityType="trip" title="Trip Files" />
+          </div>
         </CardContent>
       )}
     </Card>

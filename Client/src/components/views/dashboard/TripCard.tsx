@@ -1,5 +1,6 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import type { TripListDto } from "@/types/trips";
+import { formatDate } from "@/lib/dateUtils";
 
 interface TripCardProps {
   trip: TripListDto;
@@ -10,15 +11,6 @@ interface TripCardProps {
  * The entire card is clickable and navigates to the trip detail page
  */
 export function TripCard({ trip }: TripCardProps) {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
   const handleClick = () => {
     window.location.href = `/trips/${trip.id}`;
   };

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,7 @@ import FilesSection from "@/components/common/FilesSection";
 import type { CreateTransportRequest, UpdateTransportRequest, TransportViewModel } from "@/types/trips";
 import { api } from "@/services/api";
 import { toast } from "sonner";
+import { formatDateTime } from "@/lib/dateUtils";
 
 interface TransportSectionProps {
   tripId: string;
@@ -85,11 +86,6 @@ const TransportSection: React.FC<TransportSectionProps> = ({ tripId }) => {
     }
   };
 
-  const formatDateTime = (dateString?: string) => {
-    if (!dateString) return null;
-    return new Date(dateString).toLocaleString();
-  };
-
   const openEditDialog = (transport: TransportViewModel) => {
     setEditingTransport(transport);
     setIsDialogOpen(true);
@@ -107,138 +103,138 @@ const TransportSection: React.FC<TransportSectionProps> = ({ tripId }) => {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plane className="h-5 w-5" />
-            Transport
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-4 w-2/3" />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Plane className="h-5 w-5" />
-            Transport
-          </CardTitle>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Transport
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>{editingTransport ? "Edit Transport" : "Add Transport"}</DialogTitle>
-              </DialogHeader>
-              <TransportForm
-                transport={editingTransport}
-                onSubmit={editingTransport ? handleUpdate : handleAdd}
-                onCancel={closeDialog}
-                isSubmitting={isSubmitting}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {transports.length > 0 ? (
-          <div className="space-y-6">
-            {transports.map((transport) => (
-              <div key={transport.id} className="border rounded-lg p-4">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-lg">{transport.type}</h4>
+    <div className="space-y-4">
+      {/* Add Transport Button */}
+      <div className="flex justify-end">
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Transport
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{editingTransport ? "Edit Transport" : "Add Transport"}</DialogTitle>
+            </DialogHeader>
+            <TransportForm
+              transport={editingTransport}
+              onSubmit={editingTransport ? handleUpdate : handleAdd}
+              onCancel={closeDialog}
+              isSubmitting={isSubmitting}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Transport Cards */}
+      {transports.length > 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {transports.map((transport) => (
+            <Card key={transport.id} className="py-[5px] flex flex-col">
+              <CardContent className="py-[5px] flex-1 flex flex-col">
+                <div>
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-base truncate">{transport.type}</h4>
+                    </div>
+                    <div className="flex gap-1 shrink-0 ml-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditDialog(transport)}
+                        className="h-7 px-2"
+                      >
+                        <Edit className="h-3 w-3 mr-1" />
+                        <span className="text-xs">Edit</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openDeleteDialog(transport.id)}
+                        className="h-7 w-7 p-0"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => openEditDialog(transport)}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => openDeleteDialog(transport.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+
+                  <div className="space-y-2 mb-2">
+                    {transport.departureLocation && (
+                      <div className="flex items-start gap-2">
+                        <MapPin className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-medium">From</div>
+                          <div className="text-xs truncate">{transport.departureLocation}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {transport.arrivalLocation && (
+                      <div className="flex items-start gap-2">
+                        <MapPin className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-medium">To</div>
+                          <div className="text-xs truncate">{transport.arrivalLocation}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {transport.departureTime && (
+                      <div className="flex items-start gap-2">
+                        <Calendar className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-medium">Departure</div>
+                          <div className="text-xs">{formatDateTime(transport.departureTime)}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {transport.arrivalTime && (
+                      <div className="flex items-start gap-2">
+                        <Calendar className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-medium">Arrival</div>
+                          <div className="text-xs">{formatDateTime(transport.arrivalTime)}</div>
+                        </div>
+                      </div>
+                    )}
                   </div>
+
+                  {transport.notes && (
+                    <div className="pt-1.5 border-t mb-1.5">
+                      <p className="text-xs text-muted-foreground line-clamp-2">{transport.notes}</p>
+                    </div>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  {transport.departureLocation && (
-                    <div className="flex items-start gap-2">
-                      <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                      <div>
-                        <div className="text-sm font-medium">From</div>
-                        <div className="text-sm">{transport.departureLocation}</div>
-                      </div>
-                    </div>
-                  )}
-
-                  {transport.arrivalLocation && (
-                    <div className="flex items-start gap-2">
-                      <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                      <div>
-                        <div className="text-sm font-medium">To</div>
-                        <div className="text-sm">{transport.arrivalLocation}</div>
-                      </div>
-                    </div>
-                  )}
-
-                  {transport.departureTime && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <div className="text-sm font-medium">Departure</div>
-                        <div className="text-sm">{formatDateTime(transport.departureTime)}</div>
-                      </div>
-                    </div>
-                  )}
-
-                  {transport.arrivalTime && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <div className="text-sm font-medium">Arrival</div>
-                        <div className="text-sm">{formatDateTime(transport.arrivalTime)}</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {transport.notes && (
-                  <div className="pt-2 border-t">
-                    <p className="text-sm text-muted-foreground">{transport.notes}</p>
-                  </div>
-                )}
-
-                {/* Files Section */}
-                <div className="pt-4 border-t">
+                {/* Files Section - pinned to bottom */}
+                <div className="pt-1.5 border-t mt-auto">
                   <FilesSection entityId={transport.id} entityType="transport" title="Transport Files" />
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <Plane className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No transports added</h3>
-            <p className="text-muted-foreground mb-4">
-              Add your transportation details to keep track of your journeys.
-            </p>
-          </div>
-        )}
-      </CardContent>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center py-8">
+              <Plane className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">No transports added</h3>
+              <p className="text-muted-foreground">Add your transportation details to keep track of your journeys.</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -259,7 +255,7 @@ const TransportSection: React.FC<TransportSectionProps> = ({ tripId }) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+    </div>
   );
 };
 

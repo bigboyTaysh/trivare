@@ -89,16 +89,16 @@ const TripDetailsPage: React.FC<TripDetailsPageProps> = ({ tripId }) => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
+    <div className="container mx-auto px-4 py-4 md:py-6">
+      <div className="mb-4">
         <button
           onClick={() => (window.location.href = "/")}
-          className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2"
+          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
+            width="14"
+            height="14"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"

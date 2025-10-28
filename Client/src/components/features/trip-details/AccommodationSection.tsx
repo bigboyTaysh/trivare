@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,7 @@ import { useAccommodation } from "@/hooks/useAccommodation";
 import { AccommodationForm } from "@/components/forms/AccommodationForm";
 import FilesSection from "@/components/common/FilesSection";
 import type { AddAccommodationRequest, UpdateAccommodationRequest } from "@/types/trips";
+import { formatDateTime } from "@/lib/dateUtils";
 
 interface AccommodationSectionProps {
   tripId: string;
@@ -58,160 +59,135 @@ const AccommodationSection: React.FC<AccommodationSectionProps> = ({ tripId }) =
     }
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return null;
-    return new Date(dateString).toLocaleDateString();
-  };
-
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Accommodation
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-4 w-2/3" />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <Skeleton className="h-32 w-full" />
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Accommodation
-          </CardTitle>
-          {accommodation ? (
-            <div className="flex gap-2">
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Edit Accommodation</DialogTitle>
-                  </DialogHeader>
-                  <AccommodationForm
-                    accommodation={accommodation}
-                    onSubmit={handleUpdate}
-                    onCancel={() => setIsDialogOpen(false)}
-                    isSubmitting={isSubmitting}
-                  />
-                </DialogContent>
-              </Dialog>
-              <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Delete Accommodation</DialogTitle>
-                    <DialogDescription>
-                      Are you sure you want to delete this accommodation? This action cannot be undone.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button variant="destructive" onClick={handleDelete}>
-                      Delete
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-          ) : (
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Accommodation
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Add Accommodation</DialogTitle>
-                </DialogHeader>
-                <AccommodationForm
-                  onSubmit={handleAdd}
-                  onCancel={() => setIsDialogOpen(false)}
-                  isSubmitting={isSubmitting}
-                />
-              </DialogContent>
-            </Dialog>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent>
-        {accommodation ? (
-          <div className="space-y-4">
-            {accommodation.name && (
-              <div>
-                <h4 className="font-medium text-lg">{accommodation.name}</h4>
-              </div>
-            )}
+    <div className="space-y-4">
+      {/* Add Accommodation Button */}
+      <div className="flex justify-end">
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Accommodation
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{accommodation ? "Edit Accommodation" : "Add Accommodation"}</DialogTitle>
+            </DialogHeader>
+            <AccommodationForm
+              accommodation={accommodation || undefined}
+              onSubmit={accommodation ? handleUpdate : handleAdd}
+              onCancel={() => setIsDialogOpen(false)}
+              isSubmitting={isSubmitting}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
 
-            {accommodation.address && (
-              <div className="flex items-start gap-2">
-                <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <span className="text-sm">{accommodation.address}</span>
-              </div>
-            )}
-
-            {(accommodation.checkInDate || accommodation.checkOutDate) && (
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <div className="flex gap-2 text-sm">
-                  {accommodation.checkInDate && (
-                    <span className="px-2 py-1 bg-secondary rounded-md">
-                      Check-in: {formatDate(accommodation.checkInDate)}
-                    </span>
-                  )}
-                  {accommodation.checkOutDate && (
-                    <span className="px-2 py-1 bg-secondary rounded-md">
-                      Check-out: {formatDate(accommodation.checkOutDate)}
-                    </span>
-                  )}
+      {/* Accommodation Card */}
+      {accommodation ? (
+        <Card className="py-[5px] flex flex-col">
+          <CardContent className="py-[5px] flex-1 flex flex-col">
+            <div>
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1 min-w-0">
+                  {accommodation.name && <h4 className="font-medium text-base truncate">{accommodation.name}</h4>}
+                </div>
+                <div className="flex gap-1 shrink-0 ml-2">
+                  <Button variant="outline" size="sm" onClick={() => setIsDialogOpen(true)} className="h-7 px-2">
+                    <Edit className="h-3 w-3 mr-1" />
+                    <span className="text-xs">Edit</span>
+                  </Button>
+                  <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Delete Accommodation</DialogTitle>
+                        <DialogDescription>
+                          Are you sure you want to delete this accommodation? This action cannot be undone.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={handleDelete}>
+                          Delete
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
-            )}
 
-            {accommodation.notes && (
-              <div className="pt-2 border-t">
-                <p className="text-sm text-muted-foreground">{accommodation.notes}</p>
+              <div className="space-y-2 mb-2">
+                {accommodation.address && (
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs truncate">{accommodation.address}</div>
+                    </div>
+                  </div>
+                )}
+
+                {accommodation.checkInDate && (
+                  <div className="flex items-start gap-2">
+                    <Calendar className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-medium">Check-in</div>
+                      <div className="text-xs">{formatDateTime(accommodation.checkInDate)}</div>
+                    </div>
+                  </div>
+                )}
+
+                {accommodation.checkOutDate && (
+                  <div className="flex items-start gap-2">
+                    <Calendar className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-medium">Check-out</div>
+                      <div className="text-xs">{formatDateTime(accommodation.checkOutDate)}</div>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
 
-            {/* Files Section */}
-            <div className="pt-4 border-t">
+              {accommodation.notes && (
+                <div className="pt-1.5 border-t mb-1.5">
+                  <p className="text-xs text-muted-foreground line-clamp-2">{accommodation.notes}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Files Section - pinned to bottom */}
+            <div className="pt-1.5 border-t mt-auto">
               <FilesSection entityId={accommodation.id} entityType="accommodation" title="Accommodation Files" />
             </div>
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No accommodation added</h3>
-            <p className="text-muted-foreground mb-4">Add your accommodation details to keep track of your stay.</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center py-8">
+              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">No accommodation added</h3>
+              <p className="text-muted-foreground">Add your accommodation details to keep track of your stay.</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
 
