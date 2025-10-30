@@ -1,8 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { MapPin, ExternalLink, Clock, Trash2, GripVertical, Globe } from "lucide-react";
+import { MapPin, ExternalLink, Clock, Trash2, GripVertical, Globe, Check, Circle } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/services/api";
 import type { DayAttractionDto } from "@/types/trips";
@@ -42,24 +41,31 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ placeAttraction, index, on
 
   return (
     <div
-      className={`bg-white border border-gray-200 rounded-md px-2 py-2 transition-all hover:shadow-sm ${
+      className={`bg-card border border-border rounded-md px-2 py-2 transition-all hover:shadow-sm ${
         isVisited ? "opacity-75" : ""
       }`}
     >
       <div className="flex items-center gap-1.5">
         {/* Drag handle */}
         <div className="flex items-center flex-shrink-0">
-          <GripVertical className="h-3 w-3 text-gray-400 cursor-move hover:text-gray-600" />
+          <GripVertical className="h-3 w-3 text-muted-foreground cursor-move hover:text-foreground" />
         </div>
 
-        {/* Checkbox */}
+        {/* Visited Toggle */}
         <div className="flex items-center flex-shrink-0">
-          <Checkbox
-            id={`visited-${place.id}`}
-            checked={isVisited}
-            onCheckedChange={handleVisitedToggle}
-            className="h-3 w-3"
-          />
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-5 w-5 p-0 rounded-full transition-all duration-200 hover:scale-110 ${
+              isVisited
+                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent"
+            }`}
+            onClick={handleVisitedToggle}
+            title={isVisited ? "Mark as not visited" : "Mark as visited"}
+          >
+            {isVisited ? <Check className="h-3 w-3" /> : <Circle className="h-3 w-3" />}
+          </Button>
         </div>
 
         {/* Main content */}
@@ -71,7 +77,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ placeAttraction, index, on
                 <h4 className="font-medium text-sm truncate">{place.name}</h4>
                 <Badge
                   variant="secondary"
-                  className="text-xs px-1 py-0 text-[10px] leading-tight bg-gray-100 text-gray-600 flex-shrink-0"
+                  className="text-xs px-1 py-0 text-[10px] leading-tight bg-muted text-muted-foreground flex-shrink-0"
                 >
                   #{index + 1}
                 </Badge>
@@ -80,13 +86,13 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ placeAttraction, index, on
               {/* Second line: address and opening hours */}
               <div className="flex items-center gap-2">
                 {place.formattedAddress && (
-                  <div className="flex items-center gap-0.5 text-xs text-gray-500 flex-shrink-0">
+                  <div className="flex items-center gap-0.5 text-xs text-muted-foreground flex-shrink-0">
                     <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
                     <span className="truncate max-w-[120px]">{place.formattedAddress}</span>
                   </div>
                 )}
                 {place.openingHoursText && (
-                  <div className="flex items-center gap-0.5 text-xs text-gray-500 flex-shrink-0">
+                  <div className="flex items-center gap-0.5 text-xs text-muted-foreground flex-shrink-0">
                     <Clock className="h-2.5 w-2.5 flex-shrink-0" />
                     <span className="truncate max-w-[100px]">{place.openingHoursText}</span>
                   </div>
@@ -100,7 +106,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ placeAttraction, index, on
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 hover:bg-gray-100"
+                  className="h-6 w-6 p-0 hover:bg-accent"
                   title="Open in Google Maps"
                   onClick={() => window.open(place.googleMapsLink, "_blank")}
                 >
@@ -112,7 +118,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ placeAttraction, index, on
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 hover:bg-gray-100"
+                  className="h-6 w-6 p-0 hover:bg-accent"
                   title="Visit website"
                   onClick={() => window.open(place.website, "_blank")}
                 >
@@ -123,7 +129,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ placeAttraction, index, on
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+                className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-accent"
                 title="Remove place"
                 onClick={handleRemovePlace}
               >
