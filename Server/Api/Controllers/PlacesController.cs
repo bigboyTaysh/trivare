@@ -122,4 +122,35 @@ public class PlacesController : ControllerBase
 
         return this.HandleResult(result);
     }
+
+    /// <summary>
+    /// Removes a place from a specific day in the user's trip itinerary
+    /// Validates ownership and ensures the association exists
+    /// Reorders remaining places to maintain proper sequence
+    /// </summary>
+    /// <param name="dayId">ID of the day containing the place</param>
+    /// <param name="placeId">ID of the place to remove</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>No content on successful removal</returns>
+    /// <response code="204">Place removed successfully</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="403">Forbidden - day belongs to another user</response>
+    /// <response code="404">Day not found or place not associated with day</response>
+    /// <response code="500">Internal server error</response>
+    [HttpDelete("~/api/days/{dayId}/places/{placeId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> RemovePlaceFromDay(
+        Guid dayId,
+        Guid placeId,
+        CancellationToken cancellationToken)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _placesService.RemovePlaceFromDayAsync(dayId, placeId, userId, cancellationToken);
+
+        return this.HandleResult(result);
+    }
 }

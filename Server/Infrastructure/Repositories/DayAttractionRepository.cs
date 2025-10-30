@@ -46,4 +46,26 @@ public class DayAttractionRepository : IDayAttractionRepository
         await _context.SaveChangesAsync(cancellationToken);
         return dayAttraction;
     }
+
+    /// <summary>
+    /// Gets all day-attractions for a specific day including places
+    /// </summary>
+    public async Task<IEnumerable<DayAttraction>> GetByDayIdAsync(Guid dayId, CancellationToken cancellationToken = default)
+    {
+        return await _context.DayAttractions
+            .AsNoTracking()
+            .Include(da => da.Place)
+            .Where(da => da.DayId == dayId)
+            .OrderBy(da => da.Order)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Deletes a day-attraction association
+    /// </summary>
+    public async Task DeleteAsync(DayAttraction dayAttraction, CancellationToken cancellationToken = default)
+    {
+        _context.DayAttractions.Remove(dayAttraction);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }

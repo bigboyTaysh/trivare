@@ -56,4 +56,20 @@ public interface IPlacesService
         UpdateDayAttractionRequest request,
         Guid userId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes a place from a specific day in the user's trip itinerary
+    /// Validates ownership and ensures the association exists
+    /// Reorders remaining places to maintain proper sequence
+    /// </summary>
+    /// <param name="dayId">ID of the day containing the place</param>
+    /// <param name="placeId">ID of the place to remove</param>
+    /// <param name="userId">ID of the authenticated user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result indicating success or failure</returns>
+    Task<Result<bool>> RemovePlaceFromDayAsync(
+        Guid dayId,
+        Guid placeId,
+        Guid userId,
+        CancellationToken cancellationToken = default);
 }

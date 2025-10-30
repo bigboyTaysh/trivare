@@ -22,7 +22,7 @@ const DaysSection: React.FC<DaysSectionProps> = ({
   selectedDate: externalSelectedDate,
   onDaySelect: externalOnDaySelect,
 }) => {
-  const { days, isLoading, createDay } = useTripDays(tripId);
+  const { days, isLoading, createDay, refetch } = useTripDays(tripId);
   const [internalSelectedDay, setInternalSelectedDay] = useState<DayWithPlacesDto | null>(null);
   const [internalSelectedDate, setInternalSelectedDate] = useState<Date | null>(null);
   const hasInitializedRef = useRef(false);
@@ -180,6 +180,7 @@ const DaysSection: React.FC<DaysSectionProps> = ({
         selectedDate={selectedDate || undefined}
         tripStartDate={tripStartDate}
         tripEndDate={tripEndDate}
+        onRefetch={refetch}
       />
     </div>
   );

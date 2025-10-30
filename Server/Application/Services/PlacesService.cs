@@ -410,4 +410,84 @@ public class PlacesService : IPlacesService
             };
         }
     }
+
+    /// <summary>
+    /// Removes a place from a specific day in the user's trip itinerary
+    /// </summary>
+    /// <param name="dayId">ID of the day containing the place</param>
+    /// <param name="placeId">ID of the place to remove</param>
+    /// <param name="userId">ID of the authenticated user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result indicating success or failure</returns>
+    public async Task<Result<bool>> RemovePlaceFromDayAsync(
+        Guid dayId,
+        Guid placeId,
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogInformation(
+                "Removing place {PlaceId} from day {DayId} for user {UserId}",
+                placeId, dayId, userId);
+
+            // Get day with trip for ownership check
+            var day = await _dayRepository.GetByIdWithTripAsync(dayId, cancellationToken);
+            if (day == null)
+            {
+                return new ErrorResponse
+                {
+                    Error = PlaceErrorCodes.DayNotFound,
+                    Message = "Day not found"
+                };
+            }
+
+            if (day.Trip.UserId != userId)
+            {
+                return new ErrorResponse
+                {
+                    Error = PlaceErrorCodes.DayNotOwned,
+                    Message = "Day does not belong to the authenticated user"
+                };
+            }
+
+            // Get existing day-attraction
+            var dayAttraction = await _dayAttractionRepository.GetByDayIdAndPlaceIdAsync(dayId, placeId, cancellationToken);
+            if (dayAttraction == null)
+            {
+                return new ErrorResponse
+                {
+                    Error = PlaceErrorCodes.DayAttractionNotFound,
+                    Message = "Place is not associated with this day"
+                };
+            }
+
+            // Remove the association
+            await _dayAttractionRepository.DeleteAsync(dayAttraction, cancellationToken);
+
+            // Reorder remaining places
+            var remainingAttractions = await _dayAttractionRepository.GetByDayIdAsync(dayId, cancellationToken);
+            var remainingAttractionsList = remainingAttractions.OrderBy(da => da.Order).ToList();
+
+            for (int i = 0; i < remainingAttractionsList.Count; i++)
+            {
+                if (remainingAttractionsList[i].Order != i + 1)
+                {
+                    remainingAttractionsList[i].Order = i + 1;
+                    await _dayAttractionRepository.UpdateAsync(remainingAttractionsList[i], cancellationToken);
+                }
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing place {PlaceId} from day {DayId} for user {UserId}", placeId, dayId, userId);
+            return new ErrorResponse
+            {
+                Error = PlaceErrorCodes.InternalServerError,
+                Message = "An unexpected error occurred"
+            };
+        }
+    }
 }

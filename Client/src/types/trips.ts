@@ -415,3 +415,15 @@ export interface UpdateDayRequest {
   date?: string; // Format: "YYYY-MM-DD"
   notes?: string; // Optional, max 2000 chars
 }
+
+export interface AddPlaceRequest {
+  order: number;
+  placeId?: string;
+  place?: {
+    name: string;
+    formattedAddress?: string;
+    website?: string;
+    googleMapsLink?: string;
+    openingHoursText?: string;
+  };
+}

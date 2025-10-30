@@ -31,4 +31,19 @@ public interface IDayAttractionRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated day-attraction entity</returns>
     Task<DayAttraction> UpdateAsync(DayAttraction dayAttraction, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all day-attractions for a specific day
+    /// </summary>
+    /// <param name="dayId">The day ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of day-attraction entities for the day</returns>
+    Task<IEnumerable<DayAttraction>> GetByDayIdAsync(Guid dayId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a day-attraction association
+    /// </summary>
+    /// <param name="dayAttraction">The day-attraction entity to delete</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    Task DeleteAsync(DayAttraction dayAttraction, CancellationToken cancellationToken = default);
 }

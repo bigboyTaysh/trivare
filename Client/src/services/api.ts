@@ -16,6 +16,8 @@ import type {
   DayWithPlacesDto,
   CreateDayRequest,
   UpdateDayRequest,
+  AddPlaceRequest,
+  DayAttractionDto,
 } from "../types/trips";
 import type { UserDto, UpdateUserRequest, DeleteAccountRequest } from "../types/user";
 import type { ForgotPasswordRequest, ResetPasswordRequest } from "../types/auth";
@@ -483,6 +485,49 @@ export async function updateDay(dayId: string, data: UpdateDayRequest): Promise<
 }
 
 /**
+ * Add a place to a day
+ * @param dayId Day identifier
+ * @param request Place data
+ * @returns Promise with created place details
+ */
+export async function addPlaceToDay(dayId: string, request: AddPlaceRequest): Promise<DayAttractionDto> {
+  return fetchData<DayAttractionDto>(`/days/${dayId}/places`, {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
+}
+
+/**
+ * Update a place on a day (order or visited status)
+ * @param dayId Day identifier
+ * @param placeId Place identifier
+ * @param request Update data
+ * @returns Promise with updated place details
+ */
+export async function updatePlaceOnDay(
+  dayId: string,
+  placeId: string,
+  request: { order?: number; isVisited?: boolean }
+): Promise<{ dayId: string; placeId: string; order: number; isVisited: boolean }> {
+  return fetchData(`/days/${dayId}/places/${placeId}`, {
+    method: "PATCH",
+    body: JSON.stringify(request),
+  });
+}
+
+/**
+ * Remove a place from a day
+ * @param dayId Day identifier
+ * @param placeId Place identifier
+ * @returns Promise that resolves when place is removed
+ */
+export async function removePlaceFromDay(dayId: string, placeId: string): Promise<void> {
+  return fetchDataNoResponse(`/days/${dayId}/places/${placeId}`, {
+    method: "DELETE",
+  });
+}
+
+/**
  * Upload a file to a transport with progress tracking
  * @param transportId Transport identifier
  * @param file File to upload
@@ -574,6 +619,9 @@ export const api = {
   getDays,
   createDay,
   updateDay,
+  addPlaceToDay,
+  updatePlaceOnDay,
+  removePlaceFromDay,
   // User-related endpoints
   getMe,
   updateUser,
