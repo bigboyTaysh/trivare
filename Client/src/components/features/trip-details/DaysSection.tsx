@@ -1,7 +1,6 @@
-import React, { useState, useRef, useLayoutEffect } from "react";
+import React, { useState, useRef, useLayoutEffect, useCallback } from "react";
 import { useTripDays } from "@/hooks/useTripDays";
 import TripCalendarView from "./TripCalendarView";
-import DaysMobileView from "./DaysMobileView";
 import type { DayWithPlacesDto } from "@/types/trips";
 
 interface DaysSectionProps {
@@ -10,51 +9,118 @@ interface DaysSectionProps {
   onFileChange: () => void;
   tripStartDate?: string;
   tripEndDate?: string;
+  selectedDay?: DayWithPlacesDto | null;
+  selectedDate?: Date | null;
+  onDaySelect?: (day: DayWithPlacesDto | null, date: Date | null) => void;
 }
 
-const DaysSection: React.FC<DaysSectionProps> = ({ tripId, tripStartDate, tripEndDate }) => {
-  const { days, isLoading, createDay, refetch } = useTripDays(tripId);
-  const [selectedDay, setSelectedDay] = useState<DayWithPlacesDto | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+const DaysSection: React.FC<DaysSectionProps> = ({
+  tripId,
+  tripStartDate,
+  tripEndDate,
+  selectedDay: externalSelectedDay,
+  selectedDate: externalSelectedDate,
+  onDaySelect: externalOnDaySelect,
+}) => {
+  const { days, isLoading, createDay } = useTripDays(tripId);
+  const [internalSelectedDay, setInternalSelectedDay] = useState<DayWithPlacesDto | null>(null);
+  const [internalSelectedDate, setInternalSelectedDate] = useState<Date | null>(null);
   const hasInitializedRef = useRef(false);
+  const previousDaysLengthRef = useRef(0);
 
-  // Auto-select default day when days data loads and no day is selected
+  // Use external state if provided, otherwise use internal state
+  const selectedDay = externalSelectedDay !== undefined ? externalSelectedDay : internalSelectedDay;
+  const selectedDate = externalSelectedDate !== undefined ? externalSelectedDate : internalSelectedDate;
+
+  // Helper function to determine the correct date to select
+  const getDefaultSelection = useCallback(
+    (todayStr: string): { date: Date | null; day: DayWithPlacesDto | null } => {
+      if (!tripStartDate || !tripEndDate) {
+        return { date: null, day: null };
+      }
+
+      if (todayStr < tripStartDate) {
+        // Current date is before trip - don't select any day
+        return { date: null, day: null };
+      } else if (todayStr > tripEndDate) {
+        // Trip is in the past - don't select any day
+        return { date: null, day: null };
+      } else {
+        // Current date is within trip dates - select today regardless of whether a day entry exists
+        const [year, month, dayNum] = todayStr.split("-").map(Number);
+        const defaultDate = new Date(year, month - 1, dayNum);
+        const defaultDay = days.find((day) => day.date === todayStr) || null;
+        return { date: defaultDate, day: defaultDay };
+      }
+    },
+    [days, tripStartDate, tripEndDate]
+  );
+
+  // Auto-select default day when component mounts or when days are added
   useLayoutEffect(() => {
-    if (days.length === 0 || !tripStartDate || !tripEndDate || hasInitializedRef.current) {
+    if (!tripStartDate || !tripEndDate) {
       return;
     }
+
+    const daysChanged = days.length !== previousDaysLengthRef.current;
+    previousDaysLengthRef.current = days.length;
 
     // Get today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split("T")[0];
 
-    let defaultDay: DayWithPlacesDto;
+    // Initial load - select the appropriate day
+    if (!hasInitializedRef.current) {
+      const { date: defaultDate, day: defaultDay } = getDefaultSelection(today);
 
-    if (today < tripStartDate) {
-      // Current date is before trip - select first day
-      defaultDay = days[0];
-    } else if (today > tripEndDate) {
-      // Trip is in the past - select last day
-      defaultDay = days[days.length - 1];
-    } else {
-      // Current date is within trip dates - find current day or closest
-      const foundDay = days.find((day) => day.date === today);
-      defaultDay = foundDay || days[0];
+      if (externalOnDaySelect) {
+        externalOnDaySelect(defaultDay, defaultDate);
+      } else {
+        // Initial state setup - this is a valid use case for setState in effects
+        // We're initializing state based on external data (days, trip dates)
+        // eslint-disable-next-line
+        setInternalSelectedDay(defaultDay);
+        setInternalSelectedDate(defaultDate);
+      }
+      hasInitializedRef.current = true;
+      return;
     }
 
-    // eslint-disable-next-line
-    setSelectedDay(defaultDay);
-    setSelectedDate(new Date(defaultDay.date));
-    hasInitializedRef.current = true;
-  }, [days, tripStartDate, tripEndDate]);
+    // If days were added, re-evaluate selection to ensure we're on the correct day
+    if (daysChanged && days.length > 0) {
+      const { date: defaultDate, day: defaultDay } = getDefaultSelection(today);
+
+      // Only update if the date should be different from current selection
+      const currentSelectedDateStr = selectedDate?.toISOString().split("T")[0];
+      const defaultDateStr = defaultDate?.toISOString().split("T")[0];
+
+      if (currentSelectedDateStr !== defaultDateStr) {
+        if (externalOnDaySelect) {
+          externalOnDaySelect(defaultDay, defaultDate);
+        } else {
+          setInternalSelectedDay(defaultDay);
+          setInternalSelectedDate(defaultDate);
+        }
+      } else if (defaultDate && currentSelectedDateStr === defaultDateStr && selectedDay !== defaultDay) {
+        // Same date but day object might have been created, update the day reference
+        if (externalOnDaySelect) {
+          externalOnDaySelect(defaultDay, defaultDate);
+        } else {
+          setInternalSelectedDay(defaultDay);
+        }
+      }
+    }
+  }, [days, tripStartDate, tripEndDate, externalOnDaySelect, selectedDay, selectedDate, getDefaultSelection]);
 
   const handleDaySelect = (day: DayWithPlacesDto | null, date: Date | null) => {
-    setSelectedDay(day);
     // Normalize the date to midnight to ensure proper comparison across views
-    if (date) {
-      const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      setSelectedDate(normalizedDate);
+    const normalizedDate = date ? new Date(date.getFullYear(), date.getMonth(), date.getDate()) : null;
+
+    // Use external handler if provided, otherwise use internal state
+    if (externalOnDaySelect) {
+      externalOnDaySelect(day, normalizedDate);
     } else {
-      setSelectedDate(null);
+      setInternalSelectedDay(day);
+      setInternalSelectedDate(normalizedDate);
     }
   };
 
@@ -70,40 +136,18 @@ const DaysSection: React.FC<DaysSectionProps> = ({ tripId, tripStartDate, tripEn
     }
   };
 
-  const handlePlacesChange = () => {
-    refetch();
-  };
-
   return (
     <div className="space-y-6">
-      {/* Desktop Layout */}
-      <div className="hidden lg:block">
-        <TripCalendarView
-          days={days}
-          isLoading={isLoading}
-          onDaySelect={handleDaySelect}
-          onAddDay={handleAddDay}
-          selectedDayId={selectedDay?.id}
-          selectedDate={selectedDate || undefined}
-          tripStartDate={tripStartDate}
-          tripEndDate={tripEndDate}
-        />
-      </div>
-
-      {/* Mobile Layout */}
-      <div className="lg:hidden">
-        <DaysMobileView
-          days={days}
-          isLoading={isLoading}
-          onDaySelect={handleDaySelect}
-          onAddDay={handleAddDay}
-          onPlacesChange={handlePlacesChange}
-          selectedDayId={selectedDay?.id}
-          selectedDate={selectedDate || undefined}
-          tripStartDate={tripStartDate}
-          tripEndDate={tripEndDate}
-        />
-      </div>
+      <TripCalendarView
+        days={days}
+        isLoading={isLoading}
+        onDaySelect={handleDaySelect}
+        onAddDay={handleAddDay}
+        selectedDayId={selectedDay?.id}
+        selectedDate={selectedDate || undefined}
+        tripStartDate={tripStartDate}
+        tripEndDate={tripEndDate}
+      />
     </div>
   );
 };

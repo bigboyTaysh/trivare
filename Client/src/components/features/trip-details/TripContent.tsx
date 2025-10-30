@@ -5,6 +5,7 @@ import TransportSection from "./TransportSection";
 import AccommodationSection from "./AccommodationSection";
 import DaysSection from "./DaysSection";
 import { Calendar, Home, Plane } from "lucide-react";
+import type { DayWithPlacesDto } from "@/types/trips";
 
 interface TripContentProps {
   tripId: string;
@@ -22,6 +23,14 @@ const TripContent: React.FC<TripContentProps> = ({
   tripEndDate,
 }) => {
   const [activeSection, setActiveSection] = useState<string | null>("days");
+  // Shared state for day selection across mobile and desktop views
+  const [selectedDay, setSelectedDay] = useState<DayWithPlacesDto | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  const handleDaySelect = (day: DayWithPlacesDto | null, date: Date | null) => {
+    setSelectedDay(day);
+    setSelectedDate(date);
+  };
 
   return (
     <>
@@ -50,6 +59,9 @@ const TripContent: React.FC<TripContentProps> = ({
                 onFileChange={onFileChange}
                 tripStartDate={tripStartDate}
                 tripEndDate={tripEndDate}
+                selectedDay={selectedDay}
+                selectedDate={selectedDate}
+                onDaySelect={handleDaySelect}
               />
             )}
           </TabsContent>
@@ -84,6 +96,9 @@ const TripContent: React.FC<TripContentProps> = ({
                   onFileChange={onFileChange}
                   tripStartDate={tripStartDate}
                   tripEndDate={tripEndDate}
+                  selectedDay={selectedDay}
+                  selectedDate={selectedDate}
+                  onDaySelect={handleDaySelect}
                 />
               )}
             </AccordionContent>

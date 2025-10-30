@@ -35,7 +35,9 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
 
     if (days) {
       days.forEach((day) => {
-        const date = new Date(day.date);
+        // Parse date string and normalize to midnight local time to avoid timezone issues
+        const [year, month, dayNum] = day.date.split("-").map(Number);
+        const date = new Date(year, month - 1, dayNum);
         tripDays.push(date);
         if (day.places && day.places.length > 0) {
           daysWithPlaces.push(date);
@@ -43,15 +45,21 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
       });
     }
 
+    // Add today's date as a modifier
+    const today = new Date();
+    const todayNormalized = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
     return {
       tripDay: tripDays,
       hasPlaces: daysWithPlaces,
+      today: [todayNormalized],
     };
   }, [days]);
 
   const modifiersClassNames = {
     tripDay: "bg-blue-100 text-blue-900 font-semibold",
     hasPlaces: "ring-2 ring-blue-400",
+    today: "ring-1 ring-gray-400",
   };
 
   // Calculate disabled dates (dates outside trip range)
@@ -59,12 +67,11 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
     const disabled: Date[] = [];
 
     if (tripStartDate && tripEndDate) {
-      const startDate = new Date(tripStartDate);
-      const endDate = new Date(tripEndDate);
-
-      // Create a date range from start to end and exclude dates within the range
-      // For simplicity, we'll disable dates that are clearly before start or after end
-      // This is a basic implementation - in a real app you might want more sophisticated logic
+      // Parse dates and normalize to midnight local time
+      const [startYear, startMonth, startDay] = tripStartDate.split("-").map(Number);
+      const [endYear, endMonth, endDay] = tripEndDate.split("-").map(Number);
+      const startDate = new Date(startYear, startMonth - 1, startDay);
+      const endDate = new Date(endYear, endMonth - 1, endDay);
 
       const currentDate = new Date();
       const currentYear = currentDate.getFullYear();
@@ -88,14 +95,19 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
+      // Normalize the selected date to midnight to ensure consistent comparison
+      const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
       // Find the day for this date
       const day = days.find((d) => {
-        const dayDate = new Date(d.date);
-        return dayDate.toDateString() === date.toDateString();
+        // Parse the day date string and normalize to midnight local time
+        const [year, month, dayNum] = d.date.split("-").map(Number);
+        const dayDate = new Date(year, month - 1, dayNum);
+        return dayDate.toDateString() === normalizedDate.toDateString();
       });
 
       // Always allow selecting a date - if no day exists, pass null as day but keep the date
-      onDaySelect?.(day || null, date);
+      onDaySelect?.(day || null, normalizedDate);
     } else {
       onDaySelect?.(null, null);
     }
@@ -122,11 +134,19 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
             />
 
             <div className="mt-4 space-y-2">
-              <div className="flex items-center gap-2 text-sm">
-                <div className="w-3 h-3 bg-blue-100 rounded"></div>
-                <span>Trip days</span>
-                <div className="w-3 h-3 bg-blue-100 ring-2 ring-blue-400 rounded"></div>
-                <span>Days with places</span>
+              <div className="flex items-center gap-2 text-sm flex-wrap">
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 ring-1 ring-gray-400 rounded"></div>
+                  <span>Today</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-blue-100 rounded"></div>
+                  <span>Trip days</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-blue-100 ring-2 ring-blue-400 rounded"></div>
+                  <span>Days with places</span>
+                </div>
               </div>
             </div>
           </CardContent>
