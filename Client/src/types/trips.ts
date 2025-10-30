@@ -353,3 +353,65 @@ export const UpdateAccommodationViewModel = z
   );
 
 export type UpdateAccommodationViewModel = z.infer<typeof UpdateAccommodationViewModel>;
+
+/**
+ * Corresponds to DayDto.cs
+ */
+export interface DayDto {
+  id: string; // Guid
+  tripId: string; // Guid
+  date: string; // DateOnly as string "YYYY-MM-DD"
+  notes?: string;
+}
+
+/**
+ * Corresponds to DayWithPlacesDto.cs
+ */
+export interface DayWithPlacesDto {
+  id: string; // Guid
+  tripId: string; // Guid
+  date: string; // DateOnly as string "YYYY-MM-DD"
+  notes?: string;
+  places: DayAttractionDto[] | null;
+}
+
+/**
+ * Corresponds to DayAttractionDto.cs
+ */
+export interface DayAttractionDto {
+  dayId: string; // Guid
+  placeId: string; // Guid
+  place: PlaceDto;
+  order: number;
+  isVisited: boolean;
+}
+
+/**
+ * Corresponds to PlaceDto.cs
+ */
+export interface PlaceDto {
+  id: string; // Guid
+  googlePlaceId?: string;
+  name: string;
+  formattedAddress?: string;
+  website?: string;
+  googleMapsLink?: string;
+  openingHoursText?: string;
+  isManuallyAdded: boolean;
+}
+
+/**
+ * Corresponds to CreateDayRequest.cs
+ */
+export interface CreateDayRequest {
+  date: string; // Required, format: "YYYY-MM-DD"
+  notes?: string; // Optional, max 2000 chars
+}
+
+/**
+ * Corresponds to UpdateDayRequest.cs - to be defined later
+ */
+export interface UpdateDayRequest {
+  date?: string; // Format: "YYYY-MM-DD"
+  notes?: string; // Optional, max 2000 chars
+}

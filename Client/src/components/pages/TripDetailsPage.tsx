@@ -121,7 +121,13 @@ const TripDetailsPage: React.FC<TripDetailsPageProps> = ({ tripId }) => {
         totalFileCount={totalFileCount}
         onFileChange={refreshFileCount}
       />
-      <TripContent tripId={tripId} totalFileCount={totalFileCount} onFileChange={refreshFileCount} />
+      <TripContent
+        tripId={tripId}
+        totalFileCount={totalFileCount}
+        onFileChange={refreshFileCount}
+        tripStartDate={trip?.startDate}
+        tripEndDate={trip?.endDate}
+      />
     </div>
   );
 };

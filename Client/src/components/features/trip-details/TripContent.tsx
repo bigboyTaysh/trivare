@@ -10,9 +10,17 @@ interface TripContentProps {
   tripId: string;
   totalFileCount: number;
   onFileChange: () => void;
+  tripStartDate?: string;
+  tripEndDate?: string;
 }
 
-const TripContent: React.FC<TripContentProps> = ({ tripId, totalFileCount, onFileChange }) => {
+const TripContent: React.FC<TripContentProps> = ({
+  tripId,
+  totalFileCount,
+  onFileChange,
+  tripStartDate,
+  tripEndDate,
+}) => {
   const [activeSection, setActiveSection] = useState<string | null>("days");
 
   return (
@@ -36,7 +44,13 @@ const TripContent: React.FC<TripContentProps> = ({ tripId, totalFileCount, onFil
           </TabsList>
           <TabsContent value="days" className="mt-6">
             {activeSection === "days" && (
-              <DaysSection tripId={tripId} totalFileCount={totalFileCount} onFileChange={onFileChange} />
+              <DaysSection
+                tripId={tripId}
+                totalFileCount={totalFileCount}
+                onFileChange={onFileChange}
+                tripStartDate={tripStartDate}
+                tripEndDate={tripEndDate}
+              />
             )}
           </TabsContent>
           <TabsContent value="accommodation" className="mt-6">
@@ -64,7 +78,13 @@ const TripContent: React.FC<TripContentProps> = ({ tripId, totalFileCount, onFil
             </AccordionTrigger>
             <AccordionContent className="px-4 py-2">
               {activeSection === "days" && (
-                <DaysSection tripId={tripId} totalFileCount={totalFileCount} onFileChange={onFileChange} />
+                <DaysSection
+                  tripId={tripId}
+                  totalFileCount={totalFileCount}
+                  onFileChange={onFileChange}
+                  tripStartDate={tripStartDate}
+                  tripEndDate={tripEndDate}
+                />
               )}
             </AccordionContent>
           </AccordionItem>

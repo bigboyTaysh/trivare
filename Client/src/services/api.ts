@@ -13,6 +13,9 @@ import type {
   TransportResponse,
   CreateTransportRequest,
   UpdateTransportRequest,
+  DayWithPlacesDto,
+  CreateDayRequest,
+  UpdateDayRequest,
 } from "../types/trips";
 import type { UserDto, UpdateUserRequest, DeleteAccountRequest } from "../types/user";
 import type { ForgotPasswordRequest, ResetPasswordRequest } from "../types/auth";
@@ -445,6 +448,41 @@ export async function getTransportFiles(transportId: string): Promise<FileListRe
 }
 
 /**
+ * Get all days for a specific trip
+ * @param tripId Trip identifier
+ * @returns Promise with array of days with places
+ */
+export async function getDays(tripId: string): Promise<DayWithPlacesDto[]> {
+  return fetchData<DayWithPlacesDto[]>(`/trips/${tripId}/days`);
+}
+
+/**
+ * Create a new day for a trip
+ * @param tripId Trip identifier
+ * @param data Day creation data
+ * @returns Promise with created day details
+ */
+export async function createDay(tripId: string, data: CreateDayRequest): Promise<DayWithPlacesDto> {
+  return fetchData<DayWithPlacesDto>(`/trips/${tripId}/days`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Update an existing day
+ * @param dayId Day identifier
+ * @param data Day update data
+ * @returns Promise with updated day details
+ */
+export async function updateDay(dayId: string, data: UpdateDayRequest): Promise<DayWithPlacesDto> {
+  return fetchData<DayWithPlacesDto>(`/days/${dayId}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
  * Upload a file to a transport with progress tracking
  * @param transportId Transport identifier
  * @param file File to upload
@@ -532,6 +570,10 @@ export const api = {
   getAccommodationFiles,
   uploadAccommodationFile,
   deleteFile,
+  // Days-related endpoints
+  getDays,
+  createDay,
+  updateDay,
   // User-related endpoints
   getMe,
   updateUser,
