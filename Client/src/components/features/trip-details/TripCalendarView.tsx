@@ -62,9 +62,11 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
     today: "ring-1 ring-gray-400",
   };
 
-  // Calculate disabled dates (dates outside trip range)
-  const disabledDates = useMemo(() => {
+  // Calculate disabled dates (dates outside trip range) and min/max dates for navigation
+  const { disabledDates, minDate, maxDate } = useMemo(() => {
     const disabled: Date[] = [];
+    let min: Date | undefined;
+    let max: Date | undefined;
 
     if (tripStartDate && tripEndDate) {
       // Parse dates and normalize to midnight local time
@@ -72,6 +74,9 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
       const [endYear, endMonth, endDay] = tripEndDate.split("-").map(Number);
       const startDate = new Date(startYear, startMonth - 1, startDay);
       const endDate = new Date(endYear, endMonth - 1, endDay);
+
+      min = startDate;
+      max = endDate;
 
       const currentDate = new Date();
       const currentYear = currentDate.getFullYear();
@@ -90,7 +95,7 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
       }
     }
 
-    return disabled;
+    return { disabledDates: disabled, minDate: min, maxDate: max };
   }, [tripStartDate, tripEndDate]);
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -116,36 +121,40 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
   const selectedDay = selectedDayId ? days.find((d) => d.id === selectedDayId) || null : null;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:items-start">
       {/* Calendar Section */}
       <div className="space-y-4">
         <Card>
           <CardHeader>
             <CardTitle>Trip Calendar</CardTitle>
           </CardHeader>
-          <CardContent>
-            <Calendar
-              selected={selectedDate}
-              onSelect={handleDateSelect}
-              modifiers={modifiers}
-              modifiersClassNames={modifiersClassNames}
-              disabled={disabledDates}
-              className="w-full"
-            />
+          <CardContent className="flex justify-center">
+            <div className="w-full max-w-md space-y-4">
+              <Calendar
+                selected={selectedDate}
+                onSelect={handleDateSelect}
+                modifiers={modifiers}
+                modifiersClassNames={modifiersClassNames}
+                disabled={disabledDates}
+                minDate={minDate}
+                maxDate={maxDate}
+                className="w-full"
+              />
 
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center gap-2 text-sm flex-wrap">
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 ring-1 ring-gray-400 rounded"></div>
-                  <span>Today</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-blue-100 rounded"></div>
-                  <span>Trip days</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-blue-100 ring-2 ring-blue-400 rounded"></div>
-                  <span>Days with places</span>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm flex-wrap">
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 ring-1 ring-gray-400 rounded"></div>
+                    <span>Today</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-blue-100 rounded"></div>
+                    <span>Trip days</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-blue-100 ring-2 ring-blue-400 rounded"></div>
+                    <span>Days with places</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -154,7 +163,7 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
       </div>
 
       {/* Day Details Section */}
-      <div>
+      <div className="lg:h-full">
         <DayView day={selectedDay} selectedDate={selectedDate} onAddDay={onAddDay} isLoading={isLoading} />
       </div>
     </div>

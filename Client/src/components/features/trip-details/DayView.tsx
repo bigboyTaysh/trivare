@@ -15,7 +15,7 @@ interface DayViewProps {
 const DayView: React.FC<DayViewProps> = ({ day, selectedDate, onAddDay, isLoading = false }) => {
   if (isLoading) {
     return (
-      <Card>
+      <Card className="h-full">
         <CardHeader>
           <div className="h-6 bg-gray-200 rounded animate-pulse" />
         </CardHeader>
@@ -41,12 +41,12 @@ const DayView: React.FC<DayViewProps> = ({ day, selectedDate, onAddDay, isLoadin
       });
 
       return (
-        <Card>
+        <Card className="h-full flex flex-col">
           <CardHeader>
             <CardTitle className="text-lg">{formattedDate}</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center py-12">
+          <CardContent className="flex-1 flex items-center justify-center">
+            <div className="flex flex-col items-center justify-center">
               <Calendar className="h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No trip day yet</h3>
               <p className="text-gray-500 text-center mb-4">
@@ -63,8 +63,8 @@ const DayView: React.FC<DayViewProps> = ({ day, selectedDate, onAddDay, isLoadin
     }
 
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center h-64">
+      <Card className="h-full">
+        <CardContent className="flex items-center justify-center h-full">
           <p className="text-gray-500">Select a day to view details</p>
         </CardContent>
       </Card>
@@ -79,12 +79,12 @@ const DayView: React.FC<DayViewProps> = ({ day, selectedDate, onAddDay, isLoadin
   });
 
   return (
-    <Card>
+    <Card className="h-full flex flex-col">
       <CardHeader>
         <CardTitle className="text-lg">{formattedDate}</CardTitle>
         {day.notes && <p className="text-sm text-gray-600">{day.notes}</p>}
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 overflow-y-auto">
         <PlacesList
           dayId={day.id}
           places={day.places}

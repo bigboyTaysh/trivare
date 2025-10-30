@@ -9,6 +9,8 @@ interface CalendarProps {
   modifiersClassNames?: Record<string, string>;
   disabled?: Date[];
   className?: string;
+  minDate?: Date;
+  maxDate?: Date;
 }
 
 const Calendar: React.FC<CalendarProps> = ({
@@ -18,6 +20,8 @@ const Calendar: React.FC<CalendarProps> = ({
   modifiersClassNames = {},
   disabled = [],
   className,
+  minDate,
+  maxDate,
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
@@ -109,19 +113,50 @@ const Calendar: React.FC<CalendarProps> = ({
     });
   };
 
+  // Check if we can navigate to previous/next month
+  const canNavigatePrev = () => {
+    if (!minDate) return true;
+    const prevMonth = new Date(currentMonth);
+    prevMonth.setMonth(currentMonth.getMonth() - 1);
+    // Check if the last day of the previous month is before minDate
+    const lastDayOfPrevMonth = new Date(prevMonth.getFullYear(), prevMonth.getMonth() + 1, 0);
+    return lastDayOfPrevMonth >= minDate;
+  };
+
+  const canNavigateNext = () => {
+    if (!maxDate) return true;
+    const nextMonth = new Date(currentMonth);
+    nextMonth.setMonth(currentMonth.getMonth() + 1);
+    // Check if the first day of the next month is after maxDate
+    const firstDayOfNextMonth = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 1);
+    return firstDayOfNextMonth <= maxDate;
+  };
+
   const days = getDaysInMonth(currentMonth);
 
   return (
     <div className={cn("p-3 bg-white border rounded-lg shadow-sm", className)}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <Button variant="outline" size="sm" onClick={() => navigateMonth("prev")} className="h-7 w-7 p-0">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigateMonth("prev")}
+          disabled={!canNavigatePrev()}
+          className="h-7 w-7 p-0"
+        >
           ‹
         </Button>
         <div className="font-semibold">
           {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
         </div>
-        <Button variant="outline" size="sm" onClick={() => navigateMonth("next")} className="h-7 w-7 p-0">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigateMonth("next")}
+          disabled={!canNavigateNext()}
+          className="h-7 w-7 p-0"
+        >
           ›
         </Button>
       </div>
@@ -145,9 +180,9 @@ const Calendar: React.FC<CalendarProps> = ({
                 disabled={isDisabled(date)}
                 className={cn(
                   "w-full h-full p-0 hover:bg-gray-100",
-                  isSelected(date) && "bg-blue-500 text-white hover:bg-blue-600",
+                  !isSelected(date) && !isDisabled(date) && getModifierClassNames(date),
                   isDisabled(date) && "text-gray-400 cursor-not-allowed hover:bg-transparent",
-                  ...getModifierClassNames(date)
+                  isSelected(date) && "bg-blue-500 text-white hover:bg-blue-600"
                 )}
                 onClick={() => handleDateClick(date)}
               >

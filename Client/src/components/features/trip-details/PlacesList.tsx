@@ -1,6 +1,5 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Plus, MapPin } from "lucide-react";
 import type { DayAttractionDto } from "@/types/trips";
 import { PlaceCard } from "./PlaceCard";
@@ -22,19 +21,17 @@ export const PlacesList: React.FC<PlacesListProps> = ({ dayId, places, onPlacesC
 
   if (placesArray.length === 0) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <MapPin className="h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No places planned yet</h3>
-          <p className="text-gray-500 text-center mb-4">
-            Add attractions, restaurants, or other points of interest to your day.
-          </p>
-          <Button onClick={handleAddPlace} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Add Place
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center justify-center h-full">
+        <MapPin className="h-12 w-12 text-gray-400 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No places planned yet</h3>
+        <p className="text-gray-500 text-center mb-4">
+          Add attractions, restaurants, or other points of interest to your day.
+        </p>
+        <Button onClick={handleAddPlace} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          Add Place
+        </Button>
+      </div>
     );
   }
 

@@ -27,6 +27,7 @@ const DaysSection: React.FC<DaysSectionProps> = ({
   const [internalSelectedDate, setInternalSelectedDate] = useState<Date | null>(null);
   const hasInitializedRef = useRef(false);
   const previousDaysLengthRef = useRef(0);
+  const lastAddedDateRef = useRef<string | null>(null);
 
   // Use external state if provided, otherwise use internal state
   const selectedDay = externalSelectedDay !== undefined ? externalSelectedDay : internalSelectedDay;
@@ -87,25 +88,47 @@ const DaysSection: React.FC<DaysSectionProps> = ({
 
     // If days were added, re-evaluate selection to ensure we're on the correct day
     if (daysChanged && days.length > 0) {
-      const { date: defaultDate, day: defaultDay } = getDefaultSelection(today);
+      const currentSelectedDateStr = selectedDate
+        ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`
+        : null;
 
-      // Only update if the date should be different from current selection
-      const currentSelectedDateStr = selectedDate?.toISOString().split("T")[0];
-      const defaultDateStr = defaultDate?.toISOString().split("T")[0];
+      // Check if we just added a day - if so, keep selection on that date
+      if (lastAddedDateRef.current && currentSelectedDateStr === lastAddedDateRef.current) {
+        // Find the newly created day for the selected date
+        const newDay = days.find((day) => day.date === currentSelectedDateStr) || null;
 
-      if (currentSelectedDateStr !== defaultDateStr) {
-        if (externalOnDaySelect) {
-          externalOnDaySelect(defaultDay, defaultDate);
-        } else {
-          setInternalSelectedDay(defaultDay);
-          setInternalSelectedDate(defaultDate);
+        // Update the day reference if it was just created
+        if (newDay && selectedDay?.id !== newDay.id) {
+          if (externalOnDaySelect) {
+            externalOnDaySelect(newDay, selectedDate);
+          } else {
+            setInternalSelectedDay(newDay);
+          }
         }
-      } else if (defaultDate && currentSelectedDateStr === defaultDateStr && selectedDay !== defaultDay) {
-        // Same date but day object might have been created, update the day reference
-        if (externalOnDaySelect) {
-          externalOnDaySelect(defaultDay, defaultDate);
-        } else {
-          setInternalSelectedDay(defaultDay);
+
+        // Clear the last added date
+        lastAddedDateRef.current = null;
+      } else {
+        // Normal behavior: reset to today if within trip dates
+        const { date: defaultDate, day: defaultDay } = getDefaultSelection(today);
+        const defaultDateStr = defaultDate
+          ? `${defaultDate.getFullYear()}-${String(defaultDate.getMonth() + 1).padStart(2, "0")}-${String(defaultDate.getDate()).padStart(2, "0")}`
+          : null;
+
+        if (currentSelectedDateStr !== defaultDateStr) {
+          if (externalOnDaySelect) {
+            externalOnDaySelect(defaultDay, defaultDate);
+          } else {
+            setInternalSelectedDay(defaultDay);
+            setInternalSelectedDate(defaultDate);
+          }
+        } else if (defaultDate && currentSelectedDateStr === defaultDateStr && selectedDay !== defaultDay) {
+          // Same date but day object might have been created, update the day reference
+          if (externalOnDaySelect) {
+            externalOnDaySelect(defaultDay, defaultDate);
+          } else {
+            setInternalSelectedDay(defaultDay);
+          }
         }
       }
     }
@@ -128,11 +151,21 @@ const DaysSection: React.FC<DaysSectionProps> = ({
     try {
       // Use the provided date, or selectedDate, or current date as fallback
       const dateToUse = date || selectedDate || new Date();
-      const dateString = dateToUse.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+      // Format date as YYYY-MM-DD using local time to avoid timezone conversion issues
+      const year = dateToUse.getFullYear();
+      const month = String(dateToUse.getMonth() + 1).padStart(2, "0");
+      const day = String(dateToUse.getDate()).padStart(2, "0");
+      const dateString = `${year}-${month}-${day}`;
+
+      // Store the date we're adding to preserve selection after creation
+      lastAddedDateRef.current = dateString;
+
       await createDay({ date: dateString });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error("Failed to add day:", error);
+      // Clear the last added date on error
+      lastAddedDateRef.current = null;
     }
   };
 
