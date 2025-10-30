@@ -2,6 +2,8 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, ExternalLink, Clock, Trash2, GripVertical, Globe, Check, Circle, Edit } from "lucide-react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
 import { api } from "@/services/api";
 import type { DayAttractionDto } from "@/types/trips";
@@ -15,6 +17,16 @@ interface PlaceCardProps {
 
 export const PlaceCard: React.FC<PlaceCardProps> = ({ placeAttraction, index, onChange, onEdit }) => {
   const { place, isVisited } = placeAttraction;
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: placeAttraction.placeId,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   const handleVisitedToggle = async () => {
     try {
@@ -42,13 +54,15 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ placeAttraction, index, on
 
   return (
     <div
+      ref={setNodeRef}
+      style={style}
       className={`bg-card border border-border rounded-md px-2 py-2 transition-all hover:shadow-sm ${
         isVisited ? "opacity-75" : ""
-      }`}
+      } ${isDragging ? "shadow-lg z-50" : ""}`}
     >
       <div className="flex items-center gap-1.5">
         {/* Drag handle */}
-        <div className="flex items-center flex-shrink-0">
+        <div className="flex items-center flex-shrink-0" {...attributes} {...listeners}>
           <GripVertical className="h-3 w-3 text-muted-foreground cursor-move hover:text-foreground" />
         </div>
 
