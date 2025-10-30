@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import type { AddPlaceRequest } from "@/types/trips";
+import type { AddPlaceRequest, UpdatePlaceRequest } from "@/types/trips";
 
 interface PlaceFormProps {
   defaultPlace?: Partial<AddPlaceRequest["place"]>;
   onSubmit: (data: AddPlaceRequest) => Promise<void>;
+  onUpdate?: (data: UpdatePlaceRequest) => Promise<void>;
   onCancel: () => void;
   isSubmitting: boolean;
+  isEditing?: boolean;
 }
 
 const PlaceFormSchema = z.object({
@@ -23,7 +25,14 @@ const PlaceFormSchema = z.object({
 
 type PlaceFormData = z.infer<typeof PlaceFormSchema>;
 
-export function PlaceForm({ defaultPlace, onSubmit, onCancel, isSubmitting }: PlaceFormProps) {
+export function PlaceForm({
+  defaultPlace,
+  onSubmit,
+  onUpdate,
+  onCancel,
+  isSubmitting,
+  isEditing = false,
+}: PlaceFormProps) {
   const [formData, setFormData] = useState<PlaceFormData>(() => ({
     name: defaultPlace?.name || "",
     formattedAddress: defaultPlace?.formattedAddress || "",
@@ -45,17 +54,29 @@ export function PlaceForm({ defaultPlace, onSubmit, onCancel, isSubmitting }: Pl
     e.preventDefault();
     try {
       const validatedData = PlaceFormSchema.parse(formData);
-      const request: AddPlaceRequest = {
-        order: 1, // Always add to the top of the list
-        place: {
+
+      if (isEditing && onUpdate) {
+        const updateRequest: UpdatePlaceRequest = {
           name: validatedData.name,
           formattedAddress: validatedData.formattedAddress,
           website: validatedData.website || undefined,
           googleMapsLink: validatedData.googleMapsLink || undefined,
           openingHoursText: validatedData.openingHoursText || undefined,
-        },
-      };
-      await onSubmit(request);
+        };
+        await onUpdate(updateRequest);
+      } else {
+        const request: AddPlaceRequest = {
+          order: 1, // Always add to the top of the list
+          place: {
+            name: validatedData.name,
+            formattedAddress: validatedData.formattedAddress,
+            website: validatedData.website || undefined,
+            googleMapsLink: validatedData.googleMapsLink || undefined,
+            openingHoursText: validatedData.openingHoursText || undefined,
+          },
+        };
+        await onSubmit(request);
+      }
       onCancel();
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -161,7 +182,7 @@ export function PlaceForm({ defaultPlace, onSubmit, onCancel, isSubmitting }: Pl
           Cancel
         </Button>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Adding..." : "Add Place"}
+          {isSubmitting ? (isEditing ? "Updating..." : "Adding...") : isEditing ? "Update Place" : "Add Place"}
         </Button>
       </div>
     </form>

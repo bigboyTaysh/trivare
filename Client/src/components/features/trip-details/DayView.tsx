@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { PlaceForm } from "../../forms/PlaceForm";
 import { api } from "@/services/api";
 import { toast } from "sonner";
-import type { DayWithPlacesDto, AddPlaceRequest } from "@/types/trips";
+import type { DayWithPlacesDto, AddPlaceRequest, UpdatePlaceRequest } from "@/types/trips";
 import { PlacesList } from "./PlacesList";
 
 interface DayViewProps {
@@ -19,6 +19,8 @@ interface DayViewProps {
 
 const DayView: React.FC<DayViewProps> = ({ day, selectedDate, onAddDay, isLoading = false, onPlacesChange }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingPlaceId, setEditingPlaceId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (isLoading) {
@@ -101,13 +103,47 @@ const DayView: React.FC<DayViewProps> = ({ day, selectedDate, onAddDay, isLoadin
     }
   };
 
+  const handleEditPlace = (placeId: string) => {
+    setEditingPlaceId(placeId);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdatePlace = async (request: UpdatePlaceRequest) => {
+    if (!editingPlaceId) return;
+
+    setIsSubmitting(true);
+    try {
+      await api.updatePlace(editingPlaceId, request);
+      onPlacesChange?.();
+      toast.success("Place updated successfully");
+    } catch (error) {
+      console.error("Failed to update place:", error);
+      toast.error("Failed to update place");
+    } finally {
+      setIsSubmitting(false);
+      setIsEditDialogOpen(false);
+      setEditingPlaceId(null);
+    }
+  };
+
   // Places are always added to the top (order 1), then reordered
 
   return (
     <>
       <Card className="h-full flex flex-col">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm">{formattedDate}</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm">{formattedDate}</CardTitle>
+            {day.places && day.places.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Places ({day.places.length})</span>
+                <Button onClick={() => setIsDialogOpen(true)} size="sm" className="flex items-center gap-1 h-7">
+                  <Plus className="h-3 w-3" />
+                  Add Place
+                </Button>
+              </div>
+            )}
+          </div>
           {day.notes && <p className="text-xs text-gray-600">{day.notes}</p>}
         </CardHeader>
         <CardContent className="flex-1 overflow-y-auto">
@@ -121,6 +157,7 @@ const DayView: React.FC<DayViewProps> = ({ day, selectedDate, onAddDay, isLoadin
               })
             }
             onOpenAddDialog={() => setIsDialogOpen(true)}
+            onEditPlace={handleEditPlace}
           />
         </CardContent>
       </Card>
@@ -131,6 +168,22 @@ const DayView: React.FC<DayViewProps> = ({ day, selectedDate, onAddDay, isLoadin
             <DialogTitle>Add New Place</DialogTitle>
           </DialogHeader>
           <PlaceForm onSubmit={handleAddPlace} onCancel={() => setIsDialogOpen(false)} isSubmitting={isSubmitting} />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Place Details</DialogTitle>
+          </DialogHeader>
+          <PlaceForm
+            defaultPlace={editingPlaceId ? day.places?.find((p) => p.place.id === editingPlaceId)?.place : undefined}
+            onSubmit={handleAddPlace}
+            onUpdate={handleUpdatePlace}
+            onCancel={() => setIsEditDialogOpen(false)}
+            isSubmitting={isSubmitting}
+            isEditing={true}
+          />
         </DialogContent>
       </Dialog>
     </>

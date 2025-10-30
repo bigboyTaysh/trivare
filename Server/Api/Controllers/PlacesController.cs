@@ -153,4 +153,37 @@ public class PlacesController : ControllerBase
 
         return this.HandleResult(result);
     }
+
+    /// <summary>
+    /// Updates place details
+    /// Supports partial updates - only provided fields are modified
+    /// Requires authentication and ownership of a trip containing this place
+    /// </summary>
+    /// <param name="placeId">ID of the place to update</param>
+    /// <param name="request">Request containing fields to update</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The updated place details</returns>
+    /// <response code="200">Place updated successfully</response>
+    /// <response code="400">Invalid input data or validation errors</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="403">Forbidden - user does not own any trip containing this place</response>
+    /// <response code="404">Place not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPatch("{placeId}")]
+    [ProducesResponseType(typeof(PlaceDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<PlaceDto>> UpdatePlace(
+        Guid placeId,
+        [FromBody] UpdatePlaceRequest request,
+        CancellationToken cancellationToken)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _placesService.UpdatePlaceAsync(placeId, request, userId, cancellationToken);
+
+        return this.HandleResult(result);
+    }
 }

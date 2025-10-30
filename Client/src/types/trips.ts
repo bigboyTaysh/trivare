@@ -427,3 +427,11 @@ export interface AddPlaceRequest {
     openingHoursText?: string;
   };
 }
+
+export interface UpdatePlaceRequest {
+  name?: string;
+  formattedAddress?: string;
+  website?: string;
+  googleMapsLink?: string;
+  openingHoursText?: string;
+}

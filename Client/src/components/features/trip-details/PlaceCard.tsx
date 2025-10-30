@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, ExternalLink, Clock, Trash2, GripVertical, Globe, Check, Circle } from "lucide-react";
+import { MapPin, ExternalLink, Clock, Trash2, GripVertical, Globe, Check, Circle, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/services/api";
 import type { DayAttractionDto } from "@/types/trips";
@@ -10,9 +10,10 @@ interface PlaceCardProps {
   placeAttraction: DayAttractionDto;
   index: number;
   onChange: () => void;
+  onEdit?: (placeId: string) => void;
 }
 
-export const PlaceCard: React.FC<PlaceCardProps> = ({ placeAttraction, index, onChange }) => {
+export const PlaceCard: React.FC<PlaceCardProps> = ({ placeAttraction, index, onChange, onEdit }) => {
   const { place, isVisited } = placeAttraction;
 
   const handleVisitedToggle = async () => {
@@ -123,6 +124,18 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ placeAttraction, index, on
                   onClick={() => window.open(place.website, "_blank")}
                 >
                   <Globe className="h-3 w-3" />
+                </Button>
+              )}
+
+              {onEdit && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 hover:bg-accent"
+                  title="Edit place details"
+                  onClick={() => onEdit(place.id)}
+                >
+                  <Edit className="h-3 w-3" />
                 </Button>
               )}
 

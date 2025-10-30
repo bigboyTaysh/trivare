@@ -17,7 +17,9 @@ import type {
   CreateDayRequest,
   UpdateDayRequest,
   AddPlaceRequest,
+  UpdatePlaceRequest,
   DayAttractionDto,
+  PlaceDto,
 } from "../types/trips";
 import type { UserDto, UpdateUserRequest, DeleteAccountRequest } from "../types/user";
 import type { ForgotPasswordRequest, ResetPasswordRequest } from "../types/auth";
@@ -528,6 +530,19 @@ export async function removePlaceFromDay(dayId: string, placeId: string): Promis
 }
 
 /**
+ * Update place details
+ * @param placeId Place identifier
+ * @param request Update request with place details
+ * @returns Promise with updated place details
+ */
+export async function updatePlace(placeId: string, request: UpdatePlaceRequest): Promise<PlaceDto> {
+  return fetchData(`/places/${placeId}`, {
+    method: "PATCH",
+    body: JSON.stringify(request),
+  });
+}
+
+/**
  * Upload a file to a transport with progress tracking
  * @param transportId Transport identifier
  * @param file File to upload
@@ -622,6 +637,7 @@ export const api = {
   addPlaceToDay,
   updatePlaceOnDay,
   removePlaceFromDay,
+  updatePlace,
   // User-related endpoints
   getMe,
   updateUser,

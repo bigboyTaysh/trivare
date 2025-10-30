@@ -36,4 +36,14 @@ public class PlaceRepository : IPlaceRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
+
+    /// <summary>
+    /// Updates an existing place
+    /// </summary>
+    public async Task<Place> UpdateAsync(Place place, CancellationToken cancellationToken = default)
+    {
+        _context.Places.Update(place);
+        await _context.SaveChangesAsync(cancellationToken);
+        return place;
+    }
 }

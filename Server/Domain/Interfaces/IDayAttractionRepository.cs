@@ -46,4 +46,14 @@ public interface IDayAttractionRepository
     /// <param name="dayAttraction">The day-attraction entity to delete</param>
     /// <param name="cancellationToken">Cancellation token</param>
     Task DeleteAsync(DayAttraction dayAttraction, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks if a user has access to a place through trip ownership
+    /// User has access if they own at least one trip that contains this place
+    /// </summary>
+    /// <param name="userId">The user ID</param>
+    /// <param name="placeId">The place ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>True if user has access, false otherwise</returns>
+    Task<bool> UserHasAccessToPlaceAsync(Guid userId, Guid placeId, CancellationToken cancellationToken = default);
 }

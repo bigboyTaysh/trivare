@@ -9,9 +9,10 @@ interface PlacesListProps {
   places: DayAttractionDto[] | null | undefined;
   onPlacesChange: () => void;
   onOpenAddDialog?: () => void;
+  onEditPlace?: (placeId: string) => void;
 }
 
-export const PlacesList: React.FC<PlacesListProps> = ({ places, onPlacesChange, onOpenAddDialog }) => {
+export const PlacesList: React.FC<PlacesListProps> = ({ places, onPlacesChange, onOpenAddDialog, onEditPlace }) => {
   const placesArray = places || [];
   const sortedPlaces = [...placesArray].sort((a, b) => a.order - b.order);
 
@@ -36,25 +37,16 @@ export const PlacesList: React.FC<PlacesListProps> = ({ places, onPlacesChange, 
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Places ({placesArray.length})</h3>
-        <Button onClick={handleAddPlace} size="sm" className="flex items-center gap-1 h-7">
-          <Plus className="h-3 w-3" />
-          Add Place
-        </Button>
-      </div>
-
-      <div className="space-y-1">
-        {sortedPlaces.map((placeAttraction, index) => (
-          <PlaceCard
-            key={placeAttraction.placeId}
-            placeAttraction={placeAttraction}
-            index={index}
-            onChange={onPlacesChange}
-          />
-        ))}
-      </div>
+    <div className="space-y-1">
+      {sortedPlaces.map((placeAttraction, index) => (
+        <PlaceCard
+          key={placeAttraction.placeId}
+          placeAttraction={placeAttraction}
+          index={index}
+          onChange={onPlacesChange}
+          onEdit={onEditPlace}
+        />
+      ))}
     </div>
   );
 };

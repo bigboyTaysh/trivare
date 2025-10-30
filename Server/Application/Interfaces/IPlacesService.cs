@@ -72,4 +72,20 @@ public interface IPlacesService
         Guid placeId,
         Guid userId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates place details
+    /// Supports partial updates - only provided fields are updated
+    /// Validates that the place exists and user has access to it through trip ownership
+    /// </summary>
+    /// <param name="placeId">ID of the place to update</param>
+    /// <param name="request">Request containing fields to update</param>
+    /// <param name="userId">ID of the authenticated user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the updated place data</returns>
+    Task<Result<PlaceDto>> UpdatePlaceAsync(
+        Guid placeId,
+        UpdatePlaceRequest request,
+        Guid userId,
+        CancellationToken cancellationToken = default);
 }

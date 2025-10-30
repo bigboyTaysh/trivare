@@ -490,4 +490,136 @@ public class PlacesService : IPlacesService
             };
         }
     }
+
+    /// <summary>
+    /// Updates place details
+    /// </summary>
+    /// <param name="placeId">ID of the place to update</param>
+    /// <param name="request">Request containing fields to update</param>
+    /// <param name="userId">ID of the authenticated user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the updated place data</returns>
+    public async Task<Result<PlaceDto>> UpdatePlaceAsync(
+        Guid placeId,
+        UpdatePlaceRequest request,
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Input validation - check if at least one field is provided
+            if (string.IsNullOrWhiteSpace(request.Name) &&
+                string.IsNullOrWhiteSpace(request.FormattedAddress) &&
+                string.IsNullOrWhiteSpace(request.Website) &&
+                string.IsNullOrWhiteSpace(request.GoogleMapsLink) &&
+                string.IsNullOrWhiteSpace(request.OpeningHoursText))
+            {
+                return new ErrorResponse
+                {
+                    Error = PlaceErrorCodes.NoFieldsToUpdate,
+                    Message = "At least one field must be provided for update"
+                };
+            }
+
+            // Validate URL formats if provided
+            if (!string.IsNullOrWhiteSpace(request.Website) &&
+                !Uri.TryCreate(request.Website, UriKind.Absolute, out _))
+            {
+                return new ErrorResponse
+                {
+                    Error = PlaceErrorCodes.InvalidWebsiteUrl,
+                    Message = "Website must be a valid URL"
+                };
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.GoogleMapsLink) &&
+                !Uri.TryCreate(request.GoogleMapsLink, UriKind.Absolute, out _))
+            {
+                return new ErrorResponse
+                {
+                    Error = PlaceErrorCodes.InvalidGoogleMapsUrl,
+                    Message = "Google Maps link must be a valid URL"
+                };
+            }
+
+            // Get the place
+            var place = await _placeRepository.GetByIdAsync(placeId, cancellationToken);
+            if (place == null)
+            {
+                return new ErrorResponse
+                {
+                    Error = PlaceErrorCodes.PlaceNotFound,
+                    Message = "Place not found"
+                };
+            }
+
+            // Check user access - user must own at least one trip that contains this place
+            var userHasAccess = await _dayAttractionRepository.UserHasAccessToPlaceAsync(userId, placeId, cancellationToken);
+            if (!userHasAccess)
+            {
+                return new ErrorResponse
+                {
+                    Error = PlaceErrorCodes.PlaceNotOwned,
+                    Message = "User does not have access to this place"
+                };
+            }
+
+            // Update fields
+            if (!string.IsNullOrWhiteSpace(request.Name))
+            {
+                place.Name = request.Name.Trim();
+            }
+            if (request.FormattedAddress != null)
+            {
+                place.FormattedAddress = string.IsNullOrWhiteSpace(request.FormattedAddress)
+                    ? null
+                    : request.FormattedAddress.Trim();
+            }
+            if (request.Website != null)
+            {
+                place.Website = string.IsNullOrWhiteSpace(request.Website)
+                    ? null
+                    : request.Website.Trim();
+            }
+            if (request.GoogleMapsLink != null)
+            {
+                place.GoogleMapsLink = string.IsNullOrWhiteSpace(request.GoogleMapsLink)
+                    ? null
+                    : request.GoogleMapsLink.Trim();
+            }
+            if (request.OpeningHoursText != null)
+            {
+                place.OpeningHoursText = string.IsNullOrWhiteSpace(request.OpeningHoursText)
+                    ? null
+                    : request.OpeningHoursText.Trim();
+            }
+
+            // Save changes
+            place = await _placeRepository.UpdateAsync(place, cancellationToken);
+
+            // Map to DTO
+            var result = new PlaceDto
+            {
+                Id = place.Id,
+                GooglePlaceId = place.GooglePlaceId,
+                Name = place.Name,
+                FormattedAddress = place.FormattedAddress,
+                Website = place.Website,
+                GoogleMapsLink = place.GoogleMapsLink,
+                OpeningHoursText = place.OpeningHoursText,
+                IsManuallyAdded = place.IsManuallyAdded
+            };
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating place {PlaceId} for user {UserId}", placeId, userId);
+            return new ErrorResponse
+            {
+                Error = PlaceErrorCodes.InternalServerError,
+                Message = "An unexpected error occurred"
+            };
+        }
+    }
 }
