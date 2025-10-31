@@ -18,7 +18,11 @@ public class DayService : IDayService
     private readonly IDayAttractionRepository _dayAttractionRepository;
     private readonly ILogger<DayService> _logger;
 
-    public DayService(IDayRepository dayRepository, ITripRepository tripRepository, IDayAttractionRepository dayAttractionRepository, ILogger<DayService> logger)
+    public DayService(
+        IDayRepository dayRepository, 
+        ITripRepository tripRepository, 
+        IDayAttractionRepository dayAttractionRepository,
+        ILogger<DayService> logger)
     {
         _dayRepository = dayRepository;
         _tripRepository = tripRepository;
@@ -129,6 +133,7 @@ public class DayService : IDayService
                     Website = da.Place.Website,
                     GoogleMapsLink = da.Place.GoogleMapsLink,
                     OpeningHoursText = da.Place.OpeningHoursText,
+                    PhotoReference = da.Place.PhotoReference, // Raw reference without API key
                     IsManuallyAdded = da.Place.IsManuallyAdded
                 },
                 Order = da.Order,

@@ -126,6 +126,10 @@ public class PlacesService : IPlacesService
     /// </summary>
     private PlaceDto MapToPlaceDto(GooglePlaceResult googlePlace)
     {
+        // Keep only the photo reference (not the full URL) for security
+        // Frontend will use backend proxy endpoint to fetch images
+        var photoReference = googlePlace.PhotoReferences.FirstOrDefault();
+
         return new PlaceDto
         {
             // Use GooglePlaceId as the Id for search results (not yet saved to DB)
@@ -136,8 +140,27 @@ public class PlacesService : IPlacesService
             Website = googlePlace.Website,
             GoogleMapsLink = googlePlace.GoogleMapsLink,
             OpeningHoursText = googlePlace.OpeningHoursText,
-            PhotoReference = googlePlace.PhotoReferences.FirstOrDefault(),
+            PhotoReference = photoReference, // Raw reference without API key
             IsManuallyAdded = false
+        };
+    }
+
+    /// <summary>
+    /// Maps a Place entity to PlaceDto
+    /// </summary>
+    private PlaceDto MapPlaceEntityToDto(Place place)
+    {
+        return new PlaceDto
+        {
+            Id = place.Id,
+            GooglePlaceId = place.GooglePlaceId,
+            Name = place.Name,
+            FormattedAddress = place.FormattedAddress,
+            Website = place.Website,
+            GoogleMapsLink = place.GoogleMapsLink,
+            OpeningHoursText = place.OpeningHoursText,
+            PhotoReference = place.PhotoReference, // Raw reference without API key
+            IsManuallyAdded = place.IsManuallyAdded
         };
     }
 
@@ -330,19 +353,8 @@ public class PlacesService : IPlacesService
             };
             dayAttraction = await _dayAttractionRepository.AddAsync(dayAttraction, cancellationToken);
 
-            // Map to DTO
-            var placeDto = new PlaceDto
-            {
-                Id = place.Id,
-                GooglePlaceId = place.GooglePlaceId,
-                Name = place.Name,
-                FormattedAddress = place.FormattedAddress,
-                Website = place.Website,
-                GoogleMapsLink = place.GoogleMapsLink,
-                OpeningHoursText = place.OpeningHoursText,
-                PhotoReference = place.PhotoReference,
-                IsManuallyAdded = place.IsManuallyAdded
-            };
+            // Map to DTO using helper method
+            var placeDto = MapPlaceEntityToDto(place);
 
             var result = new DayAttractionDto
             {
@@ -655,21 +667,8 @@ public class PlacesService : IPlacesService
             // Save changes
             place = await _placeRepository.UpdateAsync(place, cancellationToken);
 
-            // Map to DTO
-            var result = new PlaceDto
-            {
-                Id = place.Id,
-                GooglePlaceId = place.GooglePlaceId,
-                Name = place.Name,
-                FormattedAddress = place.FormattedAddress,
-                Website = place.Website,
-                GoogleMapsLink = place.GoogleMapsLink,
-                OpeningHoursText = place.OpeningHoursText,
-                PhotoReference = place.PhotoReference,
-                IsManuallyAdded = place.IsManuallyAdded
-            };
-
-            return result;
+            // Map to DTO using helper method
+            return MapPlaceEntityToDto(place);
         }
         catch (Exception ex)
         {

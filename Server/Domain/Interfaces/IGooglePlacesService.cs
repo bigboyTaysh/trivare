@@ -16,6 +16,14 @@ public interface IGooglePlacesService
         string location,
         string keyword,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Generates a Google Places Photo URL for a given photo reference
+    /// </summary>
+    /// <param name="photoReference">Photo reference from Google Places API</param>
+    /// <param name="maxWidth">Maximum width of the photo (default: 400)</param>
+    /// <returns>URL to fetch the photo</returns>
+    string GetPhotoUrl(string photoReference, int maxWidth = 400);
 }
 
 /// <summary>

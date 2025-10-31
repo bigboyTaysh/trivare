@@ -108,14 +108,35 @@ public class GooglePlacesService : IGooglePlacesService
     }
 
     /// <summary>
+    /// Generates a Google Places Photo URL for a given photo reference
+    /// Uses the new Google Places API (Place Photos)
+    /// Documentation: https://developers.google.com/maps/documentation/places/web-service/place-photos
+    /// </summary>
+    /// <param name="photoReference">Photo reference from Google Places API (format: places/{place_id}/photos/{photo_id})</param>
+    /// <param name="maxWidth">Maximum width of the photo (default: 400)</param>
+    /// <returns>URL to fetch the photo directly from Google Places API</returns>
+    public string GetPhotoUrl(string photoReference, int maxWidth = 400)
+    {
+        // For the new Google Places API, the photo reference format is: places/{place_id}/photos/{photo_id}
+        // We need to use the Place Photos API: https://places.googleapis.com/v1/{photoReference}/media
+        
+        // Clean up the photo reference if needed
+        var cleanReference = photoReference.TrimStart('/');
+        
+        // Build the photo URL with the API key
+        return $"https://places.googleapis.com/v1/{cleanReference}/media?maxWidthPx={maxWidth}&key={_settings.ApiKey}";
+    }
+
+    /// <summary>
     /// Maps new API place to domain model
     /// </summary>
     private GooglePlaceResult MapNewApiPlaceToResult(GooglePlaceNew place)
     {
         // Extract photo references from photos array
+        // Format from API: places/{place_id}/photos/{photo_id}
         var photoReferences = place.Photos?
             .Take(5) // Limit to 5 photos
-            .Select(p => p.Name?.Replace("places/", "")?.Replace("/photos/", "/") ?? string.Empty)
+            .Select(p => p.Name ?? string.Empty)
             .Where(p => !string.IsNullOrEmpty(p))
             .ToList() ?? new List<string>();
 

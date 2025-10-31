@@ -43,7 +43,8 @@ public record PlaceDto
     public string? OpeningHoursText { get; init; }
 
     /// <summary>
-    /// Google Places photo reference for fetching place images
+    /// Google Places photo reference (without API key)
+    /// Use the /api/places/photo endpoint to fetch the actual image
     /// From Place.PhotoReference
     /// </summary>
     public string? PhotoReference { get; init; }

@@ -397,7 +397,7 @@ export interface PlaceDto {
   website?: string;
   googleMapsLink?: string;
   openingHoursText?: string;
-  photoReference?: string;
+  photoReference?: string; // Google Places photo reference (use with backend proxy endpoint)
   isManuallyAdded: boolean;
 }
 

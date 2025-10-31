@@ -5,6 +5,7 @@ using Trivare.Api.Extensions;
 using Trivare.Application.DTOs.Common;
 using Trivare.Application.DTOs.Places;
 using Trivare.Application.Interfaces;
+using Trivare.Domain.Interfaces;
 
 namespace Trivare.Api.Controllers;
 
@@ -18,11 +19,16 @@ namespace Trivare.Api.Controllers;
 public class PlacesController : ControllerBase
 {
     private readonly IPlacesService _placesService;
+    private readonly IGooglePlacesService _googlePlacesService;
     private readonly ILogger<PlacesController> _logger;
 
-    public PlacesController(IPlacesService placesService, ILogger<PlacesController> logger)
+    public PlacesController(
+        IPlacesService placesService, 
+        IGooglePlacesService googlePlacesService,
+        ILogger<PlacesController> logger)
     {
         _placesService = placesService;
+        _googlePlacesService = googlePlacesService;
         _logger = logger;
     }
 
@@ -62,6 +68,66 @@ public class PlacesController : ControllerBase
         var result = await _placesService.SearchPlacesAsync(request, userId, cancellationToken);
 
         return this.HandleResult(result);
+    }
+
+    /// <summary>
+    /// Proxy endpoint to fetch Google Places photos
+    /// Prevents exposing the API key on the frontend by streaming the image through the backend
+    /// </summary>
+    /// <param name="photoReference">Photo reference from Google Places API</param>
+    /// <param name="maxWidth">Maximum width of the photo (default: 400)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The image stream</returns>
+    /// <response code="200">Returns the image</response>
+    /// <response code="400">Invalid photo reference</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="404">Photo not found</response>
+    [HttpGet("photo")]
+    [AllowAnonymous] // Allow anonymous access since images are public content
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPlacePhoto(
+        [FromQuery] string photoReference,
+        [FromQuery] int maxWidth = 400,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(photoReference))
+        {
+            return BadRequest(new ErrorResponse
+            {
+                Error = "InvalidPhotoReference",
+                Message = "Photo reference is required"
+            });
+        }
+
+        try
+        {
+            // Generate the Google Photos URL with API key
+            var photoUrl = _googlePlacesService.GetPhotoUrl(photoReference, maxWidth);
+            
+            // Create HttpClient to fetch the image
+            using var httpClient = new HttpClient();
+            var response = await httpClient.GetAsync(photoUrl, cancellationToken);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Failed to fetch photo from Google: {StatusCode}", response.StatusCode);
+                return NotFound();
+            }
+
+            // Get the image stream and content type
+            var imageStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            var contentType = response.Content.Headers.ContentType?.ToString() ?? "image/jpeg";
+            
+            // Stream the image back to the client
+            return File(imageStream, contentType);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching photo for reference: {PhotoReference}", photoReference);
+            return NotFound();
+        }
     }
 
     /// <summary>
