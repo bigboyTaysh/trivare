@@ -43,6 +43,12 @@ public record PlaceDto
     public string? OpeningHoursText { get; init; }
 
     /// <summary>
+    /// Google Places photo reference for fetching place images
+    /// From Place.PhotoReference
+    /// </summary>
+    public string? PhotoReference { get; init; }
+
+    /// <summary>
     /// Indicates if place was manually added vs from Google Places API
     /// From Place.IsManuallyAdded
     /// </summary>

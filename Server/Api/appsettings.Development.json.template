@@ -31,5 +31,16 @@
     "SecretAccessKey": "your-r2-secret-access-key",
     "BucketName": "trivare-files",
     "PresignedUrlExpirationMinutes": 60
+  },
+  "GooglePlaces": {
+    "ApiKey": "your-google-places-api-key",
+    "MaxResults": 20,
+    "SearchRadiusMeters": 5000
+  },
+  "OpenRouter": {
+    "ApiKey": "your-openrouter-api-key",
+    "Model": "anthropic/claude-3.5-sonnet",
+    "BaseUrl": "https://openrouter.ai/api/v1",
+    "ResultCount": 8
   }
 }

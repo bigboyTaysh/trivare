@@ -20,6 +20,8 @@ import type {
   UpdatePlaceRequest,
   DayAttractionDto,
   PlaceDto,
+  PlaceSearchRequest,
+  PlaceSearchResponse,
 } from "../types/trips";
 import type { UserDto, UpdateUserRequest, DeleteAccountRequest } from "../types/user";
 import type { ForgotPasswordRequest, ResetPasswordRequest } from "../types/auth";
@@ -543,6 +545,21 @@ export async function updatePlace(placeId: string, request: UpdatePlaceRequest):
 }
 
 /**
+ * Search for places using Google Places API with AI filtering
+ * @param request Search request with location, keyword, and optional preferences
+ * @returns Promise with search results
+ */
+export async function searchPlaces(request: PlaceSearchRequest): Promise<PlaceSearchResponse> {
+  const params = new URLSearchParams({
+    location: request.location,
+    keyword: request.keyword,
+    ...(request.preferences && { preferences: request.preferences }),
+  });
+
+  return fetchData(`/places/search?${params.toString()}`);
+}
+
+/**
  * Upload a file to a transport with progress tracking
  * @param transportId Transport identifier
  * @param file File to upload
@@ -638,6 +655,7 @@ export const api = {
   updatePlaceOnDay,
   removePlaceFromDay,
   updatePlace,
+  searchPlaces,
   // User-related endpoints
   getMe,
   updateUser,

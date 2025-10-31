@@ -15,9 +15,17 @@ interface DayViewProps {
   onAddDay?: (date: Date) => void;
   isLoading?: boolean;
   onPlacesChange?: () => void;
+  tripDestination?: string;
 }
 
-const DayView: React.FC<DayViewProps> = ({ day, selectedDate, onAddDay, isLoading = false, onPlacesChange }) => {
+const DayView: React.FC<DayViewProps> = ({
+  day,
+  selectedDate,
+  onAddDay,
+  isLoading = false,
+  onPlacesChange,
+  tripDestination,
+}) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingPlaceId, setEditingPlaceId] = useState<string | null>(null);
@@ -163,11 +171,16 @@ const DayView: React.FC<DayViewProps> = ({ day, selectedDate, onAddDay, isLoadin
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add New Place</DialogTitle>
           </DialogHeader>
-          <PlaceForm onSubmit={handleAddPlace} onCancel={() => setIsDialogOpen(false)} isSubmitting={isSubmitting} />
+          <PlaceForm
+            onSubmit={handleAddPlace}
+            onCancel={() => setIsDialogOpen(false)}
+            isSubmitting={isSubmitting}
+            defaultLocation={tripDestination}
+          />
         </DialogContent>
       </Dialog>
 

@@ -17,9 +17,9 @@ public class PlacesService : IPlacesService
     private readonly IDayRepository _dayRepository;
     private readonly IPlaceRepository _placeRepository;
     private readonly IDayAttractionRepository _dayAttractionRepository;
+    private readonly IGooglePlacesService _googlePlacesService;
+    private readonly IOpenRouterService _openRouterService;
     private readonly ILogger<PlacesService> _logger;
-    // TODO: Add IGooglePlacesService interface and implementation in Infrastructure layer
-    // TODO: Add IOpenRouterService interface and implementation in Infrastructure layer
 
     /// <summary>
     /// Initializes a new instance of the PlacesService
@@ -28,18 +28,24 @@ public class PlacesService : IPlacesService
     /// <param name="dayRepository">Repository for day operations</param>
     /// <param name="placeRepository">Repository for place operations</param>
     /// <param name="dayAttractionRepository">Repository for day-attraction operations</param>
+    /// <param name="googlePlacesService">Service for Google Places API integration</param>
+    /// <param name="openRouterService">Service for AI-powered filtering</param>
     /// <param name="logger">Logger instance</param>
     public PlacesService(
         IAuditLogRepository auditLogRepository,
         IDayRepository dayRepository,
         IPlaceRepository placeRepository,
         IDayAttractionRepository dayAttractionRepository,
+        IGooglePlacesService googlePlacesService,
+        IOpenRouterService openRouterService,
         ILogger<PlacesService> logger)
     {
         _auditLogRepository = auditLogRepository;
         _dayRepository = dayRepository;
         _placeRepository = placeRepository;
         _dayAttractionRepository = dayAttractionRepository;
+        _googlePlacesService = googlePlacesService;
+        _openRouterService = openRouterService;
         _logger = logger;
     }
 
@@ -49,7 +55,7 @@ public class PlacesService : IPlacesService
     /// <param name="request">Search parameters including location, keyword, and optional preferences</param>
     /// <param name="userId">ID of the authenticated user performing the search</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Search response with up to 5 filtered and ranked places</returns>
+    /// <returns>Search response with up to 8 filtered and ranked places</returns>
     public async Task<Result<PlaceSearchResponse>> SearchPlacesAsync(
         PlaceSearchRequest request,
         Guid userId,
@@ -61,36 +67,44 @@ public class PlacesService : IPlacesService
                 "Searching places for user {UserId} with location: {Location}, keyword: {Keyword}",
                 userId, request.Location, request.Keyword);
 
-            // TODO: Step 1 - Call Google Places API to fetch initial results
-            // var googlePlacesResults = await _googlePlacesService.SearchAsync(
-            //     request.Location, request.Keyword, cancellationToken);
+            // Step 1 - Call Google Places API to fetch initial results
+            var googlePlacesResults = await _googlePlacesService.SearchPlacesAsync(
+                request.Location, 
+                request.Keyword, 
+                cancellationToken);
 
-            // TODO: Step 2 - Filter and rank results using OpenRouter.ai
-            // var filteredResults = await _openRouterService.FilterAndRankPlacesAsync(
-            //     googlePlacesResults, request.Preferences, cancellationToken);
+            if (googlePlacesResults.Count == 0)
+            {
+                _logger.LogInformation("No places found for query");
+                return new PlaceSearchResponse
+                {
+                    Results = Array.Empty<PlaceDto>(),
+                    Count = 0
+                };
+            }
 
-            // TODO: Step 3 - Map results to PlaceDto objects
-            // var placeDtos = filteredResults.Take(5).Select(MapToPlaceDto).ToList();
+            // Step 2 - Filter and rank results using OpenRouter.ai
+            var userPreferences = string.IsNullOrWhiteSpace(request.Preferences) 
+                ? request.Keyword 
+                : $"{request.Keyword} - {request.Preferences}";
 
-            // TODO: Step 4 - Log search event to AuditLog
-            // await LogSearchEventAsync(userId, request, placeDtos.Count, cancellationToken);
+            var filteredResults = await _openRouterService.FilterAndRankPlacesAsync(
+                googlePlacesResults, 
+                userPreferences,
+                request.Location,
+                cancellationToken);
 
-            // TODO: Step 5 - Return response with results
-            // return new PlaceSearchResponse
-            // {
-            //     Results = placeDtos,
-            //     Count = placeDtos.Count
-            // };
+            // Step 3 - Map results to PlaceDto objects
+            var placeDtos = filteredResults.Select(MapToPlaceDto).ToList();
 
-            // Temporary implementation - return empty results
-            _logger.LogWarning("PlacesService.SearchPlacesAsync not fully implemented yet");
-            
-            await Task.CompletedTask; // Suppress async warning until full implementation
-            
+            // Step 4 - Log search event to AuditLog
+            await LogSearchEventAsync(userId, request, placeDtos.Count, cancellationToken);
+
+            // Step 5 - Return response with results
             return new PlaceSearchResponse
             {
-                Results = Array.Empty<PlaceDto>(),
-                Count = 0
+                Results = placeDtos,
+                Count = placeDtos.Count
             };
         }
         catch (Exception ex)
@@ -108,36 +122,61 @@ public class PlacesService : IPlacesService
     }
 
     /// <summary>
+    /// Maps a GooglePlaceResult to PlaceDto
+    /// </summary>
+    private PlaceDto MapToPlaceDto(GooglePlaceResult googlePlace)
+    {
+        return new PlaceDto
+        {
+            // Use GooglePlaceId as the Id for search results (not yet saved to DB)
+            Id = Guid.NewGuid(), // Temporary ID for search results
+            GooglePlaceId = googlePlace.PlaceId,
+            Name = googlePlace.Name,
+            FormattedAddress = googlePlace.FormattedAddress,
+            Website = googlePlace.Website,
+            GoogleMapsLink = googlePlace.GoogleMapsLink,
+            OpeningHoursText = googlePlace.OpeningHoursText,
+            PhotoReference = googlePlace.PhotoReferences.FirstOrDefault(),
+            IsManuallyAdded = false
+        };
+    }
+
+    /// <summary>
     /// Logs a place search event to the audit log
     /// </summary>
     /// <param name="userId">ID of the user who performed the search</param>
     /// <param name="request">The search request parameters</param>
     /// <param name="resultCount">Number of results returned</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private Task LogSearchEventAsync(
+    private async Task LogSearchEventAsync(
         Guid userId,
         PlaceSearchRequest request,
         int resultCount,
         CancellationToken cancellationToken)
     {
-        // TODO: Implement audit log entry creation
-        // var auditLog = new AuditLog
-        // {
-        //     UserId = userId,
-        //     EventType = "PLACE_SEARCH",
-        //     EventTimestamp = DateTime.UtcNow,
-        //     Details = JsonSerializer.Serialize(new
-        //     {
-        //         Location = request.Location,
-        //         Keyword = request.Keyword,
-        //         Preferences = request.Preferences,
-        //         ResultCount = resultCount
-        //     })
-        // };
-        // 
-        // await _auditLogRepository.AddAsync(auditLog, cancellationToken);
-
-        return Task.CompletedTask;
+        try
+        {
+            var auditLog = new AuditLog
+            {
+                UserId = userId,
+                EventType = "PLACE_SEARCH",
+                EventTimestamp = DateTime.UtcNow,
+                Details = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    Location = request.Location,
+                    Keyword = request.Keyword,
+                    Preferences = request.Preferences,
+                    ResultCount = resultCount
+                })
+            };
+            
+            await _auditLogRepository.AddAsync(auditLog, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error logging place search event for user {UserId}", userId);
+            // Don't throw - logging failure shouldn't fail the search
+        }
     }
 
     /// <summary>
@@ -239,17 +278,35 @@ public class PlacesService : IPlacesService
             }
             else
             {
-                place = new Place
+                // Check if place with GooglePlaceId already exists
+                Place? existingPlace = null;
+                if (!string.IsNullOrEmpty(request.Place!.GooglePlaceId))
                 {
-                    Id = Guid.NewGuid(),
-                    Name = request.Place!.Name.Trim(),
-                    FormattedAddress = request.Place.FormattedAddress,
-                    Website = request.Place.Website,
-                    GoogleMapsLink = request.Place.GoogleMapsLink,
-                    OpeningHoursText = request.Place.OpeningHoursText,
-                    IsManuallyAdded = true
-                };
-                place = await _placeRepository.AddAsync(place, cancellationToken);
+                    existingPlace = await _placeRepository.GetByGooglePlaceIdAsync(
+                        request.Place.GooglePlaceId, 
+                        cancellationToken);
+                }
+
+                if (existingPlace != null)
+                {
+                    place = existingPlace;
+                }
+                else
+                {
+                    place = new Place
+                    {
+                        Id = Guid.NewGuid(),
+                        GooglePlaceId = request.Place.GooglePlaceId,
+                        Name = request.Place.Name.Trim(),
+                        FormattedAddress = request.Place.FormattedAddress,
+                        Website = request.Place.Website,
+                        GoogleMapsLink = request.Place.GoogleMapsLink,
+                        OpeningHoursText = request.Place.OpeningHoursText,
+                        PhotoReference = request.Place.PhotoReference,
+                        IsManuallyAdded = string.IsNullOrEmpty(request.Place.GooglePlaceId)
+                    };
+                    place = await _placeRepository.AddAsync(place, cancellationToken);
+                }
             }
 
             // Check if already added
@@ -283,6 +340,7 @@ public class PlacesService : IPlacesService
                 Website = place.Website,
                 GoogleMapsLink = place.GoogleMapsLink,
                 OpeningHoursText = place.OpeningHoursText,
+                PhotoReference = place.PhotoReference,
                 IsManuallyAdded = place.IsManuallyAdded
             };
 
@@ -607,6 +665,7 @@ public class PlacesService : IPlacesService
                 Website = place.Website,
                 GoogleMapsLink = place.GoogleMapsLink,
                 OpeningHoursText = place.OpeningHoursText,
+                PhotoReference = place.PhotoReference,
                 IsManuallyAdded = place.IsManuallyAdded
             };
 

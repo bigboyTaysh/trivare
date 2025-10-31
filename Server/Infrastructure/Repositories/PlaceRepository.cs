@@ -38,6 +38,16 @@ public class PlaceRepository : IPlaceRepository
     }
 
     /// <summary>
+    /// Gets a place by Google Place ID
+    /// </summary>
+    public async Task<Place?> GetByGooglePlaceIdAsync(string googlePlaceId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Places
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.GooglePlaceId == googlePlaceId, cancellationToken);
+    }
+
+    /// <summary>
     /// Updates an existing place
     /// </summary>
     public async Task<Place> UpdateAsync(Place place, CancellationToken cancellationToken = default)

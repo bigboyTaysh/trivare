@@ -1,12 +1,18 @@
 namespace Trivare.Application.DTOs.Places;
 
 /// <summary>
-/// Request model for creating a new manual place
-/// Maps to Place entity with IsManuallyAdded = true
-/// Used when user adds custom attraction not from Google Places API
+/// Request model for creating a new place
+/// Maps to Place entity
+/// Used when user adds custom attraction or place from search results
 /// </summary>
 public record CreatePlaceRequest
 {
+    /// <summary>
+    /// Google Place ID from Google Places API
+    /// Null for manually added places
+    /// </summary>
+    public string? GooglePlaceId { get; init; }
+
     /// <summary>
     /// Place name - required, minimum 1 character after trim
     /// </summary>
@@ -31,4 +37,9 @@ public record CreatePlaceRequest
     /// Opening hours text - optional, max 1000 characters
     /// </summary>
     public string? OpeningHoursText { get; init; }
+
+    /// <summary>
+    /// Google Places photo reference for fetching place images
+    /// </summary>
+    public string? PhotoReference { get; init; }
 }

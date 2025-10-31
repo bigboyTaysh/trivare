@@ -37,6 +37,23 @@ public static class DependencyInjection
 
         // Register services
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IGooglePlacesService, GooglePlacesService>();
+
+        // Configure HttpClient factory
+        services.AddHttpClient();
+
+        // Configure OpenRouter HTTP Client with timeout
+        services.AddHttpClient("OpenRouterClient", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(120); // Set reasonable timeout for LLM requests
+        });
+
+        // Register OpenRouter service
+        services.AddScoped<IOpenRouterService, OpenRouterService>();
+
+        // Configure settings
+        services.Configure<GooglePlacesSettings>(configuration.GetSection("GooglePlaces"));
+        services.Configure<OpenRouterSettings>(configuration.GetSection("OpenRouter"));
 
         // Configure Cloudflare R2 (S3-compatible storage)
         services.Configure<CloudflareR2Settings>(configuration.GetSection("CloudflareR2"));

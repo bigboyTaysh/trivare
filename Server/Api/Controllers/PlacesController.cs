@@ -29,24 +29,35 @@ public class PlacesController : ControllerBase
     /// <summary>
     /// Search for places using AI-powered filtering and ranking
     /// Integrates Google Places API with OpenRouter.ai to find relevant places
-    /// Returns up to 5 places matching the search criteria
+    /// Returns up to 8 places matching the search criteria
     /// </summary>
-    /// <param name="request">Search parameters including location, keyword, and optional preferences</param>
+    /// <param name="location">Location to search in (e.g., "Paris, France")</param>
+    /// <param name="keyword">Search keyword (e.g., "museum", "breakfast with coffee")</param>
+    /// <param name="preferences">Optional preferences for AI filtering (e.g., "vegetarian-friendly")</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>List of up to 5 filtered and ranked places</returns>
+    /// <returns>List of up to 8 filtered and ranked places</returns>
     /// <response code="200">Places retrieved successfully</response>
     /// <response code="400">Invalid search parameters or validation errors</response>
     /// <response code="401">Unauthorized - invalid or missing JWT token</response>
     /// <response code="500">Internal server error - external API failure or unexpected error</response>
-    [HttpPost("search")]
+    [HttpGet("search")]
     [ProducesResponseType(typeof(PlaceSearchResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<PlaceSearchResponse>> SearchPlaces(
-        [FromBody] PlaceSearchRequest request,
-        CancellationToken cancellationToken)
+        [FromQuery] string location,
+        [FromQuery] string keyword,
+        [FromQuery] string? preferences = null,
+        CancellationToken cancellationToken = default)
     {
+        var request = new PlaceSearchRequest
+        {
+            Location = location,
+            Keyword = keyword,
+            Preferences = preferences
+        };
+
         var userId = this.GetAuthenticatedUserId();
         var result = await _placesService.SearchPlacesAsync(request, userId, cancellationToken);
 

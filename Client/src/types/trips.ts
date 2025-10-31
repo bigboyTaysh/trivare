@@ -397,6 +397,7 @@ export interface PlaceDto {
   website?: string;
   googleMapsLink?: string;
   openingHoursText?: string;
+  photoReference?: string;
   isManuallyAdded: boolean;
 }
 
@@ -420,11 +421,13 @@ export interface AddPlaceRequest {
   order: number;
   placeId?: string;
   place?: {
+    googlePlaceId?: string;
     name: string;
     formattedAddress?: string;
     website?: string;
     googleMapsLink?: string;
     openingHoursText?: string;
+    photoReference?: string;
   };
 }
 
@@ -434,4 +437,21 @@ export interface UpdatePlaceRequest {
   website?: string;
   googleMapsLink?: string;
   openingHoursText?: string;
+}
+
+/**
+ * Corresponds to PlaceSearchRequest.cs
+ */
+export interface PlaceSearchRequest {
+  location: string;
+  keyword: string;
+  preferences?: string;
+}
+
+/**
+ * Corresponds to PlaceSearchResponse.cs
+ */
+export interface PlaceSearchResponse {
+  results: PlaceDto[];
+  count: number;
 }
