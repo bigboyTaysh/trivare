@@ -127,6 +127,7 @@ const TripDetailsPage: React.FC<TripDetailsPageProps> = ({ tripId }) => {
         onFileChange={refreshFileCount}
         tripStartDate={trip?.startDate}
         tripEndDate={trip?.endDate}
+        tripDestination={trip?.destination}
       />
     </div>
   );

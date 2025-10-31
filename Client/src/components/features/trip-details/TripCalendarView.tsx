@@ -13,6 +13,7 @@ interface TripCalendarViewProps {
   selectedDate?: Date;
   tripStartDate?: string;
   tripEndDate?: string;
+  tripDestination?: string;
   onRefetch?: () => void;
 }
 
@@ -25,6 +26,7 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
   selectedDate: propSelectedDate,
   tripStartDate,
   tripEndDate,
+  tripDestination,
   onRefetch,
 }) => {
   // Use the selected date from props (which can be any date, not just days with data)
@@ -172,6 +174,7 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
           onAddDay={onAddDay}
           isLoading={isLoading}
           onPlacesChange={onRefetch}
+          tripDestination={tripDestination}
         />
       </div>
     </div>

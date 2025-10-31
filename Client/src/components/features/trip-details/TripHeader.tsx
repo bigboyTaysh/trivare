@@ -15,6 +15,7 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 import FilesSection from "@/components/common/FilesSection";
 import type { TripDetailViewModel, UpdateTripRequest } from "@/types/trips";
 import { UpdateTripViewModel, type UpdateTripViewModel as UpdateTripFormData } from "@/types/trips";
@@ -104,7 +105,7 @@ const TripHeader: React.FC<TripHeaderProps> = ({ trip, onUpdate, onDelete, total
                         <FormItem>
                           <FormLabel>Destination</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <AutocompleteInput value={field.value || ""} onChange={field.onChange} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

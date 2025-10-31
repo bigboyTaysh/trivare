@@ -9,6 +9,7 @@ interface DaysSectionProps {
   onFileChange: () => void;
   tripStartDate?: string;
   tripEndDate?: string;
+  tripDestination?: string;
   selectedDay?: DayWithPlacesDto | null;
   selectedDate?: Date | null;
   onDaySelect?: (day: DayWithPlacesDto | null, date: Date | null) => void;
@@ -18,6 +19,7 @@ const DaysSection: React.FC<DaysSectionProps> = ({
   tripId,
   tripStartDate,
   tripEndDate,
+  tripDestination,
   selectedDay: externalSelectedDay,
   selectedDate: externalSelectedDate,
   onDaySelect: externalOnDaySelect,
@@ -180,6 +182,7 @@ const DaysSection: React.FC<DaysSectionProps> = ({
         selectedDate={selectedDate || undefined}
         tripStartDate={tripStartDate}
         tripEndDate={tripEndDate}
+        tripDestination={tripDestination}
         onRefetch={refetch}
       />
     </div>

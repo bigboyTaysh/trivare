@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 import { toast } from "sonner";
 import { Search, Plus } from "lucide-react";
 import { api } from "@/services/api";
@@ -291,11 +292,9 @@ export function PlaceForm({
               <Label htmlFor="searchLocation">
                 Location <span className="text-destructive">*</span>
               </Label>
-              <Input
-                id="searchLocation"
-                type="text"
+              <AutocompleteInput
                 value={searchLocation}
-                onChange={(e) => setSearchLocation(e.target.value)}
+                onChange={setSearchLocation}
                 placeholder="e.g., Paris, France"
                 disabled={isSearching}
               />

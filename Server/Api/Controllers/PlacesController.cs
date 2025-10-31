@@ -71,6 +71,67 @@ public class PlacesController : ControllerBase
     }
 
     /// <summary>
+    /// Get autocomplete predictions for place names and addresses
+    /// Uses Google Places API to provide location suggestions as user types
+    /// Returns up to 5 predictions matching the input
+    /// </summary>
+    /// <param name="input">User input to autocomplete (minimum 3 characters)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of autocomplete predictions</returns>
+    /// <response code="200">Autocomplete predictions retrieved successfully</response>
+    /// <response code="400">Invalid input or validation errors</response>
+    /// <response code="401">Unauthorized - invalid or missing JWT token</response>
+    /// <response code="500">Internal server error - external API failure</response>
+    [HttpGet("autocomplete")]
+    [ProducesResponseType(typeof(AutocompleteResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<AutocompleteResponse>> GetAutocomplete(
+        [FromQuery] string input,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(input) || input.Length < 3)
+        {
+            return BadRequest(new ErrorResponse
+            {
+                Error = "InvalidInput",
+                Message = "Input must be at least 3 characters long"
+            });
+        }
+
+        try
+        {
+            var predictions = await _googlePlacesService.GetAutocompletePredictionsAsync(input, cancellationToken);
+
+            var response = new AutocompleteResponse
+            {
+                Predictions = predictions.Select(p => new AutocompletePredictionDto
+                {
+                    Description = p.Description,
+                    PlaceId = p.PlaceId,
+                    StructuredFormatting = p.StructuredFormatting != null ? new AutocompleteStructuredFormatDto
+                    {
+                        MainText = p.StructuredFormatting.MainText,
+                        SecondaryText = p.StructuredFormatting.SecondaryText
+                    } : null
+                }).ToList()
+            };
+
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting autocomplete predictions for input: {Input}", input);
+            return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse
+            {
+                Error = "InternalError",
+                Message = "Failed to get autocomplete predictions"
+            });
+        }
+    }
+
+    /// <summary>
     /// Proxy endpoint to fetch Google Places photos
     /// Prevents exposing the API key on the frontend by streaming the image through the backend
     /// </summary>

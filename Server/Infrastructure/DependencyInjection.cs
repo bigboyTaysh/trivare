@@ -45,7 +45,7 @@ public static class DependencyInjection
         // Configure OpenRouter HTTP Client with timeout
         services.AddHttpClient("OpenRouterClient", client =>
         {
-            client.Timeout = TimeSpan.FromSeconds(120); // Set reasonable timeout for LLM requests
+            client.Timeout = TimeSpan.FromSeconds(30); // Set reasonable timeout for LLM requests
         });
 
         // Register OpenRouter service

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createTrip } from "@/services/api";
 import type { CreateTripRequest } from "@/types/trips";
@@ -133,15 +134,12 @@ export function CreateTripForm() {
           {/* Destination */}
           <div className="space-y-2">
             <Label htmlFor="destination">Destination</Label>
-            <Input
-              id="destination"
-              type="text"
-              value={formData.destination}
-              onChange={(e) => handleInputChange("destination", e.target.value)}
+            <AutocompleteInput
+              value={formData.destination || ""}
+              onChange={(value) => handleInputChange("destination", value)}
               placeholder="e.g., Paris, France"
               disabled={isSubmitting}
               className={errors.destination ? "border-destructive" : ""}
-              maxLength={255}
             />
             {errors.destination && <p className="text-sm text-destructive">{errors.destination}</p>}
           </div>

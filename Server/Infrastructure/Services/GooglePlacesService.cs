@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -232,6 +233,92 @@ public class GooglePlacesService : IGooglePlacesService
         }
     }
 
+    /// <summary>
+    /// Gets place autocomplete predictions from Google Places API
+    /// </summary>
+    public async Task<List<AutocompletePrediction>> GetAutocompletePredictionsAsync(
+        string input,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(input) || input.Length < 3)
+            {
+                return new List<AutocompletePrediction>();
+            }
+
+            _logger.LogInformation("Getting autocomplete predictions for input: {Input}", input);
+
+            // Use Google Places API (New) - Autocomplete
+            // Documentation: https://developers.google.com/maps/documentation/places/web-service/place-autocomplete
+            var requestUrl = "https://places.googleapis.com/v1/places:autocomplete";
+
+            _logger.LogInformation("Making POST request to: {RequestUrl} with input: {Input}", requestUrl, input);
+
+            // Create request body for Places API (New)
+            var requestBody = new
+            {
+                input = input
+            };
+
+            var jsonContent = JsonSerializer.Serialize(requestBody);
+
+            // Create a new HttpClient instance for this request to avoid header conflicts
+            using var autocompleteHttpClient = new HttpClient();
+            autocompleteHttpClient.DefaultRequestHeaders.Add("X-Goog-Api-Key", _settings.ApiKey);
+            autocompleteHttpClient.DefaultRequestHeaders.Add("X-Goog-FieldMask", "suggestions.placePrediction.text,suggestions.placePrediction.placeId,suggestions.placePrediction.structuredFormat");
+
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            var response = await autocompleteHttpClient.PostAsync(requestUrl, content, cancellationToken);
+
+            _logger.LogInformation("Google Places API response status: {StatusCode}", response.StatusCode);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Google Places autocomplete API returned {StatusCode}", response.StatusCode);
+                var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                _logger.LogWarning("Error response: {ErrorContent}", errorContent);
+                return new List<AutocompletePrediction>();
+            }
+
+            var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogInformation("Google Places API response: {JsonResponse}", jsonResponse);
+
+            var autocompleteResponse = JsonSerializer.Deserialize<AutocompleteResponse>(jsonResponse, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (autocompleteResponse?.Suggestions == null)
+            {
+                _logger.LogInformation("No suggestions found in response");
+                return new List<AutocompletePrediction>();
+            }
+
+            _logger.LogInformation("Found {Count} suggestions", autocompleteResponse.Suggestions.Count);
+
+            return autocompleteResponse.Suggestions
+                .Where(s => s.PlacePrediction != null)
+                .Select(s => new AutocompletePrediction
+                {
+                    Description = s.PlacePrediction!.Text?.Text ?? "",
+                    PlaceId = s.PlacePrediction!.PlaceId ?? "",
+                    StructuredFormatting = s.PlacePrediction!.StructuredFormat != null ? new AutocompleteStructuredFormat
+                    {
+                        MainText = s.PlacePrediction!.StructuredFormat!.MainText?.Text ?? "",
+                        SecondaryText = s.PlacePrediction!.StructuredFormat!.SecondaryText?.Text ?? ""
+                    } : null
+                })
+                .Where(p => !string.IsNullOrEmpty(p.Description) && !string.IsNullOrEmpty(p.PlaceId))
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting autocomplete predictions for input: {Input}", input);
+            return new List<AutocompletePrediction>();
+        }
+    }
+
     #region Google Places API Response Models
 
     // New API Models
@@ -319,6 +406,35 @@ public class GooglePlacesService : IGooglePlacesService
         public string PhotoReference { get; set; } = null!;
         public int Width { get; set; }
         public int Height { get; set; }
+    }
+
+    // Autocomplete API Models (New Places API)
+    private class AutocompleteResponse
+    {
+        public List<AutocompleteSuggestion>? Suggestions { get; set; }
+    }
+
+    private class AutocompleteSuggestion
+    {
+        public PlacePrediction? PlacePrediction { get; set; }
+    }
+
+    private class PlacePrediction
+    {
+        public TextData? Text { get; set; }
+        public string? PlaceId { get; set; }
+        public StructuredFormatData? StructuredFormat { get; set; }
+    }
+
+    private class TextData
+    {
+        public string? Text { get; set; }
+    }
+
+    private class StructuredFormatData
+    {
+        public TextData? MainText { get; set; }
+        public TextData? SecondaryText { get; set; }
     }
 
     #endregion

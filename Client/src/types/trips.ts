@@ -455,3 +455,27 @@ export interface PlaceSearchResponse {
   results: PlaceDto[];
   count: number;
 }
+
+/**
+ * Corresponds to AutocompleteResponse.cs
+ */
+export interface AutocompleteResponse {
+  predictions: AutocompletePredictionDto[];
+}
+
+/**
+ * Corresponds to AutocompletePredictionDto.cs
+ */
+export interface AutocompletePredictionDto {
+  description: string;
+  placeId: string;
+  structuredFormatting?: AutocompleteStructuredFormatDto;
+}
+
+/**
+ * Corresponds to AutocompleteStructuredFormatDto.cs
+ */
+export interface AutocompleteStructuredFormatDto {
+  mainText: string;
+  secondaryText: string;
+}

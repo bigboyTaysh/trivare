@@ -22,6 +22,7 @@ import type {
   PlaceDto,
   PlaceSearchRequest,
   PlaceSearchResponse,
+  AutocompleteResponse,
 } from "../types/trips";
 import type { UserDto, UpdateUserRequest, DeleteAccountRequest } from "../types/user";
 import type { ForgotPasswordRequest, ResetPasswordRequest } from "../types/auth";
@@ -560,6 +561,21 @@ export async function searchPlaces(request: PlaceSearchRequest): Promise<PlaceSe
 }
 
 /**
+ * Get autocomplete predictions for places
+ */
+export async function getAutocompletePredictions(input: string): Promise<AutocompleteResponse> {
+  if (!input || input.length < 3) {
+    return { predictions: [] };
+  }
+
+  const params = new URLSearchParams({
+    input: input,
+  });
+
+  return fetchData(`/places/autocomplete?${params.toString()}`);
+}
+
+/**
  * Upload a file to a transport with progress tracking
  * @param transportId Transport identifier
  * @param file File to upload
@@ -656,6 +672,7 @@ export const api = {
   removePlaceFromDay,
   updatePlace,
   searchPlaces,
+  getAutocompletePredictions,
   // User-related endpoints
   getMe,
   updateUser,

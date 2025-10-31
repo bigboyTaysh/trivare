@@ -24,6 +24,16 @@ public interface IGooglePlacesService
     /// <param name="maxWidth">Maximum width of the photo (default: 400)</param>
     /// <returns>URL to fetch the photo</returns>
     string GetPhotoUrl(string photoReference, int maxWidth = 400);
+
+    /// <summary>
+    /// Gets place autocomplete suggestions from Google Places API
+    /// </summary>
+    /// <param name="input">User input to autocomplete</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of autocomplete predictions</returns>
+    Task<List<AutocompletePrediction>> GetAutocompletePredictionsAsync(
+        string input,
+        CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -90,4 +100,41 @@ public class GooglePlaceResult
     /// Business status
     /// </summary>
     public string? BusinessStatus { get; set; }
+}
+
+/// <summary>
+/// Autocomplete prediction from Google Places API
+/// </summary>
+public class AutocompletePrediction
+{
+    /// <summary>
+    /// Description of the place (formatted address)
+    /// </summary>
+    public required string Description { get; set; }
+
+    /// <summary>
+    /// Place ID for the prediction
+    /// </summary>
+    public required string PlaceId { get; set; }
+
+    /// <summary>
+    /// Structured formatting of the prediction
+    /// </summary>
+    public AutocompleteStructuredFormat? StructuredFormatting { get; set; }
+}
+
+/// <summary>
+/// Structured formatting for autocomplete predictions
+/// </summary>
+public class AutocompleteStructuredFormat
+{
+    /// <summary>
+    /// Main text of the prediction (place name)
+    /// </summary>
+    public required string MainText { get; set; }
+
+    /// <summary>
+    /// Secondary text (address details)
+    /// </summary>
+    public required string SecondaryText { get; set; }
 }

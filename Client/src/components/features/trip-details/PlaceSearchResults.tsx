@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, ExternalLink, Plus, Loader2 } from "lucide-react";
@@ -12,12 +12,32 @@ interface PlaceSearchResultsProps {
 }
 
 export const PlaceSearchResults: React.FC<PlaceSearchResultsProps> = ({ results, isLoading, onSelect }) => {
+  const [currentStatusIndex, setCurrentStatusIndex] = useState(0);
+
+  const statusMessages = [
+    "Searching for places with AI...",
+    "Getting list of places...",
+    "Looking for the best suggestions...",
+    "Finding perfect matches...",
+    "Analyzing locations...",
+  ];
+
+  useEffect(() => {
+    if (!isLoading) return;
+
+    const interval = setInterval(() => {
+      setCurrentStatusIndex((prev) => (prev + 1) % statusMessages.length);
+    }, 2000); // Change message every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [isLoading, statusMessages.length]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Searching for places with AI...</p>
+          <p className="text-sm text-muted-foreground">{statusMessages[currentStatusIndex]}</p>
         </div>
       </div>
     );

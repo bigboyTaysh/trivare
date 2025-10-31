@@ -13,6 +13,7 @@ interface TripContentProps {
   onFileChange: () => void;
   tripStartDate?: string;
   tripEndDate?: string;
+  tripDestination?: string;
 }
 
 const TripContent: React.FC<TripContentProps> = ({
@@ -21,6 +22,7 @@ const TripContent: React.FC<TripContentProps> = ({
   onFileChange,
   tripStartDate,
   tripEndDate,
+  tripDestination,
 }) => {
   const [activeSection, setActiveSection] = useState<string | null>("days");
   // Shared state for day selection across mobile and desktop views
@@ -59,6 +61,7 @@ const TripContent: React.FC<TripContentProps> = ({
                 onFileChange={onFileChange}
                 tripStartDate={tripStartDate}
                 tripEndDate={tripEndDate}
+                tripDestination={tripDestination}
                 selectedDay={selectedDay}
                 selectedDate={selectedDate}
                 onDaySelect={handleDaySelect}
@@ -96,6 +99,7 @@ const TripContent: React.FC<TripContentProps> = ({
                   onFileChange={onFileChange}
                   tripStartDate={tripStartDate}
                   tripEndDate={tripEndDate}
+                  tripDestination={tripDestination}
                   selectedDay={selectedDay}
                   selectedDate={selectedDate}
                   onDaySelect={handleDaySelect}
