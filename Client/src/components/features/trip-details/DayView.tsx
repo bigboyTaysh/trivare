@@ -172,7 +172,7 @@ const DayView: React.FC<DayViewProps> = ({
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-4xl max-h-[99vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add New Place</DialogTitle>
           </DialogHeader>
@@ -187,7 +187,7 @@ const DayView: React.FC<DayViewProps> = ({
       </Dialog>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle>Edit Place Details</DialogTitle>
           </DialogHeader>

@@ -257,63 +257,65 @@ export function PlaceForm({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Mode Selector */}
       <div className="flex gap-2 border-b">
         <button
           type="button"
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+          className={`px-3 py-1.5 text-sm font-medium border-b-2 transition-colors ${
             mode === "search"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
           onClick={() => setMode("search")}
         >
-          <Search className="inline h-4 w-4 mr-1" />
+          <Search className="inline h-3.5 w-3.5 mr-1" />
           Search Places
         </button>
         <button
           type="button"
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+          className={`px-3 py-1.5 text-sm font-medium border-b-2 transition-colors ${
             mode === "manual"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
           onClick={() => setMode("manual")}
         >
-          <Plus className="inline h-4 w-4 mr-1" />
+          <Plus className="inline h-3.5 w-3.5 mr-1" />
           Add Manually
         </button>
       </div>
 
       {/* Search Mode */}
       {mode === "search" && (
-        <div className="space-y-4">
-          <form onSubmit={handleSearch} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="searchLocation">
-                Location <span className="text-destructive">*</span>
-              </Label>
-              <AutocompleteInput
-                value={searchLocation}
-                onChange={setSearchLocation}
-                placeholder="e.g., Paris, France"
-                disabled={isSearching}
-              />
-            </div>
+        <div className="space-y-3">
+          <form onSubmit={handleSearch} className="space-y-3">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="searchLocation">
+                  Location <span className="text-destructive">*</span>
+                </Label>
+                <AutocompleteInput
+                  value={searchLocation}
+                  onChange={setSearchLocation}
+                  placeholder="e.g., Paris, France"
+                  disabled={isSearching}
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="searchKeyword">
-                What are you looking for? <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="searchKeyword"
-                type="text"
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                placeholder="e.g., breakfast with coffee, museum, restaurant"
-                disabled={isSearching}
-              />
+              <div className="space-y-2">
+                <Label htmlFor="searchKeyword">
+                  What are you looking for? <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="searchKeyword"
+                  type="text"
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  placeholder="e.g., breakfast with coffee, museum, restaurant"
+                  disabled={isSearching}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -328,10 +330,12 @@ export function PlaceForm({
               />
             </div>
 
-            <Button type="submit" disabled={isSearching} className="w-full">
-              <Search className="h-4 w-4 mr-2" />
-              {isSearching ? "Searching..." : "Search"}
-            </Button>
+            <div className="flex justify-center">
+              <Button type="submit" disabled={isSearching} className="w-32">
+                <Search className="h-4 w-4 mr-2" />
+                {isSearching ? "Searching..." : "Search"}
+              </Button>
+            </div>
           </form>
 
           <PlaceSearchResults
@@ -345,7 +349,7 @@ export function PlaceForm({
 
       {/* Manual Mode */}
       {mode === "manual" && (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Place Name */}
           <div className="space-y-2">
             <Label htmlFor="name">
