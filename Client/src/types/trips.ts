@@ -398,6 +398,8 @@ export interface PlaceDto {
   googleMapsLink?: string;
   openingHoursText?: string;
   photoReference?: string; // Google Places photo reference (use with backend proxy endpoint)
+  rating?: number; // Place rating (0-5)
+  userRatingCount?: number; // Number of user ratings
   isManuallyAdded: boolean;
 }
 

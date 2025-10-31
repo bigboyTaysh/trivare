@@ -13,6 +13,7 @@ import type { AddPlaceRequest, UpdatePlaceRequest, PlaceDto } from "@/types/trip
 interface PlaceFormProps {
   defaultPlace?: Partial<AddPlaceRequest["place"]> & { id?: string };
   defaultLocation?: string; // Default location from trip destination
+  selectedDate?: Date; // Date for which the place is being added
   onSubmit: (data: AddPlaceRequest) => Promise<void>;
   onUpdate?: (data: UpdatePlaceRequest) => Promise<void>;
   onCancel: () => void;
@@ -33,6 +34,7 @@ type PlaceFormData = z.infer<typeof PlaceFormSchema>;
 export function PlaceForm({
   defaultPlace,
   defaultLocation,
+  selectedDate,
   onSubmit,
   onUpdate,
   onCancel,
@@ -332,7 +334,12 @@ export function PlaceForm({
             </Button>
           </form>
 
-          <PlaceSearchResults results={searchResults} isLoading={isSearching} onSelect={handleSelectPlace} />
+          <PlaceSearchResults
+            results={searchResults}
+            isLoading={isSearching}
+            onSelect={handleSelectPlace}
+            selectedDate={selectedDate}
+          />
         </div>
       )}
 

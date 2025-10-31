@@ -166,6 +166,7 @@ const DayView: React.FC<DayViewProps> = ({
             }
             onOpenAddDialog={() => setIsDialogOpen(true)}
             onEditPlace={handleEditPlace}
+            selectedDate={selectedDate}
           />
         </CardContent>
       </Card>
@@ -180,6 +181,7 @@ const DayView: React.FC<DayViewProps> = ({
             onCancel={() => setIsDialogOpen(false)}
             isSubmitting={isSubmitting}
             defaultLocation={tripDestination}
+            selectedDate={selectedDate}
           />
         </DialogContent>
       </Dialog>
@@ -196,6 +198,7 @@ const DayView: React.FC<DayViewProps> = ({
             onCancel={() => setIsEditDialogOpen(false)}
             isSubmitting={isSubmitting}
             isEditing={true}
+            selectedDate={selectedDate}
           />
         </DialogContent>
       </Dialog>

@@ -141,6 +141,8 @@ public class PlacesService : IPlacesService
             GoogleMapsLink = googlePlace.GoogleMapsLink,
             OpeningHoursText = googlePlace.OpeningHoursText,
             PhotoReference = photoReference, // Raw reference without API key
+            Rating = googlePlace.Rating,
+            UserRatingCount = googlePlace.UserRatingsTotal,
             IsManuallyAdded = false
         };
     }

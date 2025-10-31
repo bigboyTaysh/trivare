@@ -125,9 +125,9 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
   const selectedDay = selectedDayId ? days.find((d) => d.id === selectedDayId) || null : null;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:items-start">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start">
       {/* Calendar Section */}
-      <div className="space-y-4">
+      <div className="lg:col-span-1 space-y-4">
         <Card>
           <CardHeader>
             <CardTitle>Trip Calendar</CardTitle>
@@ -167,7 +167,7 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
       </div>
 
       {/* Day Details Section */}
-      <div className="lg:h-full">
+      <div className="lg:col-span-2 lg:h-full">
         <DayView
           day={selectedDay}
           selectedDate={selectedDate}

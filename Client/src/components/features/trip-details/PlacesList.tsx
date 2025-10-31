@@ -20,6 +20,7 @@ interface PlacesListProps {
   onPlacesChange: () => void;
   onOpenAddDialog?: () => void;
   onEditPlace?: (placeId: string) => void;
+  selectedDate?: Date;
 }
 
 export const PlacesList: React.FC<PlacesListProps> = ({
@@ -28,6 +29,7 @@ export const PlacesList: React.FC<PlacesListProps> = ({
   onOpenAddDialog,
   onEditPlace,
   dayId,
+  selectedDate,
 }) => {
   const placesArray = places || [];
   const sortedPlaces = [...placesArray].sort((a, b) => a.order - b.order);
@@ -95,7 +97,7 @@ export const PlacesList: React.FC<PlacesListProps> = ({
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={sortedPlaces.map((p) => p.placeId)} strategy={verticalListSortingStrategy}>
-        <div className="space-y-1">
+        <div className="space-y-2">
           {sortedPlaces.map((placeAttraction, index) => (
             <PlaceCard
               key={placeAttraction.placeId}
@@ -103,6 +105,7 @@ export const PlacesList: React.FC<PlacesListProps> = ({
               index={index}
               onChange={onPlacesChange}
               onEdit={onEditPlace}
+              selectedDate={selectedDate}
             />
           ))}
         </div>
