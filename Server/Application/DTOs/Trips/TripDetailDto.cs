@@ -59,7 +59,7 @@ public record TripDetailDto
     /// <summary>
     /// Trip days from Trip.Days (included when requested)
     /// </summary>
-    public IEnumerable<DayDto>? Days { get; init; }
+    public IEnumerable<DayWithPlacesDto>? Days { get; init; }
 
     /// <summary>
     /// Trip files from Trip.Files (included when requested)

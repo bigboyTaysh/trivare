@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Trivare.Application.DTOs.Accommodation;
 using Trivare.Application.DTOs.Common;
+using Trivare.Application.DTOs.Days;
+using Trivare.Application.DTOs.Places;
 using Trivare.Application.DTOs.Transport;
 using Trivare.Application.DTOs.Trips;
 using Trivare.Application.Interfaces;
@@ -16,13 +18,15 @@ public class TripService : ITripService
 {
     private readonly ITripRepository _tripRepository;
     private readonly ITransportRepository _transportRepository;
+    private readonly IDayRepository _dayRepository;
     private readonly IAuditLogRepository _auditLogRepository;
     private readonly ILogger<TripService> _logger;
 
-    public TripService(ITripRepository tripRepository, ITransportRepository transportRepository, IAuditLogRepository auditLogRepository, ILogger<TripService> logger)
+    public TripService(ITripRepository tripRepository, ITransportRepository transportRepository, IDayRepository dayRepository, IAuditLogRepository auditLogRepository, ILogger<TripService> logger)
     {
         _tripRepository = tripRepository;
         _transportRepository = transportRepository;
+        _dayRepository = dayRepository;
         _auditLogRepository = auditLogRepository;
         _logger = logger;
     }
@@ -233,6 +237,9 @@ public class TripService : ITripService
         // Get transports for this trip
         var transports = await _transportRepository.GetByTripIdAsync(tripId, cancellationToken);
 
+        // Get days for this trip with places
+        var days = await _dayRepository.GetDaysWithPlacesByTripIdAsync(tripId, cancellationToken);
+
         var tripDto = new TripDetailDto
         {
             Id = trip.Id,
@@ -262,7 +269,35 @@ public class TripService : ITripService
                 CheckInDate = trip.Accommodation.CheckInDate,
                 CheckOutDate = trip.Accommodation.CheckOutDate,
                 Notes = trip.Accommodation.Notes
-            }
+            },
+            Days = days.Select(day => new Application.DTOs.Days.DayWithPlacesDto
+            {
+                Id = day.Id,
+                TripId = day.TripId,
+                Date = day.Date,
+                Notes = day.Notes,
+                Places = day.DayAttractions?
+                    .OrderBy(da => da.Order)
+                    .Select(da => new Application.DTOs.Places.DayAttractionDto
+                    {
+                        DayId = da.DayId,
+                        PlaceId = da.PlaceId,
+                        Place = new Application.DTOs.Places.PlaceDto
+                        {
+                            Id = da.Place.Id,
+                            GooglePlaceId = da.Place.GooglePlaceId,
+                            Name = da.Place.Name,
+                            FormattedAddress = da.Place.FormattedAddress,
+                            Website = da.Place.Website,
+                            GoogleMapsLink = da.Place.GoogleMapsLink,
+                            OpeningHoursText = da.Place.OpeningHoursText,
+                            PhotoReference = da.Place.PhotoReference,
+                            IsManuallyAdded = da.Place.IsManuallyAdded
+                        },
+                        Order = da.Order,
+                        IsVisited = da.IsVisited
+                    }) ?? []
+            })
         };
 
         return tripDto;

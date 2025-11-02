@@ -12,21 +12,33 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Edit, Trash2, MapPin, Calendar, FileText } from "lucide-react";
-import { useAccommodation } from "@/hooks/useAccommodation";
 import { AccommodationForm } from "@/components/forms/AccommodationForm";
 import FilesSection from "@/components/common/FilesSection";
-import type { AddAccommodationRequest, UpdateAccommodationRequest } from "@/types/trips";
+import type { AddAccommodationRequest, UpdateAccommodationRequest, AccommodationDto } from "@/types/trips";
 import { formatDateTime } from "@/lib/dateUtils";
+import { toast } from "sonner";
 
 interface AccommodationSectionProps {
   tripId: string;
   totalFileCount: number;
   onFileChange: () => void;
+  accommodation: AccommodationDto | null | undefined;
+  onAddAccommodation: (data: AddAccommodationRequest) => Promise<AccommodationDto>;
+  onUpdateAccommodation: (data: UpdateAccommodationRequest) => Promise<AccommodationDto>;
+  onDeleteAccommodation: () => Promise<void>;
+  isLoading: boolean;
 }
 
-const AccommodationSection: React.FC<AccommodationSectionProps> = ({ tripId, totalFileCount, onFileChange }) => {
-  const { accommodation, isLoading, addAccommodation, updateAccommodation, deleteAccommodation } =
-    useAccommodation(tripId);
+const AccommodationSection: React.FC<AccommodationSectionProps> = ({
+  tripId,
+  totalFileCount,
+  onFileChange,
+  accommodation,
+  onAddAccommodation,
+  onUpdateAccommodation,
+  onDeleteAccommodation,
+  isLoading,
+}) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,8 +46,12 @@ const AccommodationSection: React.FC<AccommodationSectionProps> = ({ tripId, tot
   const handleAdd = async (data: AddAccommodationRequest) => {
     setIsSubmitting(true);
     try {
-      await addAccommodation(data);
+      await onAddAccommodation(data);
+      toast.success("Accommodation added successfully");
       setIsDialogOpen(false);
+    } catch (err) {
+      toast.error("Failed to add accommodation");
+      console.error("Failed to add accommodation:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -44,8 +60,12 @@ const AccommodationSection: React.FC<AccommodationSectionProps> = ({ tripId, tot
   const handleUpdate = async (data: UpdateAccommodationRequest) => {
     setIsSubmitting(true);
     try {
-      await updateAccommodation(data);
+      await onUpdateAccommodation(data);
+      toast.success("Accommodation updated successfully");
       setIsDialogOpen(false);
+    } catch (err) {
+      toast.error("Failed to update accommodation");
+      console.error("Failed to update accommodation:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -54,8 +74,12 @@ const AccommodationSection: React.FC<AccommodationSectionProps> = ({ tripId, tot
   const handleDelete = async () => {
     setIsSubmitting(true);
     try {
-      await deleteAccommodation();
+      await onDeleteAccommodation();
+      toast.success("Accommodation deleted successfully");
       setIsDeleteDialogOpen(false);
+    } catch (err) {
+      toast.error("Failed to delete accommodation");
+      console.error("Failed to delete accommodation:", err);
     } finally {
       setIsSubmitting(false);
     }

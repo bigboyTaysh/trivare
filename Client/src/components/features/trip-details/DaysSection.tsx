@@ -1,7 +1,13 @@
 import React, { useState, useRef, useLayoutEffect, useCallback } from "react";
-import { useTripDays } from "@/hooks/useTripDays";
 import TripCalendarView from "./TripCalendarView";
-import type { DayWithPlacesDto } from "@/types/trips";
+import type {
+  DayWithPlacesDto,
+  CreateDayRequest,
+  UpdatePlaceRequest,
+  AddPlaceRequest,
+  DayAttractionDto,
+} from "@/types/trips";
+import { toast } from "sonner";
 
 interface DaysSectionProps {
   tripId: string;
@@ -13,18 +19,34 @@ interface DaysSectionProps {
   selectedDay?: DayWithPlacesDto | null;
   selectedDate?: Date | null;
   onDaySelect?: (day: DayWithPlacesDto | null, date: Date | null) => void;
+  days: DayWithPlacesDto[];
+  onDaysChange: () => void;
+  onPlaceVisitedChange: (dayId: string, placeId: string, isVisited: boolean) => Promise<void>;
+  onPlaceUpdate: (placeId: string, data: UpdatePlaceRequest) => Promise<void>;
+  onAddPlace: (dayId: string, data: AddPlaceRequest) => Promise<unknown>;
+  onDeletePlace: (dayId: string, placeId: string) => Promise<void>;
+  onReorderPlaces: (dayId: string, reorderedPlaces: DayAttractionDto[]) => Promise<void>;
+  onAddDay: (data: CreateDayRequest) => Promise<DayWithPlacesDto>;
+  isLoading: boolean;
 }
 
 const DaysSection: React.FC<DaysSectionProps> = ({
-  tripId,
   tripStartDate,
   tripEndDate,
   tripDestination,
   selectedDay: externalSelectedDay,
   selectedDate: externalSelectedDate,
   onDaySelect: externalOnDaySelect,
+  days,
+  onDaysChange,
+  onPlaceVisitedChange,
+  onPlaceUpdate,
+  onAddPlace,
+  onDeletePlace,
+  onReorderPlaces,
+  onAddDay,
+  isLoading,
 }) => {
-  const { days, isLoading, createDay, refetch } = useTripDays(tripId);
   const [internalSelectedDay, setInternalSelectedDay] = useState<DayWithPlacesDto | null>(null);
   const [internalSelectedDate, setInternalSelectedDate] = useState<Date | null>(null);
   const hasInitializedRef = useRef(false);
@@ -162,10 +184,12 @@ const DaysSection: React.FC<DaysSectionProps> = ({
       // Store the date we're adding to preserve selection after creation
       lastAddedDateRef.current = dateString;
 
-      await createDay({ date: dateString });
+      await onAddDay({ date: dateString });
+      toast.success("Day added successfully");
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error("Failed to add day:", error);
+      toast.error("Failed to add day");
       // Clear the last added date on error
       lastAddedDateRef.current = null;
     }
@@ -183,7 +207,12 @@ const DaysSection: React.FC<DaysSectionProps> = ({
         tripStartDate={tripStartDate}
         tripEndDate={tripEndDate}
         tripDestination={tripDestination}
-        onRefetch={refetch}
+        onPlacesChange={onDaysChange}
+        onPlaceVisitedChange={onPlaceVisitedChange}
+        onPlaceUpdate={onPlaceUpdate}
+        onAddPlace={onAddPlace}
+        onDeletePlace={onDeletePlace}
+        onReorderPlaces={onReorderPlaces}
       />
     </div>
   );

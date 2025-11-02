@@ -253,6 +253,7 @@ export interface TripDetailViewModel {
     checkOutDate?: string;
     notes?: string;
   };
+  days?: DayWithPlacesDto[];
 }
 
 /**

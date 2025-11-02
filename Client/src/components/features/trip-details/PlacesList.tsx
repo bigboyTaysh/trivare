@@ -18,16 +18,22 @@ interface PlacesListProps {
   dayId: string;
   places: DayAttractionDto[] | null | undefined;
   onPlacesChange: () => void;
+  onPlaceVisitedChange?: (dayId: string, placeId: string, isVisited: boolean) => Promise<void>;
   onOpenAddDialog?: () => void;
   onEditPlace?: (placeId: string) => void;
+  onDeletePlace?: (dayId: string, placeId: string) => Promise<void>;
+  onReorderPlaces?: (dayId: string, reorderedPlaces: DayAttractionDto[]) => Promise<void>;
   selectedDate?: Date;
 }
 
 export const PlacesList: React.FC<PlacesListProps> = ({
   places,
   onPlacesChange,
+  onPlaceVisitedChange,
   onOpenAddDialog,
   onEditPlace,
+  onDeletePlace,
+  onReorderPlaces,
   dayId,
   selectedDate,
 }) => {
@@ -51,24 +57,29 @@ export const PlacesList: React.FC<PlacesListProps> = ({
       if (oldIndex !== -1 && newIndex !== -1) {
         const reorderedPlaces = arrayMove(sortedPlaces, oldIndex, newIndex);
 
-        // Update orders starting from 1
-        const updates = reorderedPlaces.map((place, index) => ({
-          placeId: place.placeId,
-          newOrder: index + 1,
-        }));
-
         try {
-          // Update each place's order on the backend
-          await Promise.all(
-            updates.map(({ placeId, newOrder }) => api.updatePlaceOnDay(dayId, placeId, { order: newOrder }))
-          );
+          // Use optimistic update if available, otherwise fall back to direct API calls
+          if (onReorderPlaces) {
+            await onReorderPlaces(dayId, reorderedPlaces);
+          } else {
+            // Fallback: Update each place's order on the backend directly
+            const updates = reorderedPlaces.map((place, index) => ({
+              placeId: place.placeId,
+              newOrder: index + 1,
+            }));
+
+            await Promise.all(
+              updates.map(({ placeId, newOrder }) => api.updatePlaceOnDay(dayId, placeId, { order: newOrder }))
+            );
+
+            // Trigger a refetch as fallback
+            onPlacesChange();
+          }
 
           toast.success("Places reordered successfully");
-          onPlacesChange();
         } catch (error) {
           console.error("Failed to reorder places:", error);
           toast.error("Failed to reorder places");
-          // The UI will revert to the original order since we don't update local state optimistically
         }
       }
     }
@@ -104,7 +115,9 @@ export const PlacesList: React.FC<PlacesListProps> = ({
               placeAttraction={placeAttraction}
               index={index}
               onChange={onPlacesChange}
+              onPlaceVisitedChange={onPlaceVisitedChange}
               onEdit={onEditPlace}
+              onDeletePlace={onDeletePlace}
               selectedDate={selectedDate}
             />
           ))}

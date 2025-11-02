@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import type { DayWithPlacesDto } from "@/types/trips";
+import type { DayWithPlacesDto, UpdatePlaceRequest, AddPlaceRequest, DayAttractionDto } from "@/types/trips";
 import DayView from "./DayView";
 
 interface TripCalendarViewProps {
@@ -14,7 +14,12 @@ interface TripCalendarViewProps {
   tripStartDate?: string;
   tripEndDate?: string;
   tripDestination?: string;
-  onRefetch?: () => void;
+  onPlacesChange?: () => void;
+  onPlaceVisitedChange?: (dayId: string, placeId: string, isVisited: boolean) => Promise<void>;
+  onPlaceUpdate?: (placeId: string, data: UpdatePlaceRequest) => Promise<void>;
+  onAddPlace?: (dayId: string, data: AddPlaceRequest) => Promise<unknown>;
+  onDeletePlace?: (dayId: string, placeId: string) => Promise<void>;
+  onReorderPlaces?: (dayId: string, reorderedPlaces: DayAttractionDto[]) => Promise<void>;
 }
 
 const TripCalendarView: React.FC<TripCalendarViewProps> = ({
@@ -27,7 +32,12 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
   tripStartDate,
   tripEndDate,
   tripDestination,
-  onRefetch,
+  onPlacesChange,
+  onPlaceVisitedChange,
+  onPlaceUpdate,
+  onAddPlace,
+  onDeletePlace,
+  onReorderPlaces,
 }) => {
   // Use the selected date from props (which can be any date, not just days with data)
   const selectedDate = propSelectedDate;
@@ -173,7 +183,12 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
           selectedDate={selectedDate}
           onAddDay={onAddDay}
           isLoading={isLoading}
-          onPlacesChange={onRefetch}
+          onPlacesChange={onPlacesChange}
+          onPlaceVisitedChange={onPlaceVisitedChange}
+          onPlaceUpdate={onPlaceUpdate}
+          onAddPlace={onAddPlace}
+          onDeletePlace={onDeletePlace}
+          onReorderPlaces={onReorderPlaces}
           tripDestination={tripDestination}
         />
       </div>

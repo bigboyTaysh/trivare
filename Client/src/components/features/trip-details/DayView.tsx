@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { PlaceForm } from "../../forms/PlaceForm";
 import { api } from "@/services/api";
 import { toast } from "sonner";
-import type { DayWithPlacesDto, AddPlaceRequest, UpdatePlaceRequest } from "@/types/trips";
+import type { DayWithPlacesDto, AddPlaceRequest, UpdatePlaceRequest, DayAttractionDto } from "@/types/trips";
 import { PlacesList } from "./PlacesList";
 
 interface DayViewProps {
@@ -15,6 +15,11 @@ interface DayViewProps {
   onAddDay?: (date: Date) => void;
   isLoading?: boolean;
   onPlacesChange?: () => void;
+  onPlaceVisitedChange?: (dayId: string, placeId: string, isVisited: boolean) => Promise<void>;
+  onPlaceUpdate?: (placeId: string, data: UpdatePlaceRequest) => Promise<void>;
+  onAddPlace?: (dayId: string, data: AddPlaceRequest) => Promise<unknown>;
+  onDeletePlace?: (dayId: string, placeId: string) => Promise<void>;
+  onReorderPlaces?: (dayId: string, reorderedPlaces: DayAttractionDto[]) => Promise<void>;
   tripDestination?: string;
 }
 
@@ -24,6 +29,11 @@ const DayView: React.FC<DayViewProps> = ({
   onAddDay,
   isLoading = false,
   onPlacesChange,
+  onPlaceVisitedChange,
+  onPlaceUpdate,
+  onAddPlace,
+  onDeletePlace,
+  onReorderPlaces,
   tripDestination,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -97,11 +107,19 @@ const DayView: React.FC<DayViewProps> = ({
   });
 
   const handleAddPlace = async (request: AddPlaceRequest) => {
+    if (!day) return;
+
     setIsSubmitting(true);
     try {
-      await api.addPlaceToDay(day.id, request);
-      onPlacesChange?.();
-      toast.success("Place added successfully");
+      if (onAddPlace) {
+        await onAddPlace(day.id, request);
+        toast.success("Place added successfully");
+      } else {
+        // Fallback to direct API call if optimistic update is not available
+        await api.addPlaceToDay(day.id, request);
+        onPlacesChange?.();
+        toast.success("Place added successfully");
+      }
     } catch (error) {
       console.error("Failed to add place:", error);
       toast.error("Failed to add place");
@@ -121,9 +139,15 @@ const DayView: React.FC<DayViewProps> = ({
 
     setIsSubmitting(true);
     try {
-      await api.updatePlace(editingPlaceId, request);
-      onPlacesChange?.();
-      toast.success("Place updated successfully");
+      if (onPlaceUpdate) {
+        await onPlaceUpdate(editingPlaceId, request);
+        toast.success("Place updated successfully");
+      } else {
+        // Fallback to direct API call if optimistic update is not available
+        await api.updatePlace(editingPlaceId, request);
+        onPlacesChange?.();
+        toast.success("Place updated successfully");
+      }
     } catch (error) {
       console.error("Failed to update place:", error);
       toast.error("Failed to update place");
@@ -164,8 +188,11 @@ const DayView: React.FC<DayViewProps> = ({
                 /* empty */
               })
             }
+            onPlaceVisitedChange={onPlaceVisitedChange}
             onOpenAddDialog={() => setIsDialogOpen(true)}
             onEditPlace={handleEditPlace}
+            onDeletePlace={onDeletePlace}
+            onReorderPlaces={onReorderPlaces}
             selectedDate={selectedDate}
           />
         </CardContent>

@@ -25,11 +25,21 @@ interface PlaceCardProps {
   placeAttraction: DayAttractionDto;
   index: number;
   onChange: () => void;
+  onPlaceVisitedChange?: (dayId: string, placeId: string, isVisited: boolean) => Promise<void>;
   onEdit?: (placeId: string) => void;
+  onDeletePlace?: (dayId: string, placeId: string) => Promise<void>;
   selectedDate?: Date;
 }
 
-export const PlaceCard: React.FC<PlaceCardProps> = ({ placeAttraction, index, onChange, onEdit, selectedDate }) => {
+export const PlaceCard: React.FC<PlaceCardProps> = ({
+  placeAttraction,
+  index,
+  onChange,
+  onPlaceVisitedChange,
+  onEdit,
+  onDeletePlace,
+  selectedDate,
+}) => {
   const { place, isVisited } = placeAttraction;
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -86,11 +96,17 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ placeAttraction, index, on
 
   const handleVisitedToggle = async () => {
     try {
-      await api.updatePlaceOnDay(placeAttraction.dayId, place.id, {
-        isVisited: !isVisited,
-      });
-      toast.success(isVisited ? "Place marked as not visited" : "Place marked as visited");
-      onChange();
+      if (onPlaceVisitedChange) {
+        await onPlaceVisitedChange(placeAttraction.dayId, place.id, !isVisited);
+        toast.success(isVisited ? "Place marked as not visited" : "Place marked as visited");
+      } else {
+        // Fallback to direct API call if optimistic update is not available
+        await api.updatePlaceOnDay(placeAttraction.dayId, place.id, {
+          isVisited: !isVisited,
+        });
+        toast.success(isVisited ? "Place marked as not visited" : "Place marked as visited");
+        onChange();
+      }
     } catch (error) {
       console.error("Failed to toggle visited status:", error);
       toast.error("Failed to update visited status");
@@ -99,9 +115,15 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ placeAttraction, index, on
 
   const handleRemovePlace = async () => {
     try {
-      await api.removePlaceFromDay(placeAttraction.dayId, place.id);
-      toast.success("Place removed from day");
-      onChange();
+      if (onDeletePlace) {
+        await onDeletePlace(placeAttraction.dayId, place.id);
+        toast.success("Place removed from day");
+      } else {
+        // Fallback to direct API call if optimistic update is not available
+        await api.removePlaceFromDay(placeAttraction.dayId, place.id);
+        toast.success("Place removed from day");
+        onChange();
+      }
     } catch (error) {
       console.error("Failed to remove place:", error);
       toast.error("Failed to remove place");

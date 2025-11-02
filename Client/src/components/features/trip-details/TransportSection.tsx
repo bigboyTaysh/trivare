@@ -12,10 +12,13 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Edit, Trash2, MapPin, Calendar, Plane } from "lucide-react";
-import { useTripDetails } from "@/hooks/useTripDetails";
 import FilesSection from "@/components/common/FilesSection";
-import type { CreateTransportRequest, UpdateTransportRequest, TransportViewModel } from "@/types/trips";
-import { api } from "@/services/api";
+import type {
+  CreateTransportRequest,
+  UpdateTransportRequest,
+  TransportViewModel,
+  TransportResponse,
+} from "@/types/trips";
 import { toast } from "sonner";
 import { formatDateTime } from "@/lib/dateUtils";
 
@@ -23,29 +26,39 @@ interface TransportSectionProps {
   tripId: string;
   totalFileCount: number;
   onFileChange: () => void;
+  transports: TransportViewModel[];
+  onAddTransport: (data: CreateTransportRequest) => Promise<TransportResponse>;
+  onUpdateTransport: (transportId: string, data: UpdateTransportRequest) => Promise<TransportResponse>;
+  onDeleteTransport: (transportId: string) => Promise<void>;
+  isLoading: boolean;
 }
 
-const TransportSection: React.FC<TransportSectionProps> = ({ tripId, totalFileCount, onFileChange }) => {
-  const { trip, isLoading } = useTripDetails(tripId);
+const TransportSection: React.FC<TransportSectionProps> = ({
+  tripId,
+  totalFileCount,
+  onFileChange,
+  transports,
+  onAddTransport,
+  onUpdateTransport,
+  onDeleteTransport,
+  isLoading,
+}) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingTransport, setEditingTransport] = useState<TransportViewModel | null>(null);
   const [deletingTransportId, setDeletingTransportId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const transports = trip?.transports || [];
-
   const handleAdd = async (data: CreateTransportRequest | UpdateTransportRequest) => {
     const createData = data as CreateTransportRequest;
     setIsSubmitting(true);
     try {
-      await api.addTransport(tripId, createData);
-      // Refresh trip details to get updated transports
-      window.location.reload(); // Simple refresh for now
+      await onAddTransport(createData);
       setIsDialogOpen(false);
       toast.success("Transport added successfully");
-    } catch {
+    } catch (err) {
       toast.error("Failed to add transport");
+      console.error("Failed to add transport:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -57,14 +70,13 @@ const TransportSection: React.FC<TransportSectionProps> = ({ tripId, totalFileCo
     const updateData = data as UpdateTransportRequest;
     setIsSubmitting(true);
     try {
-      await api.updateTransport(editingTransport.id, updateData);
-      // Refresh trip details to get updated transports
-      window.location.reload(); // Simple refresh for now
+      await onUpdateTransport(editingTransport.id, updateData);
       setIsDialogOpen(false);
       setEditingTransport(null);
       toast.success("Transport updated successfully");
-    } catch {
+    } catch (err) {
       toast.error("Failed to update transport");
+      console.error("Failed to update transport:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -75,14 +87,13 @@ const TransportSection: React.FC<TransportSectionProps> = ({ tripId, totalFileCo
 
     setIsSubmitting(true);
     try {
-      await api.deleteTransport(deletingTransportId);
-      // Refresh trip details to get updated transports
-      window.location.reload(); // Simple refresh for now
+      await onDeleteTransport(deletingTransportId);
       setIsDeleteDialogOpen(false);
       setDeletingTransportId(null);
       toast.success("Transport deleted successfully");
-    } catch {
+    } catch (err) {
       toast.error("Failed to delete transport");
+      console.error("Failed to delete transport:", err);
     } finally {
       setIsSubmitting(false);
     }
