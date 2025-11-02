@@ -65,9 +65,9 @@ const DayView: React.FC<DayViewProps> = ({
           </CardHeader>
           <CardContent className="flex-1 flex items-center justify-center">
             <div className="flex flex-col items-center justify-center">
-              <Calendar className="h-8 w-8 text-gray-400 mb-2" />
-              <h3 className="text-sm font-medium text-gray-900 mb-1.5">No trip day yet</h3>
-              <p className="text-gray-500 text-center text-xs mb-2">
+              <Calendar className="h-8 w-8 text-muted-foreground mb-2" />
+              <h3 className="text-sm font-medium text-foreground mb-1.5">No trip day yet</h3>
+              <p className="text-muted-foreground text-center text-xs mb-2">
                 Add this day to your trip itinerary to start planning activities and places to visit.
               </p>
               <Button onClick={() => onAddDay?.(selectedDate)} className="flex items-center gap-1 h-7">
@@ -83,7 +83,7 @@ const DayView: React.FC<DayViewProps> = ({
     return (
       <Card className="h-full">
         <CardContent className="flex items-center justify-center h-full">
-          <p className="text-gray-500">Select a day to view details</p>
+          <p className="text-muted-foreground">Select a day to view details</p>
         </CardContent>
       </Card>
     );
@@ -152,7 +152,7 @@ const DayView: React.FC<DayViewProps> = ({
               </div>
             )}
           </div>
-          {day.notes && <p className="text-xs text-gray-600">{day.notes}</p>}
+          {day.notes && <p className="text-xs text-muted-foreground">{day.notes}</p>}
         </CardHeader>
         <CardContent className="flex-1 overflow-y-auto">
           <PlacesList

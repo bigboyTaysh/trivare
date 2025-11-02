@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { User, Home, UserCircle, LogOut } from "lucide-react";
 import { clearAuthData } from "@/lib/auth";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
 
 interface ProfileDropdownProps {
   user: UserDto | null;
@@ -53,6 +54,13 @@ export function ProfileDropdown({ user }: ProfileDropdownProps) {
             <span>Profile</span>
           </a>
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <div className="px-2 py-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Theme</span>
+            <ThemeToggle />
+          </div>
+        </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
           <LogOut className="mr-2 h-4 w-4" />

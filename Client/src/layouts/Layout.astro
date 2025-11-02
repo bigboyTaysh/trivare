@@ -12,6 +12,24 @@ import "@/styles/global.css";
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>{Astro.props.title}</title>
+    <script
+      is:inline
+      set:html={`
+      // Apply theme immediately to prevent flash
+      (function() {
+        try {
+          const stored = localStorage.getItem("trivare-theme");
+          const theme = stored || "dark";
+          if (theme === "dark") {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (e) {
+          // Fallback to dark theme if localStorage is not available
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    `}
+    />
   </head>
   <body>
     <Nav client:load />

@@ -135,7 +135,7 @@ const Calendar: React.FC<CalendarProps> = ({
   const days = getDaysInMonth(currentMonth);
 
   return (
-    <div className={cn("p-3 bg-white border rounded-lg shadow-sm", className)}>
+    <div className={cn("p-3 bg-card border rounded-lg shadow-sm", className)}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <Button
@@ -164,7 +164,7 @@ const Calendar: React.FC<CalendarProps> = ({
       {/* Day headers */}
       <div className="grid grid-cols-7 gap-1 mb-2">
         {dayNames.map((day) => (
-          <div key={day} className="text-center text-sm font-medium text-gray-500 py-1">
+          <div key={day} className="text-center text-sm font-medium text-muted-foreground py-1">
             {day}
           </div>
         ))}
@@ -179,10 +179,10 @@ const Calendar: React.FC<CalendarProps> = ({
                 variant="ghost"
                 disabled={isDisabled(date)}
                 className={cn(
-                  "w-full h-full p-0 hover:bg-gray-100",
+                  "w-full h-full p-0 hover:bg-accent",
                   !isSelected(date) && !isDisabled(date) && getModifierClassNames(date),
-                  isDisabled(date) && "text-gray-400 cursor-not-allowed hover:bg-transparent",
-                  isSelected(date) && "bg-blue-500 text-white hover:bg-blue-600"
+                  isDisabled(date) && "text-muted-foreground cursor-not-allowed hover:bg-transparent",
+                  isSelected(date) && "bg-primary text-primary-foreground hover:bg-primary/90"
                 )}
                 onClick={() => handleDateClick(date)}
               >

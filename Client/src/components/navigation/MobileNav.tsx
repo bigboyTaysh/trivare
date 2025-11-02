@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Home, UserCircle, LogOut } from "lucide-react";
 import { clearAuthData } from "@/lib/auth";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
 
 interface MobileNavProps {
   user: UserDto | null;
@@ -53,6 +54,11 @@ export function MobileNav({ user }: MobileNavProps) {
             <UserCircle className="mr-2 h-4 w-4" />
             Profile
           </Button>
+          <div className="my-2 border-t" />
+          <div className="flex items-center justify-between px-3 py-2">
+            <span className="text-sm font-medium">Theme</span>
+            <ThemeToggle />
+          </div>
           <div className="my-2 border-t" />
           <Button variant="ghost" className="justify-start text-red-600 hover:text-red-600" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
