@@ -40,7 +40,7 @@ const Calendar: React.FC<CalendarProps> = ({
     "December",
   ];
 
-  const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+  const dayNames = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -48,7 +48,8 @@ const Calendar: React.FC<CalendarProps> = ({
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
+    // Adjust startingDayOfWeek to make Monday = 0, Sunday = 6
+    const startingDayOfWeek = (firstDay.getDay() + 6) % 7;
 
     const days = [];
 
