@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Calendar } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PlaceForm } from "../../forms/PlaceForm";
 import { api } from "@/services/api";
@@ -12,7 +12,8 @@ import { PlacesList } from "./PlacesList";
 interface DayViewProps {
   day: DayWithPlacesDto | null;
   selectedDate?: Date;
-  onAddDay?: (date: Date) => void;
+  onAddDay?: (date: Date) => Promise<DayWithPlacesDto>;
+  onDayCreated?: (date: Date) => void;
   isLoading?: boolean;
   onPlacesChange?: () => void;
   onPlaceVisitedChange?: (dayId: string, placeId: string, isVisited: boolean) => Promise<void>;
@@ -27,6 +28,7 @@ const DayView: React.FC<DayViewProps> = ({
   day,
   selectedDate,
   onAddDay,
+  onDayCreated,
   isLoading = false,
   onPlacesChange,
   onPlaceVisitedChange,
@@ -58,38 +60,8 @@ const DayView: React.FC<DayViewProps> = ({
     );
   }
 
-  if (!day) {
-    // If no day exists but a date is selected, show option to add the day
-    if (selectedDate) {
-      const formattedDate = selectedDate.toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-
-      return (
-        <Card className="h-full flex flex-col">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">{formattedDate}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 flex items-center justify-center">
-            <div className="flex flex-col items-center justify-center">
-              <Calendar className="h-8 w-8 text-muted-foreground mb-2" />
-              <h3 className="text-sm font-medium text-foreground mb-1.5">No trip day yet</h3>
-              <p className="text-muted-foreground text-center text-xs mb-2">
-                Add this day to your trip itinerary to start planning activities and places to visit.
-              </p>
-              <Button onClick={() => onAddDay?.(selectedDate)} className="flex items-center gap-1 h-7">
-                <Plus className="h-3 w-3" />
-                Add Day
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      );
-    }
-
+  // Handle case when no date is selected
+  if (!selectedDate) {
     return (
       <Card className="h-full">
         <CardContent className="flex items-center justify-center h-full">
@@ -99,7 +71,7 @@ const DayView: React.FC<DayViewProps> = ({
     );
   }
 
-  const formattedDate = new Date(day.date).toLocaleDateString("en-US", {
+  const formattedDate = selectedDate.toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
     month: "long",
@@ -107,21 +79,48 @@ const DayView: React.FC<DayViewProps> = ({
   });
 
   const handleAddPlace = async (request: AddPlaceRequest) => {
-    if (!day) return;
-
     setIsSubmitting(true);
     try {
+      let dayIdToUse = day?.id;
+
+      // If no day exists yet, create one first
+      if (!day && selectedDate && onAddDay) {
+        try {
+          const newDay = await onAddDay(selectedDate);
+          dayIdToUse = newDay.id;
+          // Signal that a day was created for this date - useLayoutEffect will handle selection
+          onDayCreated?.(selectedDate);
+        } catch {
+          toast.error("Failed to create day for the place");
+          setIsSubmitting(false);
+          setIsDialogOpen(false);
+          return;
+        }
+      }
+
+      if (!dayIdToUse) {
+        toast.error("Unable to add place - no day available");
+        setIsSubmitting(false);
+        setIsDialogOpen(false);
+        return;
+      }
+
       if (onAddPlace) {
-        await onAddPlace(day.id, request);
-        toast.success("Place added successfully");
+        await onAddPlace(dayIdToUse, request);
+        if (day) {
+          // Only show success message if day already existed
+          toast.success("Place added successfully");
+        }
       } else {
         // Fallback to direct API call if optimistic update is not available
-        await api.addPlaceToDay(day.id, request);
+        await api.addPlaceToDay(dayIdToUse, request);
         onPlacesChange?.();
-        toast.success("Place added successfully");
+        if (day) {
+          // Only show success message if day already existed
+          toast.success("Place added successfully");
+        }
       }
-    } catch (error) {
-      console.error("Failed to add place:", error);
+    } catch {
       toast.error("Failed to add place");
     } finally {
       setIsSubmitting(false);
@@ -148,8 +147,7 @@ const DayView: React.FC<DayViewProps> = ({
         onPlacesChange?.();
         toast.success("Place updated successfully");
       }
-    } catch (error) {
-      console.error("Failed to update place:", error);
+    } catch {
       toast.error("Failed to update place");
     } finally {
       setIsSubmitting(false);
@@ -166,7 +164,7 @@ const DayView: React.FC<DayViewProps> = ({
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm">{formattedDate}</CardTitle>
-            {day.places && day.places.length > 0 && (
+            {day?.places && day.places.length > 0 && (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Places ({day.places.length})</span>
                 <Button onClick={() => setIsDialogOpen(true)} size="sm" className="flex items-center gap-1 h-7">
@@ -176,12 +174,12 @@ const DayView: React.FC<DayViewProps> = ({
               </div>
             )}
           </div>
-          {day.notes && <p className="text-xs text-muted-foreground">{day.notes}</p>}
+          {day?.notes && <p className="text-xs text-muted-foreground">{day.notes}</p>}
         </CardHeader>
         <CardContent className="flex-1 overflow-y-auto">
           <PlacesList
-            dayId={day.id}
-            places={day.places}
+            dayId={day?.id || "temp"} // Use temp ID when no day exists yet
+            places={day?.places || []}
             onPlacesChange={
               onPlacesChange ||
               (() => {
@@ -219,7 +217,7 @@ const DayView: React.FC<DayViewProps> = ({
             <DialogTitle>Edit Place Details</DialogTitle>
           </DialogHeader>
           <PlaceForm
-            defaultPlace={editingPlaceId ? day.places?.find((p) => p.place.id === editingPlaceId)?.place : undefined}
+            defaultPlace={editingPlaceId ? day?.places?.find((p) => p.place.id === editingPlaceId)?.place : undefined}
             onSubmit={handleAddPlace}
             onUpdate={handleUpdatePlace}
             onCancel={() => setIsEditDialogOpen(false)}

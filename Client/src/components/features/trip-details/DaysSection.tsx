@@ -171,6 +171,12 @@ const DaysSection: React.FC<DaysSectionProps> = ({
     }
   };
 
+  const handleDayCreated = (date: Date) => {
+    // Set the last added date so the useLayoutEffect knows a day was just created
+    const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    lastAddedDateRef.current = dateString;
+  };
+
   const handleAddDay = async (date?: Date) => {
     try {
       // Use the provided date, or selectedDate, or current date as fallback
@@ -184,14 +190,16 @@ const DaysSection: React.FC<DaysSectionProps> = ({
       // Store the date we're adding to preserve selection after creation
       lastAddedDateRef.current = dateString;
 
-      await onAddDay({ date: dateString });
+      const newDay = await onAddDay({ date: dateString });
       toast.success("Day added successfully");
+      return newDay;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error("Failed to add day:", error);
       toast.error("Failed to add day");
       // Clear the last added date on error
       lastAddedDateRef.current = null;
+      throw error; // Re-throw so DayView can catch it
     }
   };
 
@@ -202,6 +210,7 @@ const DaysSection: React.FC<DaysSectionProps> = ({
         isLoading={isLoading}
         onDaySelect={handleDaySelect}
         onAddDay={handleAddDay}
+        onDayCreated={handleDayCreated}
         selectedDayId={selectedDay?.id}
         selectedDate={selectedDate || undefined}
         tripStartDate={tripStartDate}

@@ -8,7 +8,8 @@ interface TripCalendarViewProps {
   days: DayWithPlacesDto[];
   isLoading?: boolean;
   onDaySelect?: (day: DayWithPlacesDto | null, date: Date | null) => void;
-  onAddDay?: (date?: Date) => void;
+  onAddDay?: (date?: Date) => Promise<DayWithPlacesDto>;
+  onDayCreated?: (date: Date) => void;
   selectedDayId?: string;
   selectedDate?: Date;
   tripStartDate?: string;
@@ -27,6 +28,7 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
   isLoading = false,
   onDaySelect,
   onAddDay,
+  onDayCreated,
   selectedDayId,
   selectedDate: propSelectedDate,
   tripStartDate,
@@ -44,16 +46,14 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
 
   // Create modifiers for the calendar
   const modifiers = useMemo(() => {
-    const tripDays: Date[] = [];
     const daysWithPlaces: Date[] = [];
 
     if (days) {
       days.forEach((day) => {
-        // Parse date string and normalize to midnight local time to avoid timezone issues
-        const [year, month, dayNum] = day.date.split("-").map(Number);
-        const date = new Date(year, month - 1, dayNum);
-        tripDays.push(date);
         if (day.places && day.places.length > 0) {
+          // Parse date string and normalize to midnight local time to avoid timezone issues
+          const [year, month, dayNum] = day.date.split("-").map(Number);
+          const date = new Date(year, month - 1, dayNum);
           daysWithPlaces.push(date);
         }
       });
@@ -64,15 +64,13 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
     const todayNormalized = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
     return {
-      tripDay: tripDays,
       hasPlaces: daysWithPlaces,
       today: [todayNormalized],
     };
   }, [days]);
 
   const modifiersClassNames = {
-    tripDay: "bg-blue-100 text-blue-900 font-semibold",
-    hasPlaces: "ring-2 ring-blue-400",
+    hasPlaces: "bg-blue-100 text-blue-900 font-semibold ring-2 ring-blue-400",
     today: "ring-1 ring-gray-400",
   };
 
@@ -162,12 +160,12 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
                     <span>Today</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-blue-100 rounded"></div>
-                    <span>Trip days</span>
-                  </div>
-                  <div className="flex items-center gap-1">
                     <div className="w-3 h-3 bg-blue-100 ring-2 ring-blue-400 rounded"></div>
                     <span>Days with places</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                    <span>Selected day</span>
                   </div>
                 </div>
               </div>
@@ -182,6 +180,10 @@ const TripCalendarView: React.FC<TripCalendarViewProps> = ({
           day={selectedDay}
           selectedDate={selectedDate}
           onAddDay={onAddDay}
+          onDayCreated={(date) => {
+            onDayCreated?.(date);
+            onDaySelect?.(null, date);
+          }}
           isLoading={isLoading}
           onPlacesChange={onPlacesChange}
           onPlaceVisitedChange={onPlaceVisitedChange}

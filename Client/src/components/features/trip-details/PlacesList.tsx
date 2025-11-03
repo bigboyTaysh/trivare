@@ -77,8 +77,7 @@ export const PlacesList: React.FC<PlacesListProps> = ({
           }
 
           toast.success("Places reordered successfully");
-        } catch (error) {
-          console.error("Failed to reorder places:", error);
+        } catch {
           toast.error("Failed to reorder places");
         }
       }
@@ -92,10 +91,10 @@ export const PlacesList: React.FC<PlacesListProps> = ({
   if (placesArray.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
-        <MapPin className="h-8 w-8 text-gray-400 mb-2" />
-        <h3 className="text-sm font-medium text-gray-900 mb-1.5">No places planned yet</h3>
-        <p className="text-gray-500 text-center text-xs mb-2">
-          Add attractions, restaurants, or other points of interest to your day.
+        <MapPin className="h-8 w-8 text-muted-foreground mb-2" />
+        <h3 className="text-sm font-medium text-foreground mb-1.5">Ready to plan your day</h3>
+        <p className="text-muted-foreground text-center text-xs mb-2">
+          Start by adding your first place or activity for this day.
         </p>
         <Button onClick={handleAddPlace} className="flex items-center gap-1 h-7">
           <Plus className="h-3 w-3" />
