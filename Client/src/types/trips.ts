@@ -13,6 +13,22 @@ export interface TripListDto {
   endDate: string; // Format: "YYYY-MM-DD"
   notes?: string;
   createdAt: string; // ISO 8601 DateTime string
+
+  // Enhanced statistics (optional, fetched separately)
+  statistics?: {
+    dayCount: number;
+    placeCount: number;
+    transportCount: number;
+    fileCount: number;
+    durationInDays: number;
+    daysCompleted?: number;
+    daysRemaining?: number;
+    progressPercentage?: number;
+    hasAccommodation: boolean;
+    hasTransports: boolean;
+    hasPlaces: boolean;
+    hasFiles: boolean;
+  };
 }
 
 /**
@@ -221,7 +237,7 @@ export interface UpdateAccommodationRequest {
  * Frontend view model for the Dashboard view
  */
 export interface DashboardViewModel {
-  // Categorized data
+  // Categorized data with enhanced statistics
   ongoingTrips: TripListDto[]; // Current and future trips combined
   pastTrips: TripListDto[];
 
@@ -232,6 +248,9 @@ export interface DashboardViewModel {
   // UI state flags
   isLoading: boolean;
   error: Error | null;
+
+  // Statistics loading state
+  statisticsLoading: boolean;
 }
 
 /**
