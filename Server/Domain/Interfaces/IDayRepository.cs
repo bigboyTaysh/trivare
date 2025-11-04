@@ -55,4 +55,12 @@ public interface IDayRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The day entity with trip or null if not found</returns>
     Task<Day?> GetByIdWithTripAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all days for a specific trip including places
+    /// </summary>
+    /// <param name="tripId">The trip ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of day entities with places for the trip</returns>
+    Task<IEnumerable<Day>> GetDaysWithPlacesByTripIdAsync(Guid tripId, CancellationToken cancellationToken = default);
 }

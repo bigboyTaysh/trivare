@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Trivare.Application.DTOs.Common;
 using Trivare.Application.DTOs.Days;
+using Trivare.Application.DTOs.Places;
 using Trivare.Application.Interfaces;
 using Trivare.Domain.Entities;
 using Trivare.Domain.Interfaces;
@@ -14,12 +15,18 @@ public class DayService : IDayService
 {
     private readonly IDayRepository _dayRepository;
     private readonly ITripRepository _tripRepository;
+    private readonly IDayAttractionRepository _dayAttractionRepository;
     private readonly ILogger<DayService> _logger;
 
-    public DayService(IDayRepository dayRepository, ITripRepository tripRepository, ILogger<DayService> logger)
+    public DayService(
+        IDayRepository dayRepository, 
+        ITripRepository tripRepository, 
+        IDayAttractionRepository dayAttractionRepository,
+        ILogger<DayService> logger)
     {
         _dayRepository = dayRepository;
         _tripRepository = tripRepository;
+        _dayAttractionRepository = dayAttractionRepository;
         _logger = logger;
     }
 
@@ -84,10 +91,10 @@ public class DayService : IDayService
     }
 
     /// <summary>
-    /// Gets all days for a specific trip
+    /// Gets all days for a specific trip with associated places
     /// Validates trip ownership before returning days
     /// </summary>
-    public async Task<Result<IEnumerable<DayDto>>> GetDaysForTripAsync(Guid tripId, Guid userId, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<DayWithPlacesDto>>> GetDaysForTripAsync(Guid tripId, Guid userId, CancellationToken cancellationToken = default)
     {
         // Check if trip exists and belongs to user
         var trip = await _tripRepository.GetByIdAsync(tripId, cancellationToken);
@@ -106,15 +113,46 @@ public class DayService : IDayService
         // Get days for the trip
         var days = await _dayRepository.GetByTripIdAsync(tripId, cancellationToken);
 
-        var dayDtos = days.Select(d => new DayDto
-        {
-            Id = d.Id,
-            TripId = d.TripId,
-            Date = d.Date,
-            Notes = d.Notes
-        });
+        var dayWithPlacesDtos = new List<DayWithPlacesDto>();
 
-        return dayDtos.ToList();
+        foreach (var day in days)
+        {
+            // Get places for this day
+            var dayAttractions = await _dayAttractionRepository.GetByDayIdAsync(day.Id, cancellationToken);
+
+            var placeDtos = dayAttractions.Select(da => new DayAttractionDto
+            {
+                DayId = da.DayId,
+                PlaceId = da.PlaceId,
+                Place = new PlaceDto
+                {
+                    Id = da.Place.Id,
+                    GooglePlaceId = da.Place.GooglePlaceId,
+                    Name = da.Place.Name,
+                    FormattedAddress = da.Place.FormattedAddress,
+                    Website = da.Place.Website,
+                    GoogleMapsLink = da.Place.GoogleMapsLink,
+                    OpeningHoursText = da.Place.OpeningHoursText,
+                    PhotoReference = da.Place.PhotoReference, // Raw reference without API key
+                    IsManuallyAdded = da.Place.IsManuallyAdded
+                },
+                Order = da.Order,
+                IsVisited = da.IsVisited
+            });
+
+            var dayWithPlacesDto = new DayWithPlacesDto
+            {
+                Id = day.Id,
+                TripId = day.TripId,
+                Date = day.Date,
+                Notes = day.Notes,
+                Places = placeDtos
+            };
+
+            dayWithPlacesDtos.Add(dayWithPlacesDto);
+        }
+
+        return dayWithPlacesDtos;
     }
 
     /// <summary>

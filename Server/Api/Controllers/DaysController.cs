@@ -4,6 +4,7 @@ using Trivare.Api.Controllers.Utils;
 using Trivare.Api.Extensions;
 using Trivare.Application.DTOs.Days;
 using Trivare.Application.DTOs.Common;
+using Trivare.Application.DTOs.Places;
 using Trivare.Application.Interfaces;
 using System.Net;
 
@@ -49,13 +50,13 @@ public class DaysController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all days for a specific trip
+    /// Retrieves all days for a specific trip with associated places
     /// </summary>
     /// <param name="tripId">The ID of the trip</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>List of days for the trip</returns>
+    /// <returns>List of days with places for the trip</returns>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<DayDto>), 200)]
+    [ProducesResponseType(typeof(IEnumerable<DayWithPlacesDto>), 200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
     [ProducesResponseType(403)]

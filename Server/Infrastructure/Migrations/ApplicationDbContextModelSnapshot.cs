@@ -193,7 +193,7 @@ namespace Infrastructure.Migrations
 
                     b.ToTable("Files", t =>
                         {
-                            t.HasCheckConstraint("CK_Files_PolymorphicLink", "(CASE WHEN TripId IS NOT NULL THEN 1 ELSE 0 END) + (CASE WHEN TransportId IS NOT NULL THEN 1 ELSE 0 END) + (CASE WHEN AccommodationId IS NOT NULL THEN 1 ELSE 0 END) + (CASE WHEN DayId IS NOT NULL THEN 1 ELSE 0 END) = 1");
+                            t.HasCheckConstraint("CK_Files_PolymorphicLink", "(CASE WHEN TransportId IS NOT NULL THEN 1 ELSE 0 END) + (CASE WHEN AccommodationId IS NOT NULL THEN 1 ELSE 0 END) + (CASE WHEN DayId IS NOT NULL THEN 1 ELSE 0 END) <= 1");
                         });
                 });
 
@@ -229,6 +229,9 @@ namespace Infrastructure.Migrations
                     b.Property<string>("OpeningHoursText")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("PhotoReference")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Website")
                         .HasMaxLength(500)

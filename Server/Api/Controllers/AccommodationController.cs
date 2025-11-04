@@ -63,17 +63,37 @@ public class AccommodationController : ControllerBase
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated accommodation details</returns>
     [HttpPatch]
-    [ProducesResponseType(typeof(AccommodationDto), 200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
+    [ProducesResponseType(typeof(AccommodationDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateAccommodation(Guid tripId, UpdateAccommodationRequest request, CancellationToken cancellationToken = default)
     {
         var userId = this.GetAuthenticatedUserId();
         var result = await _accommodationService.UpdateAccommodationAsync(request, tripId, userId, cancellationToken);
 
         return this.HandleResult(result);
+    }
+
+    /// <summary>
+    /// Deletes accommodation from a specific trip
+    /// </summary>
+    /// <param name="tripId">The ID of the trip</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>No content on successful deletion</returns>
+    [HttpDelete]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeleteAccommodation(Guid tripId, CancellationToken cancellationToken = default)
+    {
+        var userId = this.GetAuthenticatedUserId();
+        var result = await _accommodationService.DeleteAccommodationAsync(tripId, userId, cancellationToken);
+
+        return this.HandleResult(result, StatusCodes.Status204NoContent);
     }
 }

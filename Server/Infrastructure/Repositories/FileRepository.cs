@@ -65,4 +65,43 @@ public class FileRepository : IFileRepository
                 (f.DayId.HasValue && _context.Days.Any(d => d.Id == f.DayId && d.TripId == tripId)))
             .ToListAsync(cancellationToken);
     }
+
+    /// <summary>
+    /// Gets all files directly associated with a trip (trip-level files only)
+    /// </summary>
+    public async Task<IEnumerable<Trivare.Domain.Entities.File>> GetTripLevelFilesByTripIdAsync(Guid tripId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Files
+            .Where(f => f.TripId == tripId && f.AccommodationId == null && f.TransportId == null && f.DayId == null)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets all files associated with an accommodation
+    /// </summary>
+    public async Task<IEnumerable<Trivare.Domain.Entities.File>> GetFilesByAccommodationIdAsync(Guid accommodationId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Files
+            .Where(f => f.AccommodationId == accommodationId)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets all files associated with a transport
+    /// </summary>
+    public async Task<IEnumerable<Trivare.Domain.Entities.File>> GetFilesByTransportIdAsync(Guid transportId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Files
+            .Where(f => f.TransportId == transportId)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Deletes a file from the database
+    /// </summary>
+    public async Task DeleteAsync(Trivare.Domain.Entities.File file, CancellationToken cancellationToken = default)
+    {
+        _context.Files.Remove(file);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }

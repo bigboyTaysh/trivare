@@ -135,10 +135,9 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.Day).WithMany(d => d.Files).HasForeignKey(e => e.DayId).OnDelete(DeleteBehavior.NoAction);
 
             entity.ToTable(tb => tb.HasCheckConstraint("CK_Files_PolymorphicLink",
-                "(CASE WHEN TripId IS NOT NULL THEN 1 ELSE 0 END) + " +
                 "(CASE WHEN TransportId IS NOT NULL THEN 1 ELSE 0 END) + " +
                 "(CASE WHEN AccommodationId IS NOT NULL THEN 1 ELSE 0 END) + " +
-                "(CASE WHEN DayId IS NOT NULL THEN 1 ELSE 0 END) = 1"));
+                "(CASE WHEN DayId IS NOT NULL THEN 1 ELSE 0 END) <= 1"));
         });
 
         modelBuilder.Entity<AuditLog>(entity =>

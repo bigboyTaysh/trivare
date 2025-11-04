@@ -46,4 +46,41 @@ public class DayAttractionRepository : IDayAttractionRepository
         await _context.SaveChangesAsync(cancellationToken);
         return dayAttraction;
     }
+
+    /// <summary>
+    /// Gets all day-attractions for a specific day including places
+    /// </summary>
+    public async Task<IEnumerable<DayAttraction>> GetByDayIdAsync(Guid dayId, CancellationToken cancellationToken = default)
+    {
+        return await _context.DayAttractions
+            .AsNoTracking()
+            .Include(da => da.Place)
+            .Where(da => da.DayId == dayId)
+            .OrderBy(da => da.Order)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Deletes a day-attraction association
+    /// </summary>
+    public async Task DeleteAsync(DayAttraction dayAttraction, CancellationToken cancellationToken = default)
+    {
+        _context.DayAttractions.Remove(dayAttraction);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Checks if a user has access to a place through trip ownership
+    /// User has access if they own at least one trip that contains this place
+    /// </summary>
+    public async Task<bool> UserHasAccessToPlaceAsync(Guid userId, Guid placeId, CancellationToken cancellationToken = default)
+    {
+        return await _context.DayAttractions
+            .AnyAsync(da =>
+                da.PlaceId == placeId &&
+                da.Day != null &&
+                da.Day.Trip != null &&
+                da.Day.Trip.UserId == userId,
+                cancellationToken);
+    }
 }

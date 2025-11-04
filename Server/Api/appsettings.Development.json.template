@@ -5,6 +5,7 @@
       "Microsoft.AspNetCore": "Warning"
     }
   },
+  "Urls": "http://localhost:5000;https://localhost:5001",
   "ConnectionStrings": {
     "DefaultConnection": "Server=localhost,1433;Database=Trivare;User Id=sa;Password=REPLACE_WITH_SA_PASSWORD;Trusted_Connection=False;MultipleActiveResultSets=true;TrustServerCertificate=True"
   },
@@ -23,5 +24,23 @@
     "SenderEmail": "your-email@mail.com",
     "Username": "your-email@mail.com",
     "Password": "your-app-password"
+  },
+  "CloudflareR2": {
+    "AccountId": "your-cloudflare-account-id",
+    "AccessKeyId": "your-r2-access-key-id",
+    "SecretAccessKey": "your-r2-secret-access-key",
+    "BucketName": "trivare-files",
+    "PresignedUrlExpirationMinutes": 60
+  },
+  "GooglePlaces": {
+    "ApiKey": "your-google-places-api-key",
+    "MaxResults": 20,
+    "SearchRadiusMeters": 5000
+  },
+  "OpenRouter": {
+    "ApiKey": "your-openrouter-api-key",
+    "Model": "anthropic/claude-3.5-sonnet",
+    "BaseUrl": "https://openrouter.ai/api/v1",
+    "ResultCount": 8
   }
 }

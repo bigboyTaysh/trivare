@@ -24,6 +24,14 @@ public interface ITripRepository
     Task<Trip?> GetByIdAsync(Guid tripId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets a trip by its ID including the accommodation details.
+    /// </summary>
+    /// <param name="id">The ID of the trip.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The trip entity with accommodation or null if not found.</returns>
+    Task<Trip?> GetByIdWithAccommodationAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Updates an existing trip
     /// </summary>
     /// <param name="trip">The trip entity to update</param>

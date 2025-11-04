@@ -28,6 +28,15 @@ public class AccommodationRepository : IAccommodationRepository
     }
 
     /// <summary>
+    /// Gets an accommodation by its ID
+    /// </summary>
+    public async Task<Accommodation?> GetByIdAsync(Guid accommodationId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Accommodations
+            .FirstOrDefaultAsync(a => a.Id == accommodationId, cancellationToken);
+    }
+
+    /// <summary>
     /// Gets an accommodation by trip ID
     /// </summary>
     public async Task<Accommodation?> GetByTripIdAsync(Guid tripId, CancellationToken cancellationToken = default)
@@ -44,5 +53,14 @@ public class AccommodationRepository : IAccommodationRepository
         _context.Accommodations.Update(accommodation);
         await _context.SaveChangesAsync(cancellationToken);
         return accommodation;
+    }
+
+    /// <summary>
+    /// Deletes an accommodation
+    /// </summary>
+    public async Task DeleteAsync(Accommodation accommodation, CancellationToken cancellationToken = default)
+    {
+        _context.Accommodations.Remove(accommodation);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

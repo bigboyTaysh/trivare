@@ -1,0 +1,21 @@
+---
+description: 
+globs: *.astro
+alwaysApply: false
+---
+
+# AI Rules for Astro Components
+
+This file contains rules and guidelines for Astro components in the Trivare project.
+
+## General Guidelines
+
+- Use Astro for static content and layouts.
+- Prefer Astro components for UI that doesn't require client-side interactivity.
+- Use `client:load`, `client:idle`, or `client:visible` directives to hydrate React components where necessary.
+
+## Component Structure
+
+- Keep the component script (`---`) at the top of the file.
+- Follow with the component's HTML template.
+- Use `<style>` tags for component-scoped CSS.

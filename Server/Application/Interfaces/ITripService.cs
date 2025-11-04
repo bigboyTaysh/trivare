@@ -19,6 +19,15 @@ public interface ITripService
     Task<Result<CreateTripResponse>> CreateTripAsync(CreateTripRequest request, Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a single trip by its ID for the authenticated user.
+    /// </summary>
+    /// <param name="tripId">The ID of the trip to retrieve.</param>
+    /// <param name="userId">The ID of the authenticated user.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The trip details or an error.</returns>
+    Task<Result<TripDetailDto>> GetTripByIdAsync(Guid tripId, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves a paginated list of trips for the authenticated user
     /// </summary>
     /// <param name="request">The list request parameters</param>

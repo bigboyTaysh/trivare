@@ -20,4 +20,9 @@ public static class PlaceErrorCodes
     // Update place on day error codes
     public const string DayAttractionNotFound = "DayAttractionNotFound";
     public const string NoFieldsToUpdate = "NoFieldsToUpdate";
+
+    // Update place error codes
+    public const string PlaceNotOwned = "PlaceNotOwned";
+    public const string InvalidWebsiteUrl = "InvalidWebsiteUrl";
+    public const string InvalidGoogleMapsUrl = "InvalidGoogleMapsUrl";
 }

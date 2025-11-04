@@ -51,4 +51,40 @@ public interface IFileService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The file upload response or an error</returns>
     Task<Result<FileUploadResponse>> UploadDayFileAsync(Guid dayId, FileUploadData file, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all files for a trip with secure presigned URLs
+    /// </summary>
+    /// <param name="tripId">The ID of the trip</param>
+    /// <param name="userId">The ID of the authenticated user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of files with presigned URLs</returns>
+    Task<Result<IEnumerable<FileUploadResponse>>> GetTripFilesAsync(Guid tripId, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all files for an accommodation with secure presigned URLs
+    /// </summary>
+    /// <param name="accommodationId">The ID of the accommodation</param>
+    /// <param name="userId">The ID of the authenticated user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of files with presigned URLs</returns>
+    Task<Result<IEnumerable<FileUploadResponse>>> GetAccommodationFilesAsync(Guid accommodationId, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all files for a transport with secure presigned URLs
+    /// </summary>
+    /// <param name="transportId">The ID of the transport</param>
+    /// <param name="userId">The ID of the authenticated user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of files with presigned URLs</returns>
+    Task<Result<IEnumerable<FileUploadResponse>>> GetTransportFilesAsync(Guid transportId, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a file from storage and database
+    /// </summary>
+    /// <param name="fileId">The ID of the file to delete</param>
+    /// <param name="userId">The ID of the authenticated user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Success result or an error</returns>
+    Task<Result<bool>> DeleteFileAsync(Guid fileId, Guid userId, CancellationToken cancellationToken = default);
 }

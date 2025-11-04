@@ -22,7 +22,7 @@ public record ResetPasswordRequest
     /// </summary>
     [Required(ErrorMessage = "New password is required")]
     [MinLength(8, ErrorMessage = "Password must be at least 8 characters")]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$",
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]+$",
         ErrorMessage = "Password must contain uppercase, lowercase, number, and special character")]
     public required string NewPassword { get; init; }
 }

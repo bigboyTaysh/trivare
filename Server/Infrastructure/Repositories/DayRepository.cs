@@ -79,4 +79,18 @@ public class DayRepository : IDayRepository
         await _context.SaveChangesAsync(cancellationToken);
         return day;
     }
+
+    /// <summary>
+    /// Gets all days for a specific trip including places
+    /// </summary>
+    public async Task<IEnumerable<Day>> GetDaysWithPlacesByTripIdAsync(Guid tripId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Days
+            .AsNoTracking()
+            .Include(d => d.DayAttractions)
+                .ThenInclude(da => da.Place)
+            .Where(d => d.TripId == tripId)
+            .OrderBy(d => d.Date)
+            .ToListAsync(cancellationToken);
+    }
 }

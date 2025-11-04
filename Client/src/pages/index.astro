@@ -1,11 +1,12 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import DataFetcher from "../components/DataFetcher";
+import { DashboardView } from "../components/views/DashboardView";
 ---
 
-<Layout title="Astro + .NET 9 App">
-  <main class="container mx-auto p-8">
-    <h1 class="text-4xl font-bold mb-8">Welcome to Astro + .NET 9</h1>
-    <DataFetcher client:load />
-  </main>
+<Layout title="Dashboard - Trivare">
+  <DashboardView client:load />
+
+  <script>
+    // Client-side authentication check import {requireAuth} from "@/lib/auth"; requireAuth();
+  </script>
 </Layout>

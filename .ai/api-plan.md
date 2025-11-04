@@ -4,18 +4,18 @@
 
 The API is organized around the following main resources, mapped to database tables:
 
-| Resource | Database Table | Description |
-|----------|---------------|-------------|
-| Auth | Users, Roles, UserRoles | Authentication and authorization operations |
-| Users | Users | User profile management |
-| Trips | Trips | Core trip information and planning |
-| Transport | Transport | Transportation details for trips (one-to-many with Trip) |
-| Accommodation | Accommodation | Accommodation details for trips (one-to-one with Trip) |
-| Days | Days | Individual days within trips |
-| Places | Places | Attractions and points of interest |
-| DayAttractions | DayAttractions | Links places to specific days |
-| Files | Files | User-uploaded documents and images |
-| Admin | AuditLog | Administrative metrics and audit logs |
+| Resource       | Database Table          | Description                                              |
+| -------------- | ----------------------- | -------------------------------------------------------- |
+| Auth           | Users, Roles, UserRoles | Authentication and authorization operations              |
+| Users          | Users                   | User profile management                                  |
+| Trips          | Trips                   | Core trip information and planning                       |
+| Transport      | Transport               | Transportation details for trips (one-to-many with Trip) |
+| Accommodation  | Accommodation           | Accommodation details for trips (one-to-one with Trip)   |
+| Days           | Days                    | Individual days within trips                             |
+| Places         | Places                  | Attractions and points of interest                       |
+| DayAttractions | DayAttractions          | Links places to specific days                            |
+| Files          | Files                   | User-uploaded documents and images                       |
+| Admin          | AuditLog                | Administrative metrics and audit logs                    |
 
 ## 2. Endpoints
 
@@ -28,6 +28,7 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Register a new user account
 - **Authentication:** None
 - **Request Body:**
+
 ```json
 {
   "userName": "johndoe",
@@ -35,7 +36,9 @@ The API is organized around the following main resources, mapped to database tab
   "password": "SecurePassword123!"
 }
 ```
+
 - **Response (201 Created):**
+
 ```json
 {
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -44,6 +47,7 @@ The API is organized around the following main resources, mapped to database tab
   "createdAt": "2025-10-12T10:30:00Z"
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid email format or weak password
   - `409 Conflict` - Email already exists
@@ -57,13 +61,16 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Authenticate user and receive JWT tokens
 - **Authentication:** None
 - **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
   "password": "SecurePassword123!"
 }
 ```
+
 - **Response (200 OK):**
+
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -76,6 +83,7 @@ The API is organized around the following main resources, mapped to database tab
   }
 }
 ```
+
 - **Error Responses:**
   - `401 Unauthorized` - Invalid credentials
 
@@ -88,12 +96,15 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Obtain new access token using refresh token
 - **Authentication:** None (refresh token in body)
 - **Request Body:**
+
 ```json
 {
   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
+
 - **Response (200 OK):**
+
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -101,6 +112,7 @@ The API is organized around the following main resources, mapped to database tab
   "expiresIn": 900
 }
 ```
+
 - **Error Responses:**
   - `401 Unauthorized` - Invalid or expired refresh token
 
@@ -113,17 +125,21 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Invalidate the refresh token to log the user out. The access token will expire on its own.
 - **Authentication:** None (refresh token in body)
 - **Request Body:**
+
 ```json
 {
   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
+
 - **Response (200 OK):**
+
 ```json
 {
   "message": "Logged out successfully"
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid refresh token provided.
 
@@ -136,17 +152,21 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Initiate password reset process (sends email with reset token)
 - **Authentication:** None
 - **Request Body:**
+
 ```json
 {
   "email": "user@example.com"
 }
 ```
+
 - **Response (200 OK):**
+
 ```json
 {
   "message": "Password reset link sent to your email"
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid email format
   - `404 Not Found` - Email not found (Note: May return 200 for security)
@@ -160,18 +180,22 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Reset password using token from email
 - **Authentication:** None (token in body)
 - **Request Body:**
+
 ```json
 {
   "token": "reset-token-from-email",
   "newPassword": "NewSecurePassword123!"
 }
 ```
+
 - **Response (200 OK):**
+
 ```json
 {
   "message": "Password reset successful"
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid or expired token, or weak password
   - `404 Not Found` - Token not found
@@ -187,6 +211,7 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Get current authenticated user profile
 - **Authentication:** Required (JWT)
 - **Response (200 OK):**
+
 ```json
 {
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -196,6 +221,7 @@ The API is organized around the following main resources, mapped to database tab
   "roles": ["User"]
 }
 ```
+
 - **Error Responses:**
   - `401 Unauthorized` - Invalid or missing token
 
@@ -208,6 +234,7 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Update current user username and/or password
 - **Authentication:** Required (JWT)
 - **Request Body:**
+
 ```json
 {
   "userName": "newusername",
@@ -215,7 +242,9 @@ The API is organized around the following main resources, mapped to database tab
   "newPassword": "NewSecurePassword123!"
 }
 ```
+
 - **Response (200 OK):**
+
 ```json
 {
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -225,6 +254,7 @@ The API is organized around the following main resources, mapped to database tab
   "roles": ["User"]
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid data or current password mismatch
 
@@ -259,6 +289,7 @@ The API is organized around the following main resources, mapped to database tab
   - `sortOrder` (string, default: "desc") - Sort order (asc, desc)
   - `search` (string, optional) - Search in name and destination
 - **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -280,6 +311,7 @@ The API is organized around the following main resources, mapped to database tab
   }
 }
 ```
+
 - **Error Responses:**
   - `401 Unauthorized` - Invalid or missing token
 
@@ -289,11 +321,10 @@ The API is organized around the following main resources, mapped to database tab
 
 - **Method:** `GET`
 - **Path:** `/api/trips/{tripId}`
-- **Description:** Get detailed trip information with optional related data
+- **Description:** Get detailed trip information with its accommodation.
 - **Authentication:** Required (JWT)
-- **Query Parameters:**
-  - `include` (string, optional) - Comma-separated list of related resources to include (days, transport, accommodation, files)
 - **Response (200 OK):**
+
 ```json
 {
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -303,43 +334,17 @@ The API is organized around the following main resources, mapped to database tab
   "endDate": "2025-07-10",
   "notes": "Family trip to Paris",
   "createdAt": "2025-06-01T10:30:00Z",
-  "transports": [{
-    "id": "4fa85f64-5717-4562-b3fc-2c963f66afa7",
-    "type": "Flight",
-    "departureLocation": "New York JFK",
-    "arrivalLocation": "Paris CDG",
-    "departureTime": "2025-07-01T08:00:00Z",
-    "arrivalTime": "2025-07-01T20:00:00Z",
-    "notes": "Air France AF007"
-  }],
   "accommodation": {
     "id": "5fa85f64-5717-4562-b3fc-2c963f66afa8",
     "name": "Hotel Eiffel",
-    "address": "123 Rue de Paris, 75001 Paris",
-    "checkInDate": "2025-07-01T15:00:00Z",
+    "address": "20 Rue de la Paix, 75002 Paris, France",
+    "checkInDate": "2025-07-01T14:00:00Z",
     "checkOutDate": "2025-07-10T11:00:00Z",
     "notes": "Booking confirmation #123456"
-  },
-  "days": [
-    {
-      "id": "6fa85f64-5717-4562-b3fc-2c963f66afa9",
-      "date": "2025-07-01",
-      "notes": "Arrival day"
-    }
-  ],
-  "files": [
-    {
-      "id": "7fa85f64-5717-4562-b3fc-2c963f66afaa",
-      "fileName": "flight-ticket.pdf",
-      "fileSize": 245678,
-      "fileType": "application/pdf",
-      "createdAt": "2025-06-01T10:30:00Z",
-      "previewUrl": "/api/files/7fa85f64-5717-4562-b3fc-2c963f66afaa/preview",
-      "downloadUrl": "/api/files/7fa85f64-5717-4562-b3fc-2c963f66afaa/download"
-    }
-  ]
+  }
 }
 ```
+
 - **Error Responses:**
   - `401 Unauthorized` - Invalid or missing token
   - `403 Forbidden` - Trip belongs to another user
@@ -354,6 +359,7 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Create a new trip
 - **Authentication:** Required (JWT)
 - **Request Body:**
+
 ```json
 {
   "name": "Summer Vacation",
@@ -363,7 +369,9 @@ The API is organized around the following main resources, mapped to database tab
   "notes": "Family trip to Paris"
 }
 ```
+
 - **Response (201 Created):**
+
 ```json
 {
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -375,6 +383,7 @@ The API is organized around the following main resources, mapped to database tab
   "createdAt": "2025-06-01T10:30:00Z"
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid data (e.g., endDate before startDate)
   - `409 Conflict` - User has reached the 10-trip limit
@@ -396,6 +405,7 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Update trip information
 - **Authentication:** Required (JWT)
 - **Request Body:**
+
 ```json
 {
   "name": "Summer Vacation Updated",
@@ -405,7 +415,9 @@ The API is organized around the following main resources, mapped to database tab
   "notes": "Extended family trip"
 }
 ```
+
 - **Response (200 OK):**
+
 ```json
 {
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -417,6 +429,7 @@ The API is organized around the following main resources, mapped to database tab
   "createdAt": "2025-06-01T10:30:00Z"
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid data
   - `403 Forbidden` - Trip belongs to another user
@@ -439,13 +452,42 @@ The API is organized around the following main resources, mapped to database tab
 
 ### 2.4 Transport (`/api/trips/{tripId}/transport`)
 
-#### 2.4.1 Add Transport
+#### 2.4.1 List Transports for Trip
+
+- **Method:** `GET`
+- **Path:** `/api/trips/{tripId}/transport`
+- **Description:** Get all transport details for a specific trip.
+- **Authentication:** Required (JWT)
+- **Response (200 OK):**
+
+```json
+{
+  "data": [
+    {
+      "id": "4fa85f64-5717-4562-b3fc-2c963f66afa7",
+      "type": "Flight",
+      "departureTime": "2025-07-01T18:00:00Z",
+      "arrivalTime": "2025-07-01T20:00:00Z",
+      "notes": "Air France AF007"
+    }
+  ]
+}
+```
+
+- **Error Responses:**
+  - `403 Forbidden` - Trip belongs to another user
+  - `404 Not Found` - Trip not found
+
+---
+
+#### 2.4.2 Add Transport
 
 - **Method:** `POST`
 - **Path:** `/api/trips/{tripId}/transport`
 - **Description:** Add transportation details to a trip (one-to-many relationship)
 - **Authentication:** Required (JWT)
 - **Request Body:**
+
 ```json
 {
   "type": "Flight",
@@ -456,7 +498,9 @@ The API is organized around the following main resources, mapped to database tab
   "notes": "Air France AF007"
 }
 ```
+
 - **Response (201 Created):**
+
 ```json
 {
   "id": "4fa85f64-5717-4562-b3fc-2c963f66afa7",
@@ -469,6 +513,7 @@ The API is organized around the following main resources, mapped to database tab
   "notes": "Air France AF007"
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid data (e.g., arrival before departure)
   - `403 Forbidden` - Trip belongs to another user
@@ -477,13 +522,14 @@ The API is organized around the following main resources, mapped to database tab
 
 ---
 
-#### 2.4.2 Update Transport
+#### 2.4.3 Update Transport
 
 - **Method:** `PATCH`
 - **Path:** `/api/transport/{transportId}`
 - **Description:** Update details for a specific transport record.
 - **Authentication:** Required (JWT)
 - **Request Body:**
+
 ```json
 {
   "type": "Flight",
@@ -491,7 +537,9 @@ The API is organized around the following main resources, mapped to database tab
   "arrivalTime": "2025-07-01T21:00:00Z"
 }
 ```
+
 - **Response (200 OK):**
+
 ```json
 {
   "id": "4fa85f64-5717-4562-b3fc-2c963f66afa7",
@@ -504,6 +552,7 @@ The API is organized around the following main resources, mapped to database tab
   "notes": "Air France AF007"
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid data
   - `403 Forbidden` - Transport belongs to another user's trip
@@ -511,7 +560,7 @@ The API is organized around the following main resources, mapped to database tab
 
 ---
 
-#### 2.4.3 Delete Transport
+#### 2.4.4 Delete Transport
 
 - **Method:** `DELETE`
 - **Path:** `/api/transport/{transportId}`
@@ -533,6 +582,7 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Add accommodation details to a trip (one-to-one relationship)
 - **Authentication:** Required (JWT)
 - **Request Body:**
+
 ```json
 {
   "name": "Hotel Eiffel",
@@ -542,7 +592,9 @@ The API is organized around the following main resources, mapped to database tab
   "notes": "Booking confirmation #123456"
 }
 ```
+
 - **Response (201 Created):**
+
 ```json
 {
   "id": "5fa85f64-5717-4562-b3fc-2c963f66afa8",
@@ -554,6 +606,7 @@ The API is organized around the following main resources, mapped to database tab
   "notes": "Booking confirmation #123456"
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid data (e.g., checkout before checkin)
   - `403 Forbidden` - Trip belongs to another user
@@ -569,12 +622,15 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Update accommodation details
 - **Authentication:** Required (JWT)
 - **Request Body:**
+
 ```json
 {
   "checkOutDate": "2025-07-12T11:00:00Z"
 }
 ```
+
 - **Response (200 OK):**
+
 ```json
 {
   "id": "5fa85f64-5717-4562-b3fc-2c963f66afa8",
@@ -586,6 +642,7 @@ The API is organized around the following main resources, mapped to database tab
   "notes": "Booking confirmation #123456"
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid data
   - `403 Forbidden` - Trip belongs to another user
@@ -615,6 +672,7 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Get all days for a trip.
 - **Authentication:** Required (JWT)
 - **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -627,6 +685,7 @@ The API is organized around the following main resources, mapped to database tab
   ]
 }
 ```
+
 - **Error Responses:**
   - `403 Forbidden` - Trip belongs to another user
   - `404 Not Found` - Trip not found
@@ -640,14 +699,16 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Get detailed information for a specific day, including associated places.
 - **Authentication:** Required (JWT)
 - **Response (200 OK):**
+
 ```json
 {
-    "id": "6fa85f64-5717-4562-b3fc-2c963f66afa9",
-    "tripId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "date": "2025-07-01",
-    "notes": "Arrival day",
+  "id": "6fa85f64-5717-4562-b3fc-2c963f66afa9",
+  "tripId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "date": "2025-07-01",
+  "notes": "Arrival day"
 }
 ```
+
 - **Error Responses:**
   - `403 Forbidden` - Day belongs to another user's trip
   - `404 Not Found` - Day not found
@@ -661,13 +722,16 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Add a new day to the trip
 - **Authentication:** Required (JWT)
 - **Request Body:**
+
 ```json
 {
   "date": "2025-07-01",
   "notes": "Arrival day - explore nearby area"
 }
 ```
+
 - **Response (201 Created):**
+
 ```json
 {
   "id": "6fa85f64-5717-4562-b3fc-2c963f66afa9",
@@ -676,6 +740,7 @@ The API is organized around the following main resources, mapped to database tab
   "notes": "Arrival day - explore nearby area"
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid date or date outside trip range
   - `403 Forbidden` - Trip belongs to another user
@@ -690,13 +755,16 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Update day information
 - **Authentication:** Required (JWT)
 - **Request Body:**
+
 ```json
 {
   "date": "2025-07-01",
   "notes": "Arrival day - updated notes"
 }
 ```
+
 - **Response (200 OK):**
+
 ```json
 {
   "id": "6fa85f64-5717-4562-b3fc-2c963f66afa9",
@@ -705,6 +773,7 @@ The API is organized around the following main resources, mapped to database tab
   "notes": "Arrival day - updated notes"
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid data
   - `403 Forbidden` - Day belongs to another user's trip
@@ -734,6 +803,7 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Search for places using Google Places API with AI filtering and ranking
 - **Authentication:** Required (JWT)
 - **Request Body:**
+
 ```json
 {
   "location": "Paris, France",
@@ -741,7 +811,9 @@ The API is organized around the following main resources, mapped to database tab
   "preferences": "vegetarian-friendly, outdoor seating"
 }
 ```
+
 - **Response (200 OK):**
+
 ```json
 {
   "results": [
@@ -751,12 +823,13 @@ The API is organized around the following main resources, mapped to database tab
       "formattedAddress": "22 Rue Rambuteau, 75003 Paris",
       "website": "https://www.lepotagerdumarais.fr",
       "googleMapsLink": "https://maps.google.com/?cid=123456",
-      "openingHoursText": "12:00 PM - 11:00 PM",
+      "openingHoursText": "12:00 PM - 11:00 PM"
     }
   ],
   "count": 5
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Missing or invalid search parameters
   - `500 Internal Server Error` - Google Places API or AI service error
@@ -772,13 +845,16 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Add a place (attraction) to a specific day
 - **Authentication:** Required (JWT)
 - **Request Body (existing place):**
+
 ```json
 {
   "placeId": "8fa85f64-5717-4562-b3fc-2c963f66afab",
   "order": 1
 }
 ```
+
 **OR Request Body (new manual place):**
+
 ```json
 {
   "place": {
@@ -791,7 +867,9 @@ The API is organized around the following main resources, mapped to database tab
   "order": 2
 }
 ```
+
 - **Response (201 Created):**
+
 ```json
 {
   "dayId": "6fa85f64-5717-4562-b3fc-2c963f66afa9",
@@ -807,6 +885,7 @@ The API is organized around the following main resources, mapped to database tab
   "isVisited": false
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid place data
   - `403 Forbidden` - Day belongs to another user's trip
@@ -822,13 +901,16 @@ The API is organized around the following main resources, mapped to database tab
 - **Description:** Update place order or visited status
 - **Authentication:** Required (JWT)
 - **Request Body:**
+
 ```json
 {
   "order": 3,
   "isVisited": true
 }
 ```
+
 - **Response (200 OK):**
+
 ```json
 {
   "dayId": "6fa85f64-5717-4562-b3fc-2c963f66afa9",
@@ -837,6 +919,7 @@ The API is organized around the following main resources, mapped to database tab
   "isVisited": true
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid data
   - `403 Forbidden` - Day belongs to another user's trip
@@ -857,9 +940,77 @@ The API is organized around the following main resources, mapped to database tab
 
 ---
 
-### 2.8 Files (`/api/trips/{tripId}/files`, `/api/days/{dayId}/files`, `/api/files`)
+### 2.8 Files (`/api/files`)
 
-#### 2.8.1 Upload File to Trip
+#### 2.8.1 List Files for Trip
+
+- **Method:** `GET`
+- **Path:** `/api/trips/{tripId}/files`
+- **Description:** Get all files associated with a trip.
+- **Authentication:** Required (JWT)
+- **Response (200 OK):**
+
+```json
+{
+  "data": [
+    {
+      "id": "7fa85f64-5717-4562-b3fc-2c963f66afaa",
+      "fileName": "flight-ticket.pdf",
+      "fileType": "application/pdf",
+      "fileSize": 102400,
+      "uploadedAt": "2025-06-02T11:00:00Z",
+      "downloadUrl": "/api/files/7fa85f64-5717-4562-b3fc-2c963f66afaa/download"
+    }
+  ]
+}
+```
+
+- **Error Responses:**
+  - `403 Forbidden` - Trip belongs to another user
+  - `404 Not Found` - Trip not found
+
+---
+
+#### 2.8.2 List Files for Transport
+
+- **Method:** `GET`
+- **Path:** `/api/transport/{transportId}/files`
+- **Description:** Get all files associated with a specific transport record.
+- **Authentication:** Required (JWT)
+- **Response:** Same structure as 2.8.1
+- **Error Responses:**
+  - `403 Forbidden` - Transport belongs to another user's trip
+  - `404 Not Found` - Transport not found
+
+---
+
+#### 2.8.3 List Files for Accommodation
+
+- **Method:** `GET`
+- **Path:** `/api/accommodation/{accommodationId}/files`
+- **Description:** Get all files associated with a specific accommodation record.
+- **Authentication:** Required (JWT)
+- **Response:** Same structure as 2.8.1
+- **Error Responses:**
+  - `403 Forbidden` - Accommodation belongs to another user's trip
+  - `404 Not Found` - Accommodation not found
+
+---
+
+#### 2.8.4 List Files for Day
+
+- **Method:** `GET`
+- **Path:** `/api/days/{dayId}/files`
+- **Description:** Get all files associated with a specific day.
+- **Authentication:** Required (JWT)
+- **Response:** Same structure as 2.8.1
+- **Error Responses:**
+  - `403 Forbidden` - Day belongs to another user's trip
+  - `404 Not Found` - Day not found
+
+---
+
+#### 2.8.5 Upload File to Trip
 
 - **Method:** `POST`
 - **Path:** `/api/trips/{tripId}/files`
@@ -869,6 +1020,7 @@ The API is organized around the following main resources, mapped to database tab
 - **Request Body:**
   - `file` (file) - The file to upload (PNG, JPEG, or PDF, max 5MB)
 - **Response (201 Created):**
+
 ```json
 {
   "id": "7fa85f64-5717-4562-b3fc-2c963f66afaa",
@@ -882,23 +1034,16 @@ The API is organized around the following main resources, mapped to database tab
   "downloadUrl": "/api/files/7fa85f64-5717-4562-b3fc-2c963f66afaa/download"
 }
 ```
+
 - **Error Responses:**
   - `400 Bad Request` - Invalid file type or size exceeds 5MB
   - `403 Forbidden` - Trip belongs to another user
   - `404 Not Found` - Trip not found
-  - `409 Conflict` - Trip has reached the 10-file limit
-  ```json
-  {
-    "error": "FileLimitExceeded",
-    "message": "This trip has reached the maximum limit of 10 files",
-    "currentFileCount": 10,
-    "maxFileCount": 10
-  }
-  ```
+  - `409 Conflict` - File with the same name already exists for this trip
 
 ---
 
-#### 2.8.2 Upload File to Transport
+#### 2.8.6 Upload File to Transport
 
 - **Method:** `POST`
 - **Path:** `/api/transports/{transportId}/files`
@@ -907,12 +1052,12 @@ The API is organized around the following main resources, mapped to database tab
 - **Content-Type:** `multipart/form-data`
 - **Request Body:**
   - `file` (file) - The file to upload
-- **Response:** Same structure as 2.8.1 but with `transportId` instead of `tripId`
+- **Response:** Same structure as 2.8.5 but with `transportId` instead of `tripId`
 - **Error Responses:** Same as 2.8.1
 
 ---
 
-#### 2.8.3 Upload File to Accommodation
+#### 2.8.7 Upload File to Accommodation
 
 - **Method:** `POST`
 - **Path:** `/api/accommodations/{accommodationId}/files`
@@ -921,12 +1066,12 @@ The API is organized around the following main resources, mapped to database tab
 - **Content-Type:** `multipart/form-data`
 - **Request Body:**
   - `file` (file) - The file to upload
-- **Response:** Same structure as 2.8.1 but with `accommodationId` instead of `tripId`
+- **Response:** Same structure as 2.8.5 but with `accommodationId` instead of `tripId`
 - **Error Responses:** Same as 2.8.1
 
 ---
 
-#### 2.8.4 Upload File to Day
+#### 2.8.8 Upload File to Day
 
 - **Method:** `POST`
 - **Path:** `/api/days/{dayId}/files`
@@ -935,80 +1080,12 @@ The API is organized around the following main resources, mapped to database tab
 - **Content-Type:** `multipart/form-data`
 - **Request Body:**
   - `file` (file) - The file to upload
-- **Response:** Same structure as 2.8.1 but with `dayId` instead of `tripId`
+- **Response:** Same structure as 2.8.5 but with `dayId` instead of `tripId`
 - **Error Responses:** Same as 2.8.1
 
 ---
 
-#### 2.8.5 List Files for Trip
-
-- **Method:** `GET`
-- **Path:** `/api/trips/{tripId}/files`
-- **Description:** Get all files associated with a trip (including transport, accommodation, and days)
-- **Authentication:** Required (JWT)
-- **Response (200 OK):**
-```json
-{
-  "data": [
-    {
-      "id": "7fa85f64-5717-4562-b3fc-2c963f66afaa",
-      "fileName": "flight-ticket.pdf",
-      "fileSize": 245678,
-      "fileType": "application/pdf",
-      "parentType": "trip",
-      "parentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      "createdAt": "2025-06-01T10:30:00Z"
-    },
-    {
-      "id": "9fa85f64-5717-4562-b3fc-2c963f66afac",
-      "fileName": "hotel-booking.pdf",
-      "fileSize": 189234,
-      "fileType": "application/pdf",
-      "parentType": "accommodation",
-      "parentId": "5fa85f64-5717-4562-b3fc-2c963f66afa8",
-      "createdAt": "2025-06-02T14:20:00Z"
-    }
-  ],
-  "count": 2,
-  "maxFiles": 10
-}
-```
-- **Error Responses:**
-  - `403 Forbidden` - Trip belongs to another user
-  - `404 Not Found` - Trip not found
-
----
-
-#### 2.8.6 List Files for Day
-
-- **Method:** `GET`
-- **Path:** `/api/days/{dayId}/files`
-- **Description:** Get all files associated with a specific day
-- **Authentication:** Required (JWT)
-- **Response (200 OK):**
-```json
-{
-  "data": [
-    {
-      "id": "afa85f64-5717-4562-b3fc-2c963f66afad",
-      "fileName": "museum-ticket.pdf",
-      "fileSize": 156789,
-      "fileType": "application/pdf",
-      "createdAt": "2025-06-03T09:15:00Z",
-      "previewUrl": "/api/files/afa85f64-5717-4562-b3fc-2c963f66afad/preview",
-      "downloadUrl": "/api/files/afa85f64-5717-4562-b3fc-2c963f66afad/download"
-    }
-  ],
-  "count": 1
-}
-```
-- **Error Responses:**
-  - `403 Forbidden` - Day belongs to another user's trip
-  - `404 Not Found` - Day not found
-
----
-
-#### 2.8.7 Preview File
+#### 2.8.9 Preview File
 
 - **Method:** `GET`
 - **Path:** `/api/files/{fileId}/preview`
@@ -1023,11 +1100,9 @@ The API is organized around the following main resources, mapped to database tab
   - `403 Forbidden` - File belongs to another user
   - `404 Not Found` - File not found
 
-**Note:** This endpoint is optimized for browser preview. Images and PDFs will be displayed inline, while other file types may prompt download depending on browser capabilities.
-
 ---
 
-#### 2.8.8 Download File
+#### 2.8.10 Download File
 
 - **Method:** `GET`
 - **Path:** `/api/files/{fileId}/download`
@@ -1042,7 +1117,7 @@ The API is organized around the following main resources, mapped to database tab
 
 ---
 
-#### 2.8.9 Delete File
+#### 2.8.11 Delete File
 
 - **Method:** `DELETE`
 - **Path:** `/api/files/{fileId}`
@@ -1066,6 +1141,7 @@ The API is organized around the following main resources, mapped to database tab
 - **Query Parameters:**
   - `days` (integer, default: 60, max: 365) - Number of days to look back
 - **Response (200 OK):**
+
 ```json
 {
   "period": {
@@ -1085,6 +1161,7 @@ The API is organized around the following main resources, mapped to database tab
   }
 }
 ```
+
 - **Error Responses:**
   - `401 Unauthorized` - Invalid or missing token
   - `403 Forbidden` - User does not have Admin role
@@ -1105,6 +1182,7 @@ The API is organized around the following main resources, mapped to database tab
   - `startDate` (string, optional) - Filter from date (ISO 8601)
   - `endDate` (string, optional) - Filter to date (ISO 8601)
 - **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -1131,6 +1209,7 @@ The API is organized around the following main resources, mapped to database tab
   }
 }
 ```
+
 - **Error Responses:**
   - `401 Unauthorized` - Invalid or missing token
   - `403 Forbidden` - User does not have Admin role
@@ -1144,6 +1223,7 @@ The API is organized around the following main resources, mapped to database tab
 The API uses **JWT (JSON Web Tokens)** for authentication with a dual-token approach:
 
 #### Access Token
+
 - **Purpose:** Authorize API requests
 - **Lifetime:** 15 minutes
 - **Storage:** Client-side memory (not localStorage for security)
@@ -1155,6 +1235,7 @@ The API uses **JWT (JSON Web Tokens)** for authentication with a dual-token appr
   - `iat` (issued at): Token creation timestamp
 
 #### Refresh Token
+
 - **Purpose:** Obtain new access tokens
 - **Lifetime:** 7 days
 - **Storage:** Secure, HTTP-only cookie
@@ -1174,6 +1255,7 @@ The API uses **JWT (JSON Web Tokens)** for authentication with a dual-token appr
 ### 3.3 Authorization Levels
 
 #### Public Endpoints (No Authentication Required)
+
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `POST /api/auth/refresh`
@@ -1181,6 +1263,7 @@ The API uses **JWT (JSON Web Tokens)** for authentication with a dual-token appr
 - `POST /api/auth/reset-password`
 
 #### Authenticated User Endpoints (Valid JWT Required)
+
 - All `/api/users/*` endpoints
 - All `/api/trips/*` endpoints
 - All `/api/days/*` endpoints
@@ -1188,6 +1271,7 @@ The API uses **JWT (JSON Web Tokens)** for authentication with a dual-token appr
 - All `/api/files/*` endpoints
 
 #### Admin-Only Endpoints (JWT + Admin Role Required)
+
 - All `/api/admin/*` endpoints
 
 ### 3.4 Row-Level Security (RLS) Implementation
@@ -1195,15 +1279,18 @@ The API uses **JWT (JSON Web Tokens)** for authentication with a dual-token appr
 The API leverages Azure SQL's Row-Level Security to ensure data isolation:
 
 1. **Session Context Setup:** On every authenticated request, the API extracts the `UserId` from the JWT and executes:
+
    ```sql
    EXEC sp_set_session_context 'UserId', '<userId-from-jwt>', @read_only = 1;
    ```
 
 2. **RLS Predicate Function:** The database uses a predicate function that checks:
+
    - If the row's `UserId` matches the session's `UserId`, OR
    - If the user has the "Admin" role (via `UserRoles` join)
 
 3. **Security Policies:** Applied to tables: `Trips`, `Days`, `Files`, `Transport`, `Accommodation`
+
    - **Filter Predicate:** Automatically filters SELECT queries
    - **Block Predicate:** Prevents INSERT/UPDATE/DELETE on unauthorized rows
 
@@ -1215,34 +1302,40 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
 ### 3.5 Security Best Practices
 
 1. **Password Security:**
+
    - Minimum length: 8 characters
    - Require: uppercase, lowercase, number, special character
    - Hash using BCrypt with salt (cost factor: 12)
    - Never log or return password hashes
 
 2. **Token Security:**
+
    - Sign with HS256 or RS256 algorithm
    - Use strong secret key (min 256 bits)
    - Implement token refresh rotation (new refresh token on each refresh)
    - Consider implementing refresh token revocation list
 
 3. **HTTPS Only:**
+
    - All API endpoints must use HTTPS in production
    - Set `Secure` flag on refresh token cookie
    - Enable HSTS (HTTP Strict Transport Security)
 
 4. **CORS Configuration:**
+
    - Allow only frontend domain (e.g., https://trivare.app)
-   - Do not use wildcard (*) in production
+   - Do not use wildcard (\*) in production
    - Include credentials for cookie-based refresh tokens
 
 5. **Rate Limiting:**
+
    - Auth endpoints: 5 requests per minute per IP
    - Search endpoints: 10 requests per minute per user
    - General endpoints: 100 requests per minute per user
    - File upload: 10 requests per hour per user
 
 6. **Input Validation:**
+
    - Validate all inputs against schema
    - Sanitize file names before storage
    - Validate file MIME types (not just extension)
@@ -1262,6 +1355,7 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
 ### 4.1 Validation Rules by Resource
 
 #### Users
+
 - **UserName:**
   - Required on registration
   - Minimum length: 3 characters
@@ -1279,6 +1373,7 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
   - Maximum length: 128 characters (before hashing)
 
 #### Trips
+
 - **Name:**
   - Required
   - Maximum length: 255 characters
@@ -1302,6 +1397,7 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
   - Validate on trip creation (POST)
 
 #### Transport
+
 - **Type:**
   - Optional
   - Maximum length: 100 characters
@@ -1326,6 +1422,7 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
   - Return 409 Conflict if transport already exists
 
 #### Accommodation
+
 - **Name:**
   - Optional
   - Maximum length: 255 characters
@@ -1347,6 +1444,7 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
   - Return 409 Conflict if accommodation already exists
 
 #### Days
+
 - **Date:**
   - Required
   - Must be valid date (ISO 8601 format: YYYY-MM-DD)
@@ -1356,6 +1454,7 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
   - Maximum length: 2000 characters
 
 #### Places
+
 - **Name:**
   - Required
   - Maximum length: 255 characters
@@ -1383,6 +1482,7 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
   - Boolean value
 
 #### DayAttractions
+
 - **Order:**
   - Required
   - Must be integer >= 0
@@ -1395,6 +1495,7 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
   - Return 409 Conflict if duplicate
 
 #### Files
+
 - **File (upload):**
   - Required on upload
   - File type: Must be PNG, JPEG, or PDF
@@ -1415,14 +1516,17 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
 ### 4.2 Business Logic Implementation
 
 #### Trip Limit Enforcement
+
 **Endpoint:** `POST /api/trips`
 **Logic:**
+
 1. Extract UserId from JWT
 2. Query database: `SELECT COUNT(*) FROM Trips WHERE UserId = @UserId`
 3. If count >= 10, return 409 Conflict with error details
 4. Otherwise, proceed with trip creation
 
 **Error Response:**
+
 ```json
 {
   "error": "TripLimitExceeded",
@@ -1433,13 +1537,15 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
 ```
 
 #### File Limit Enforcement
+
 **Endpoints:** All file upload endpoints
 **Logic:**
+
 1. Determine the TripId for the file (direct for trip files, query for transport/accommodation/day files)
 2. Query database:
    ```sql
-   SELECT COUNT(*) FROM Files 
-   WHERE TripId = @TripId 
+   SELECT COUNT(*) FROM Files
+   WHERE TripId = @TripId
       OR TransportId IN (SELECT Id FROM Transport WHERE TripId = @TripId)
       OR AccommodationId IN (SELECT Id FROM Accommodation WHERE TripId = @TripId)
       OR DayId IN (SELECT Id FROM Days WHERE TripId = @TripId)
@@ -1448,6 +1554,7 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
 4. Otherwise, proceed with file upload
 
 **Error Response:**
+
 ```json
 {
   "error": "FileLimitExceeded",
@@ -1459,19 +1566,23 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
 ```
 
 #### AI Place Search
+
 **Endpoint:** `POST /api/places/search`
 **Logic:**
+
 1. Validate input parameters (location, keyword)
 2. Call Google Places API with location and keyword
 3. Receive list of places (typically 20 results)
 4. Prepare prompt for OpenRouter.ai:
+
    ```
    You are a travel assistant. Filter and rank the following places based on the user's preferences: {preferences}
-   
+
    Places: {json_list_of_places}
-   
+
    Return the top 5 places that best match the preferences, with a brief recommendation for each.
    ```
+
 5. Send prompt to OpenRouter.ai
 6. Parse AI response and extract top 5 places
 7. For each place, check if it exists in database by GooglePlaceId
@@ -1486,16 +1597,19 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
 **Note:** Places are saved to the database for future reference but not yet associated with any day/trip.
 
 #### Place Addition to Day
+
 **Endpoint:** `POST /api/days/{dayId}/places`
 **Logic:**
 
 **Option A: Add existing place**
+
 ```json
 {
   "placeId": "8fa85f64-5717-4562-b3fc-2c963f66afab",
   "order": 1
 }
 ```
+
 1. Verify Place exists
 2. Verify Day exists and user owns the parent trip (RLS handles this)
 3. Check if DayAttraction already exists (Day + Place combination)
@@ -1503,6 +1617,7 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
 5. Insert into DayAttractions with Order and IsVisited = false
 
 **Option B: Add new manual place**
+
 ```json
 {
   "place": {
@@ -1513,32 +1628,38 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
   "order": 2
 }
 ```
+
 1. Validate place data
 2. Create new Place record with IsManuallyAdded = true
 3. Insert into DayAttractions linking the new Place to the Day
 
 #### Mark Place as Visited
+
 **Endpoint:** `PATCH /api/days/{dayId}/places/{placeId}`
 **Logic:**
+
 ```json
 {
   "isVisited": true,
   "order": 2
 }
 ```
+
 1. Verify DayAttraction exists (Day + Place combination)
 2. User owns the parent trip (RLS handles this)
 3. Update IsVisited and/or Order in DayAttractions table
 4. Return updated DayAttraction data
 
 #### Account Deletion (GDPR)
+
 **Endpoint:** `DELETE /api/users/me`
 **Logic:**
+
 1. Extract UserId from JWT
 2. Query all Files associated with user's trips:
    ```sql
    SELECT f.* FROM Files f
-   JOIN Trips t ON (f.TripId = t.Id OR 
+   JOIN Trips t ON (f.TripId = t.Id OR
                      f.TransportId IN (SELECT Id FROM Transport WHERE TripId = t.Id) OR
                      f.AccommodationId IN (SELECT Id FROM Accommodation WHERE TripId = t.Id) OR
                      f.DayId IN (SELECT Id FROM Days WHERE TripId = t.Id))
@@ -1557,39 +1678,45 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
 **Important:** File deletion from R2 must succeed before database deletion to prevent orphaned files.
 
 #### Admin Metrics Calculation
+
 **Endpoint:** `GET /api/admin/metrics?days=60`
 **Logic:**
+
 1. Verify user has Admin role (check JWT claims)
 2. Calculate date range: startDate = NOW() - {days} days, endDate = NOW()
 3. Execute aggregate queries:
+
    ```sql
    -- Total users
    SELECT COUNT(*) FROM Users;
-   
+
    -- Total trips
    SELECT COUNT(*) FROM Trips;
-   
+
    -- New trips in period
    SELECT COUNT(*) FROM Trips WHERE CreatedAt >= @startDate;
-   
+
    -- Total place searches in period
-   SELECT COUNT(*) FROM AuditLog 
+   SELECT COUNT(*) FROM AuditLog
    WHERE EventType = 'PlaceSearch' AND EventTimestamp >= @startDate;
-   
+
    -- Total files
    SELECT COUNT(*) FROM Files;
-   
+
    -- Files uploaded in period
    SELECT COUNT(*) FROM Files WHERE CreatedAt >= @startDate;
-   
+
    -- Active users (users with at least one trip)
    SELECT COUNT(DISTINCT UserId) FROM Trips;
    ```
+
 4. Return aggregated metrics in response
 
 #### Transport/Accommodation One-to-One Enforcement
+
 **Endpoints:** `POST /api/trips/{tripId}/transport` and `POST /api/trips/{tripId}/accommodation`
 **Logic:**
+
 1. Verify Trip exists and user owns it (RLS handles this)
 2. Check if Transport/Accommodation already exists for this trip:
    ```sql
@@ -1606,6 +1733,7 @@ The API leverages Azure SQL's Row-Level Security to ensure data isolation:
 4. Otherwise, insert new Transport/Accommodation record
 
 **Alternative Approach (PUT for Upsert):**
+
 - Consider using PUT instead of POST for idempotent upsert behavior
 - `PUT /api/trips/{tripId}/transport` would create if not exists, or update if exists
 - Simplifies client logic
@@ -1629,6 +1757,7 @@ All error responses follow a consistent structure:
 ```
 
 **Common Error Codes:**
+
 - `ValidationError` - Input validation failed
 - `Unauthorized` - Missing or invalid token
 - `Forbidden` - Insufficient permissions
@@ -1640,17 +1769,18 @@ All error responses follow a consistent structure:
 
 Events logged to AuditLog table for metrics tracking:
 
-| EventType | Trigger | Details |
-|-----------|---------|---------|
-| UserRegistered | POST /api/auth/register | User email |
-| UserLogin | POST /api/auth/login | User email, timestamp |
-| TripCreated | POST /api/trips | Trip name, destination |
-| TripDeleted | DELETE /api/trips/{tripId} | Trip name |
-| PlaceSearch | POST /api/places/search | Location, keyword, result count |
-| FileUploaded | POST /api/.../files | File name, size, parent entity |
-| UserDeleted | DELETE /api/users/me | User email (before deletion) |
+| EventType      | Trigger                    | Details                         |
+| -------------- | -------------------------- | ------------------------------- |
+| UserRegistered | POST /api/auth/register    | User email                      |
+| UserLogin      | POST /api/auth/login       | User email, timestamp           |
+| TripCreated    | POST /api/trips            | Trip name, destination          |
+| TripDeleted    | DELETE /api/trips/{tripId} | Trip name                       |
+| PlaceSearch    | POST /api/places/search    | Location, keyword, result count |
+| FileUploaded   | POST /api/.../files        | File name, size, parent entity  |
+| UserDeleted    | DELETE /api/users/me       | User email (before deletion)    |
 
 **Implementation:**
+
 - Log asynchronously to avoid blocking API responses
 - Use background queue for non-critical events
 - Set UserId from JWT (will be NULL for deleted users due to ON DELETE SET NULL)
@@ -1662,6 +1792,7 @@ Events logged to AuditLog table for metrics tracking:
 For the MVP, the API will not implement versioning. All endpoints are under `/api/`.
 
 **Future Consideration:**
+
 - When breaking changes are needed, introduce versioning: `/api/v1/`, `/api/v2/`
 - Use content negotiation with custom media types: `Accept: application/vnd.trivare.v2+json`
 - Maintain backward compatibility for at least 6 months before deprecating old versions
@@ -1671,6 +1802,7 @@ For the MVP, the API will not implement versioning. All endpoints are under `/ap
 ## 6. Additional Technical Considerations
 
 ### 6.1 Response Time Targets
+
 - Auth endpoints: < 200ms
 - CRUD operations: < 300ms
 - AI search: < 3 seconds (due to external API calls)
@@ -1678,22 +1810,26 @@ For the MVP, the API will not implement versioning. All endpoints are under `/ap
 - File preview/download: < 2 seconds (for 5MB file)
 
 ### 6.2 Error Handling for External Services
+
 - **Google Places API failure:** Return 503 Service Unavailable with retry-after header
 - **OpenRouter.ai failure:** Fall back to returning Google Places results without AI filtering
 - **Cloudflare R2 failure (upload):** Return 503 Service Unavailable, log error, retry with exponential backoff
 - **Cloudflare R2 failure (download/preview):** Return 503 Service Unavailable, retry up to 3 times with exponential backoff
 
 ### 6.3 Pagination Defaults
+
 - Default page size: 10 items
 - Maximum page size: 50 items (100 for admin audit logs)
 - Page numbers start at 1
 - Include total count in response for client-side pagination UI
 
 ### 6.4 Caching Strategy
+
 - **No caching in MVP** as per project requirements
 - Future consideration: Cache Google Places results by GooglePlaceId for 24 hours
 
 ### 6.5 API Documentation
+
 - Generate OpenAPI/Swagger documentation from code
 - Host at `/api/docs` for developer reference
 - Include example requests and responses
@@ -1704,6 +1840,7 @@ For the MVP, the API will not implement versioning. All endpoints are under `/ap
 ## 7. Implementation Priority
 
 ### Phase 1: Core MVP (Must Have)
+
 1. Authentication endpoints (register, login, refresh, password reset)
 2. User profile endpoints (get, update, delete)
 3. Trip CRUD endpoints
@@ -1712,12 +1849,14 @@ For the MVP, the API will not implement versioning. All endpoints are under `/ap
 6. File upload and management
 
 ### Phase 2: Advanced Features
+
 7. Place search with AI integration
 8. Place management and day attractions
 9. Admin metrics endpoint
 10. Admin audit logs endpoint
 
 ### Phase 3: Optimization
+
 11. Rate limiting implementation
 12. Enhanced error handling
 13. Performance optimization

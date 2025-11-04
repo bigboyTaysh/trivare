@@ -25,11 +25,10 @@ builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =
            .AddInterceptors(serviceProvider.GetRequiredService<RlsSessionContextInterceptor>()));
 
 // Register layer services
-builder.Services.AddInfrastructureServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApplicationServices();
 
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
-builder.Services.Configure<CloudflareR2Settings>(builder.Configuration.GetSection("CloudflareR2"));
 
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>

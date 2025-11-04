@@ -38,4 +38,11 @@ public interface ITransportRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated transport</returns>
     Task<Transport> UpdateAsync(Transport transport, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a transport
+    /// </summary>
+    /// <param name="transport">The transport entity to delete</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    Task DeleteAsync(Transport transport, CancellationToken cancellationToken = default);
 }

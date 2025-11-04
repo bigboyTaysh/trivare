@@ -43,6 +43,25 @@ public record PlaceDto
     public string? OpeningHoursText { get; init; }
 
     /// <summary>
+    /// Google Places photo reference (without API key)
+    /// Use the /api/places/photo endpoint to fetch the actual image
+    /// From Place.PhotoReference
+    /// </summary>
+    public string? PhotoReference { get; init; }
+
+    /// <summary>
+    /// Place rating (0-5) from Google Places API
+    /// From Place.Rating
+    /// </summary>
+    public double? Rating { get; init; }
+
+    /// <summary>
+    /// Number of user ratings from Google Places API
+    /// From Place.UserRatingCount
+    /// </summary>
+    public int? UserRatingCount { get; init; }
+
+    /// <summary>
     /// Indicates if place was manually added vs from Google Places API
     /// From Place.IsManuallyAdded
     /// </summary>

@@ -1,0 +1,12 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { UserProfileView } from "../components/views/UserProfileView";
+---
+
+<Layout title="Profile Settings - Trivare">
+  <UserProfileView client:load />
+
+  <script>
+    // Client-side authentication check import {requireAuth} from "@/lib/auth"; requireAuth();
+  </script>
+</Layout>

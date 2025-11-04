@@ -8,4 +8,5 @@ public static class FileErrorCodes
     public const string FileNotFound = "FileNotFound";
     public const string FileUploadFailed = "FileUploadFailed";
     public const string FileSaveFailed = "FileSaveFailed";
+    public const string FileDeleteFailed = "FileDeleteFailed";
 }
