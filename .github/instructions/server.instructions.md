@@ -1,6 +1,3 @@
----
-applyTo: 'Server/**'
----
 ## CODING_PRACTICES
 
 ### Guidelines for ARCHITECTURE
@@ -25,7 +22,6 @@ applyTo: 'Server/**'
 - Configure security schemes to document authentication and authorization requirements
 - Use tags to group related endpoints by resource or functional area
 - Implement examples for all endpoints to facilitate easier integration by consumers
-
 
 ## BACKEND
 
