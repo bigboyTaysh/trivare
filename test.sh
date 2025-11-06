@@ -245,7 +245,7 @@ run_unit_tests() {
     cd Server
 
     print_status "Running Domain unit tests..."
-    if dotnet test Domain.Tests/Domain.Tests.csproj --logger "trx" --no-build > /dev/null; then
+    if dotnet test Domain.Tests/Domain.Tests.csproj --logger "trx" --verbosity minimal --no-build 2>/dev/null | grep -E "(Results File|Test Run Successful|Total tests|Passed:|Failed:|Skipped:|Total time)"; then
         print_success "Domain tests passed ✅"
     else
         print_error "Domain tests failed ❌"
@@ -253,7 +253,7 @@ run_unit_tests() {
     fi
 
     print_status "Running Application unit tests..."
-    if dotnet test Application.Tests/Application.Tests.csproj --logger "trx" --no-build > /dev/null; then
+    if dotnet test Application.Tests/Application.Tests.csproj --logger "trx" --verbosity minimal --no-build 2>/dev/null | grep -E "(Results File|Test Run Successful|Total tests|Passed:|Failed:|Skipped:|Total time)"; then
         print_success "Application tests passed ✅"
     else
         print_error "Application tests failed ❌"
@@ -261,7 +261,7 @@ run_unit_tests() {
     fi
 
     print_status "Running Infrastructure unit tests..."
-    if dotnet test Infrastructure.Tests/Infrastructure.Tests.csproj --logger "trx" --no-build > /dev/null; then
+    if dotnet test Infrastructure.Tests/Infrastructure.Tests.csproj --logger "trx" --verbosity minimal --no-build 2>/dev/null | grep -E "(Results File|Test Run Successful|Total tests|Passed:|Failed:|Skipped:|Total time)"; then
         print_success "Infrastructure tests passed ✅"
     else
         print_error "Infrastructure tests failed ❌"
