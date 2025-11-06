@@ -1,0 +1,11 @@
+---
+description: 
+globs:
+alwaysApply: false
+---
+## DevOps
+
+### Cloud - Azure
+- Use Azure Resource Manager (ARM) templates or Bicep for infrastructure as code.
+- Implement Azure AD for authentication and authorization.
+- Use managed identities instead of service principals when possible.

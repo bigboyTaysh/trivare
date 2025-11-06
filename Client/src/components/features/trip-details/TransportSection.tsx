@@ -1,0 +1,410 @@
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Plus, Edit, Trash2, MapPin, Calendar, Plane } from "lucide-react";
+import FilesSection from "@/components/common/FilesSection";
+import type {
+  CreateTransportRequest,
+  UpdateTransportRequest,
+  TransportViewModel,
+  TransportResponse,
+} from "@/types/trips";
+import { toast } from "sonner";
+import { formatDateTime } from "@/lib/dateUtils";
+
+interface TransportSectionProps {
+  tripId: string;
+  totalFileCount: number;
+  onFileChange: () => void;
+  transports: TransportViewModel[];
+  onAddTransport: (data: CreateTransportRequest) => Promise<TransportResponse>;
+  onUpdateTransport: (transportId: string, data: UpdateTransportRequest) => Promise<TransportResponse>;
+  onDeleteTransport: (transportId: string) => Promise<void>;
+  isLoading: boolean;
+}
+
+const TransportSection: React.FC<TransportSectionProps> = ({
+  tripId,
+  totalFileCount,
+  onFileChange,
+  transports,
+  onAddTransport,
+  onUpdateTransport,
+  onDeleteTransport,
+  isLoading,
+}) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [editingTransport, setEditingTransport] = useState<TransportViewModel | null>(null);
+  const [deletingTransportId, setDeletingTransportId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleAdd = async (data: CreateTransportRequest | UpdateTransportRequest) => {
+    const createData = data as CreateTransportRequest;
+    setIsSubmitting(true);
+    try {
+      await onAddTransport(createData);
+      setIsDialogOpen(false);
+      toast.success("Transport added successfully");
+    } catch (err) {
+      toast.error("Failed to add transport");
+      console.error("Failed to add transport:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdate = async (data: CreateTransportRequest | UpdateTransportRequest) => {
+    if (!editingTransport) return;
+
+    const updateData = data as UpdateTransportRequest;
+    setIsSubmitting(true);
+    try {
+      await onUpdateTransport(editingTransport.id, updateData);
+      setIsDialogOpen(false);
+      setEditingTransport(null);
+      toast.success("Transport updated successfully");
+    } catch (err) {
+      toast.error("Failed to update transport");
+      console.error("Failed to update transport:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deletingTransportId) return;
+
+    setIsSubmitting(true);
+    try {
+      await onDeleteTransport(deletingTransportId);
+      setIsDeleteDialogOpen(false);
+      setDeletingTransportId(null);
+      toast.success("Transport deleted successfully");
+    } catch (err) {
+      toast.error("Failed to delete transport");
+      console.error("Failed to delete transport:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openEditDialog = (transport: TransportViewModel) => {
+    setEditingTransport(transport);
+    setIsDialogOpen(true);
+  };
+
+  const openDeleteDialog = (transportId: string) => {
+    setDeletingTransportId(transportId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setIsDialogOpen(false);
+    setEditingTransport(null);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Add Transport Button */}
+      <div className="flex justify-end">
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Transport
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{editingTransport ? "Edit Transport" : "Add Transport"}</DialogTitle>
+            </DialogHeader>
+            <TransportForm
+              transport={editingTransport}
+              onSubmit={editingTransport ? handleUpdate : handleAdd}
+              onCancel={closeDialog}
+              isSubmitting={isSubmitting}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Transport Cards */}
+      {transports.length > 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {transports.map((transport) => (
+            <Card key={transport.id} className="py-[5px] flex flex-col">
+              <CardContent className="py-[5px] flex-1 flex flex-col">
+                <div>
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-base truncate">{transport.type}</h4>
+                    </div>
+                    <div className="flex gap-1 shrink-0 ml-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditDialog(transport)}
+                        className="h-7 px-2"
+                      >
+                        <Edit className="h-3 w-3 mr-1" />
+                        <span className="text-xs">Edit</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openDeleteDialog(transport.id)}
+                        className="h-7 w-7 p-0"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 mb-2">
+                    {transport.departureLocation && (
+                      <div className="flex items-start gap-2">
+                        <MapPin className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-medium">From</div>
+                          <div className="text-xs truncate">{transport.departureLocation}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {transport.arrivalLocation && (
+                      <div className="flex items-start gap-2">
+                        <MapPin className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-medium">To</div>
+                          <div className="text-xs truncate">{transport.arrivalLocation}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {transport.departureTime && (
+                      <div className="flex items-start gap-2">
+                        <Calendar className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-medium">Departure</div>
+                          <div className="text-xs">{formatDateTime(transport.departureTime)}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {transport.arrivalTime && (
+                      <div className="flex items-start gap-2">
+                        <Calendar className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-medium">Arrival</div>
+                          <div className="text-xs">{formatDateTime(transport.arrivalTime)}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {transport.notes && (
+                    <div className="pt-1.5 border-t mb-1.5">
+                      <p className="text-xs text-muted-foreground line-clamp-2">{transport.notes}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Files Section - pinned to bottom */}
+                <div className="pt-1.5 border-t mt-auto">
+                  <FilesSection
+                    entityId={transport.id}
+                    entityType="transport"
+                    title="Transport Files"
+                    tripId={tripId}
+                    totalFileCount={totalFileCount}
+                    onFileChange={onFileChange}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center py-8">
+              <Plane className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">No transports added</h3>
+              <p className="text-muted-foreground">Add your transportation details to keep track of your journeys.</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Transport</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this transport? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={isSubmitting}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+// Simple inline form component - in a real app, this would be in a separate file
+interface TransportFormProps {
+  transport?: TransportViewModel | null;
+  onSubmit: (data: CreateTransportRequest | UpdateTransportRequest) => Promise<void>;
+  onCancel: () => void;
+  isSubmitting: boolean;
+}
+
+const TransportForm: React.FC<TransportFormProps> = ({ transport, onSubmit, onCancel, isSubmitting }) => {
+  const [formData, setFormData] = useState({
+    type: transport?.type || "",
+    departureLocation: transport?.departureLocation || "",
+    arrivalLocation: transport?.arrivalLocation || "",
+    departureTime: transport?.departureTime ? transport.departureTime.slice(0, 16) : "",
+    arrivalTime: transport?.arrivalTime ? transport.arrivalTime.slice(0, 16) : "",
+    notes: transport?.notes || "",
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const data = {
+      ...formData,
+      departureTime: formData.departureTime || undefined,
+      arrivalTime: formData.arrivalTime || undefined,
+      notes: formData.notes || undefined,
+    };
+    onSubmit(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="transport-type" className="block text-sm font-medium mb-1">
+          Type *
+        </label>
+        <input
+          id="transport-type"
+          type="text"
+          value={formData.type}
+          onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+          className="w-full p-2 border rounded-md"
+          required
+          maxLength={100}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="departure-location" className="block text-sm font-medium mb-1">
+            Departure Location
+          </label>
+          <input
+            id="departure-location"
+            type="text"
+            value={formData.departureLocation}
+            onChange={(e) => setFormData({ ...formData, departureLocation: e.target.value })}
+            className="w-full p-2 border rounded-md"
+            maxLength={255}
+          />
+        </div>
+        <div>
+          <label htmlFor="arrival-location" className="block text-sm font-medium mb-1">
+            Arrival Location
+          </label>
+          <input
+            id="arrival-location"
+            type="text"
+            value={formData.arrivalLocation}
+            onChange={(e) => setFormData({ ...formData, arrivalLocation: e.target.value })}
+            className="w-full p-2 border rounded-md"
+            maxLength={255}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="departure-time" className="block text-sm font-medium mb-1">
+            Departure Time
+          </label>
+          <input
+            id="departure-time"
+            type="datetime-local"
+            value={formData.departureTime}
+            onChange={(e) => setFormData({ ...formData, departureTime: e.target.value })}
+            className="w-full p-2 border rounded-md"
+          />
+        </div>
+        <div>
+          <label htmlFor="arrival-time" className="block text-sm font-medium mb-1">
+            Arrival Time
+          </label>
+          <input
+            id="arrival-time"
+            type="datetime-local"
+            value={formData.arrivalTime}
+            onChange={(e) => setFormData({ ...formData, arrivalTime: e.target.value })}
+            className="w-full p-2 border rounded-md"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="transport-notes" className="block text-sm font-medium mb-1">
+          Notes
+        </label>
+        <textarea
+          id="transport-notes"
+          value={formData.notes}
+          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+          className="w-full p-2 border rounded-md"
+          rows={3}
+          maxLength={2000}
+        />
+      </div>
+
+      <div className="flex justify-end gap-2 pt-4">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Saving..." : transport ? "Update" : "Add"} Transport
+        </Button>
+      </div>
+    </form>
+  );
+};
+
+export default TransportSection;

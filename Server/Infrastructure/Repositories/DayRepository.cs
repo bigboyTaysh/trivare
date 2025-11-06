@@ -1,0 +1,96 @@
+using Microsoft.EntityFrameworkCore;
+using Trivare.Domain.Entities;
+using Trivare.Domain.Interfaces;
+using Trivare.Infrastructure.Data;
+
+namespace Trivare.Infrastructure.Repositories;
+
+/// <summary>
+/// Repository implementation for Day entity operations
+/// </summary>
+public class DayRepository : IDayRepository
+{
+    private readonly ApplicationDbContext _context;
+
+    public DayRepository(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    /// <summary>
+    /// Creates a new day
+    /// </summary>
+    public async Task<Day> AddAsync(Day day, CancellationToken cancellationToken = default)
+    {
+        _context.Days.Add(day);
+        await _context.SaveChangesAsync(cancellationToken);
+        return day;
+    }
+
+    /// <summary>
+    /// Gets a day by trip ID and date
+    /// </summary>
+    public async Task<Day?> GetByTripIdAndDateAsync(Guid tripId, DateOnly date, CancellationToken cancellationToken = default)
+    {
+        return await _context.Days
+            .AsNoTracking()
+            .FirstOrDefaultAsync(d => d.TripId == tripId && d.Date == date, cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets all days for a specific trip
+    /// </summary>
+    public async Task<IEnumerable<Day>> GetByTripIdAsync(Guid tripId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Days
+            .AsNoTracking()
+            .Where(d => d.TripId == tripId)
+            .OrderBy(d => d.Date)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets a day by ID
+    /// </summary>
+    public async Task<Day?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Days
+            .AsNoTracking()
+            .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets a day by ID including the associated trip
+    /// </summary>
+    public async Task<Day?> GetByIdWithTripAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Days
+            .AsNoTracking()
+            .Include(d => d.Trip)
+            .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates an existing day
+    /// </summary>
+    public async Task<Day> UpdateAsync(Day day, CancellationToken cancellationToken = default)
+    {
+        _context.Days.Update(day);
+        await _context.SaveChangesAsync(cancellationToken);
+        return day;
+    }
+
+    /// <summary>
+    /// Gets all days for a specific trip including places
+    /// </summary>
+    public async Task<IEnumerable<Day>> GetDaysWithPlacesByTripIdAsync(Guid tripId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Days
+            .AsNoTracking()
+            .Include(d => d.DayAttractions)
+                .ThenInclude(da => da.Place)
+            .Where(d => d.TripId == tripId)
+            .OrderBy(d => d.Date)
+            .ToListAsync(cancellationToken);
+    }
+}

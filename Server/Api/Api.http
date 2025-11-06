@@ -1,0 +1,971 @@
+@Api_HostAddress = http://localhost:6000
+
+### Auth Controller Endpoints
+
+### Register - Successful Registration
+POST {{Api_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "userName": "newuser",
+  "email": "user@example.com",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Register - Email Already Exists
+POST {{Api_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "userName": "existinguser",
+  "email": "user@example.com",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Register - Validation Error
+POST {{Api_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "invalid-email",
+  "password": ""
+}
+
+###
+
+### Login - Successful
+# @name Login
+POST {{Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "SecurePassword123!"
+}
+
+###
+
+###
+
+@refresh_token = {{Login.response.body.refreshToken}}
+@auth_token = {{Login.response.body.accessToken}}
+###
+
+### Login - Invalid Credentials
+POST {{Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@example.com",
+  "password": "wrongpassword"
+}
+
+###
+
+### Login - Validation Error
+POST {{Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "invalid-email",
+  "password": ""
+}
+
+###
+
+### Refresh Token - Successful
+POST {{Api_HostAddress}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refresh_token}}"
+}
+
+###
+
+### Refresh Token - Invalid Token
+POST {{Api_HostAddress}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "invalid-token"
+}
+
+###
+
+### Logout - Successful
+POST {{Api_HostAddress}}/api/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refresh_token}}"
+}
+
+###
+
+### Logout - Invalid Token
+POST {{Api_HostAddress}}/api/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "invalid-token"
+}
+
+###
+
+### Forgot Password - Successful
+POST {{Api_HostAddress}}/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "user@example.com"
+}
+
+###
+
+### Forgot Password - Invalid Email
+POST {{Api_HostAddress}}/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "invalid-email"
+}
+
+###
+
+### Reset Password - Successful
+POST {{Api_HostAddress}}/api/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "reset-token-from-email",
+  "newPassword": "NewSecurePassword123!"
+}
+
+###
+
+### Reset Password - Invalid Token
+POST {{Api_HostAddress}}/api/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "invalid-token",
+  "newPassword": "NewSecurePassword123!"
+}
+
+###
+
+### Users Controller Endpoints
+
+### Get Current User Profile - Successful
+GET {{Api_HostAddress}}/api/users/me
+Authorization: Bearer {{auth_token}}
+
+###
+
+### Update User Profile - Successful
+PATCH {{Api_HostAddress}}/api/users/me
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "userName": "newusername",
+  "currentPassword": "SecurePassword123!",
+  "newPassword": "NewSecurePassword456!"
+}
+
+###
+
+### Update User Profile - Validation Error
+PATCH {{Api_HostAddress}}/api/users/me
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "userName": "us",
+  "currentPassword": "short"
+}
+
+###
+
+### Trips Controller Endpoints
+
+### Create Trip - Successful
+POST {{Api_HostAddress}}/api/trips
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Trip to Paris",
+  "destination": "Paris, France",
+  "startDate": "2025-12-01",
+  "endDate": "2025-12-05",
+  "notes": "Excited for the trip!"
+}
+
+###
+
+### Create Trip - Validation Error (Empty Name)
+POST {{Api_HostAddress}}/api/trips
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "",
+  "destination": "Paris, France",
+  "startDate": "2025-12-01",
+  "endDate": "2025-12-05"
+}
+
+###
+
+### Create Trip - Business Rule Error (End Date Before Start)
+POST {{Api_HostAddress}}/api/trips
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Invalid Trip",
+  "startDate": "2025-12-05",
+  "endDate": "2025-12-01"
+}
+
+###
+
+### Update Trip - Successful (Partial Update)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Updated Trip to Paris",
+  "notes": "Updated notes for the trip!"
+}
+
+###
+
+### Update Trip - Full Update
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Trip to Rome",
+  "destination": "Rome, Italy",
+  "startDate": "2025-11-15",
+  "endDate": "2025-11-20",
+  "notes": "Excited for Rome!"
+}
+
+###
+
+### Update Trip - Validation Error (Empty Name)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": ""
+}
+
+###
+
+### Update Trip - Validation Error (Invalid Date Range)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "startDate": "2025-12-05",
+  "endDate": "2025-12-01"
+}
+
+###
+
+### Update Trip - Validation Error (Destination Too Long)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "destination": "This destination name is way too long and exceeds the maximum allowed length of 255 characters for the destination field in the database schema."
+}
+
+###
+
+### Update Trip - Not Found (will return 404)
+PATCH {{Api_HostAddress}}/api/trips/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Non-existent Trip"
+}
+
+###
+
+### Update Trip - Forbidden (Trip belongs to another user, will return 403)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174001
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Someone else's trip"
+}
+
+###
+
+### Update Trip - Unauthorized (missing token, will return 401)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
+
+{
+  "name": "Unauthorized update"
+}
+
+###
+
+### List Trips - Default Parameters
+GET {{Api_HostAddress}}/api/trips
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Custom Pagination
+GET {{Api_HostAddress}}/api/trips?page=2&pageSize=5
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Sorted by Name Ascending
+GET {{Api_HostAddress}}/api/trips?sortBy=name&sortOrder=asc
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Sorted by Start Date Descending
+GET {{Api_HostAddress}}/api/trips?sortBy=startDate&sortOrder=desc
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - With Search (by name, destination, notes, dates)
+GET {{Api_HostAddress}}/api/trips?search=Paris
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Combined Parameters
+GET {{Api_HostAddress}}/api/trips?page=1&pageSize=10&sortBy=createdAt&sortOrder=desc&search=Europe
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Invalid Page (will return 400)
+GET {{Api_HostAddress}}/api/trips?page=0
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Invalid Page Size (will return 400)
+GET {{Api_HostAddress}}/api/trips?pageSize=100
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Invalid Sort Field (will return 400)
+GET {{Api_HostAddress}}/api/trips?sortBy=invalid
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Invalid Sort Order (will return 400)
+GET {{Api_HostAddress}}/api/trips?sortOrder=invalid
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Trips - Unauthorized (missing token, will return 401)
+GET {{Api_HostAddress}}/api/trips
+
+###
+
+### Days Controller Endpoints
+
+### Create Day - Successful
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/days
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "date": "2025-12-01",
+  "notes": "Arrival day - explore nearby area"
+}
+
+###
+
+### Create Day - Validation Error (Date Outside Trip Range)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/days
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "date": "2025-11-30",
+  "notes": "Before trip starts"
+}
+
+###
+
+### Create Day - Conflict (Duplicate Date)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/days
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "date": "2025-12-01",
+  "notes": "Duplicate date"
+}
+
+###
+
+### Create Day - Trip Not Found (will return 404)
+POST {{Api_HostAddress}}/api/trips/00000000-0000-0000-0000-000000000000/days
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "date": "2025-12-01"
+}
+
+###
+
+### Create Day - Forbidden (Trip belongs to another user, will return 403)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174001/days
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "date": "2025-12-01"
+}
+
+###
+
+### Create Day - Unauthorized (missing token, will return 401)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/days
+Content-Type: application/json
+
+{
+  "date": "2025-12-01"
+}
+
+###
+
+### List Days - Successful
+GET {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/days
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Days - Trip Not Found (will return 404)
+GET {{Api_HostAddress}}/api/trips/00000000-0000-0000-0000-000000000000/days
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Days - Forbidden (Trip belongs to another user, will return 403)
+GET {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174001/days
+Authorization: Bearer {{auth_token}}
+
+###
+
+### List Days - Unauthorized (missing token, will return 401)
+GET {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/days
+
+###
+
+### Transport Controller Endpoints
+
+### Create Transport - Successful
+POST {{Api_HostAddress}}/api/trips/fe1a75ea-1174-414f-916b-47255c307250/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "Flight",
+  "departureLocation": "John F. Kennedy International Airport (JFK)",
+  "arrivalLocation": "Charles de Gaulle Airport (CDG)",
+  "departureTime": "2025-12-15T14:30:00Z",
+  "arrivalTime": "2025-12-15T18:45:00Z",
+  "notes": "Direct flight with meal service. Gate changes possible."
+}
+
+###
+
+### Create Transport - Minimal Data (Only Required Fields)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "Flight"
+}
+
+###
+
+### Create Transport - Validation Error (Missing Required Type)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "departureLocation": "JFK",
+  "arrivalLocation": "CDG"
+}
+
+###
+
+### Create Transport - Only Type and Locations
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "Train",
+  "departureLocation": "Central Station",
+  "arrivalLocation": "Airport Terminal"
+}
+
+###
+
+### Create Transport - Validation Error (Type Too Long)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "This transportation type name is way too long and exceeds the maximum allowed length of 100 characters for the type field in the database schema",
+  "departureLocation": "Valid Location",
+  "arrivalLocation": "Valid Location"
+}
+
+###
+
+### Create Transport - Validation Error (Departure Location Too Long)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "Flight",
+  "departureLocation": "This departure location name is way too long and exceeds the maximum allowed length of 255 characters for the location fields in the database schema. This should trigger a validation error.",
+  "arrivalLocation": "Valid Location"
+}
+
+###
+
+### Create Transport - Validation Error (Notes Too Long)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "Flight",
+  "departureLocation": "JFK",
+  "arrivalLocation": "CDG",
+  "notes": "This notes field contains way too much text and exceeds the maximum allowed length of 2000 characters for the notes field in the database schema. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. This is just filler text to make this exceed the 2000 character limit that is enforced by the database schema and validation rules."
+}
+
+###
+
+### Create Transport - Business Rule Error (Arrival Before Departure)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "Flight",
+  "departureLocation": "JFK",
+  "arrivalLocation": "CDG",
+  "departureTime": "2025-12-15T18:45:00Z",
+  "arrivalTime": "2025-12-15T14:30:00Z",
+  "notes": "Invalid time range - arrival before departure"
+}
+
+###
+
+### Create Transport - Not Found (Trip doesn't exist, will return 404)
+POST {{Api_HostAddress}}/api/trips/00000000-0000-0000-0000-000000000000/transports
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "type": "Flight",
+  "departureLocation": "JFK",
+  "arrivalLocation": "CDG"
+}
+
+###
+
+### Create Transport - Unauthorized (missing token, will return 401)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/transports
+Content-Type: application/json
+
+{
+  "type": "Flight",
+  "departureLocation": "JFK",
+  "arrivalLocation": "CDG"
+}
+
+###
+
+### Transport Update Controller Endpoints
+
+### Update Transport - Successful (Partial Update)
+PATCH {{Api_HostAddress}}/api/transports/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "type": "Updated Flight",
+  "notes": "Updated flight details"
+}
+
+###
+
+### Update Transport - Full Update
+PATCH {{Api_HostAddress}}/api/transports/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "type": "Train",
+  "departureLocation": "Paris Gare du Nord",
+  "arrivalLocation": "London St Pancras",
+  "departureTime": "2024-12-20T08:00:00Z",
+  "arrivalTime": "2024-12-20T11:30:00Z",
+  "notes": "Eurostar train from Paris to London"
+}
+
+###
+
+### Update Transport - Validation Error (Type Too Long)
+PATCH {{Api_HostAddress}}/api/transports/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "type": "This transportation type name is way too long and exceeds the maximum allowed length of 100 characters for the type field"
+}
+
+###
+
+### Update Transport - Validation Error (Invalid Time Range)
+PATCH {{Api_HostAddress}}/api/transports/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "departureTime": "2024-12-20T12:00:00Z",
+  "arrivalTime": "2024-12-20T10:00:00Z"
+}
+
+###
+
+### Update Transport - Not Found (will return 404)
+PATCH {{Api_HostAddress}}/api/transports/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "type": "Updated Transport"
+}
+
+###
+
+### Update Transport - Forbidden (Transport belongs to another user, will return 403)
+PATCH {{Api_HostAddress}}/api/transports/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "type": "Updated by wrong user"
+}
+
+###
+
+### Update Transport - Unauthorized (missing token, will return 401)
+PATCH {{Api_HostAddress}}/api/transports/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "type": "Flight"
+}
+
+###
+
+### Accommodation Controller Endpoints
+
+### Create Accommodation - Successful
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{
+  "name": "Hotel Eiffel",
+  "address": "123 Rue de Paris, 75001 Paris",
+  "checkInDate": "2025-07-01T15:00:00Z",
+  "checkOutDate": "2025-07-10T11:00:00Z",
+  "notes": "Booking confirmation #123456"
+}
+
+###
+
+### Create Accommodation - Minimal Data (Only Required Fields)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{}
+
+###
+
+### Create Accommodation - Validation Error (Name Too Long)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{
+  "name": "This accommodation name is way too long and exceeds the maximum allowed length of 255 characters for the name field in the database schema and validation rules"
+}
+
+###
+
+### Create Accommodation - Validation Error (Address Too Long)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{
+  "address": "This accommodation address is way too long and exceeds the maximum allowed length of 500 characters for the address field in the database schema and validation rules. This is a very long address that goes on and on and on with lots of unnecessary details about the location."
+}
+
+###
+
+### Create Accommodation - Validation Error (Notes Too Long)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{
+  "notes": "These notes are way too long and exceed the maximum allowed length of 2000 characters for the notes field in the database schema and validation rules. This is a very long note that contains lots of unnecessary information about the accommodation, including detailed descriptions of amenities, nearby attractions, check-in procedures, and other miscellaneous details that make this text much longer than it should be for a simple note field."
+}
+
+###
+
+### Create Accommodation - Business Rule Error (Check-out Before Check-in)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{
+  "checkInDate": "2025-07-10T15:00:00Z",
+  "checkOutDate": "2025-07-01T11:00:00Z"
+}
+
+###
+
+### Create Accommodation - Conflict (Accommodation Already Exists)
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{
+  "name": "Second Accommodation Attempt"
+}
+
+###
+
+### Create Accommodation - Not Found (Trip doesn't exist, will return 404)
+POST {{Api_HostAddress}}/api/trips/00000000-0000-0000-0000-000000000000/accommodation
+Content-Type: application/json
+
+{
+  "name": "Hotel Not Found"
+}
+
+###
+
+### Update Accommodation - Successful Full Update
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Updated Hotel Name",
+  "address": "Updated Address, 123 New Street",
+  "checkInDate": "2025-07-15T14:00:00Z",
+  "checkOutDate": "2025-07-20T11:00:00Z",
+  "notes": "Updated booking notes"
+}
+
+###
+
+### Update Accommodation - Partial Update (Only Name)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Partially Updated Name"
+}
+
+###
+
+### Update Accommodation - Partial Update (Dates Only)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "checkInDate": "2025-08-01T15:00:00Z",
+  "checkOutDate": "2025-08-10T10:00:00Z"
+}
+
+###
+
+### Update Accommodation - Validation Error (Name Too Long)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "This accommodation name is way too long and exceeds the maximum allowed length of 255 characters for the name field in the database schema and validation rules"
+}
+
+###
+
+### Update Accommodation - Validation Error (Address Too Long)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "address": "This accommodation address is way too long and exceeds the maximum allowed length of 500 characters for the address field in the database schema and validation rules. This is a very long address that goes on and on and on with lots of unnecessary details about the location."
+}
+
+###
+
+### Update Accommodation - Validation Error (Notes Too Long)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "notes": "These notes are way too long and exceed the maximum allowed length of 2000 characters for the notes field in the database schema and validation rules. This is a very long note that contains lots of unnecessary information about the accommodation, including detailed descriptions of amenities, nearby attractions, check-in procedures, and other miscellaneous details that make this text much longer than it should be for a simple note field."
+}
+
+###
+
+### Update Accommodation - Business Rule Error (Check-out Before Check-in)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "checkInDate": "2025-07-20T14:00:00Z",
+  "checkOutDate": "2025-07-15T11:00:00Z"
+}
+
+###
+
+### Update Accommodation - Not Found (Accommodation doesn't exist)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Non-existent Accommodation"
+}
+
+###
+
+### Update Accommodation - Not Found (Trip doesn't exist)
+PATCH {{Api_HostAddress}}/api/trips/fe1a75ea-1174-414f-916b-47255c307249/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Trip Not Found"
+}
+
+###
+
+### Update Accommodation - Forbidden (Trip belongs to another user)
+PATCH {{Api_HostAddress}}/api/trips/fe1a75ea-1174-414f-916b-47255c307250/accommodation
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Forbidden Update"
+}
+
+###
+
+### Update Accommodation - Unauthorized (missing token)
+PATCH {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/accommodation
+Content-Type: application/json
+
+{
+  "name": "Unauthorized Update"
+}
+
+###
+
+### File Upload Endpoints
+
+### Upload File to Trip - Successful
+POST {{Api_HostAddress}}/api/trips/123e4567-e89b-12d3-a456-426614174000/files
+Authorization: Bearer {{auth_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="flight-ticket.pdf"
+Content-Type: application/pdf
+
+< /path/to/flight-ticket.pdf
+------WebKitFormBoundary--
+
+###
+
+### Upload File to Transport - Successful
+POST {{Api_HostAddress}}/api/transports/123e4567-e89b-12d3-a456-426614174001/files
+Authorization: Bearer {{auth_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="boarding-pass.pdf"
+Content-Type: application/pdf
+
+< /path/to/boarding-pass.pdf
+------WebKitFormBoundary--
+
+###
+
+### Upload File to Accommodation - Successful
+POST {{Api_HostAddress}}/api/accommodations/123e4567-e89b-12d3-a456-426614174002/files
+Authorization: Bearer {{auth_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="hotel-booking.pdf"
+Content-Type: application/pdf
+
+< /path/to/hotel-booking.pdf
+------WebKitFormBoundary--
+
+###
+
+### Upload File to Day - Successful
+POST {{Api_HostAddress}}/api/days/123e4567-e89b-12d3-a456-426614174003/files
+Authorization: Bearer {{auth_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="museum-ticket.pdf"
+Content-Type: application/pdf
+
+< /path/to/museum-ticket.pdf
+------WebKitFormBoundary--
+
+###
