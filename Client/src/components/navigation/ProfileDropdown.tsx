@@ -29,7 +29,7 @@ export function ProfileDropdown({ user }: ProfileDropdownProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-10 w-10">
+        <Button variant="ghost" size="icon" className="relative h-10 w-10" data-testid="user-menu">
           <User className="h-5 w-5" />
           <span className="sr-only">Open user menu</span>
         </Button>

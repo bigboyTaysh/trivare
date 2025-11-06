@@ -12,6 +12,7 @@ Trivare is an MVP trip planning web application that helps users organize travel
 - [Tech Stack](#tech-stack)
 - [Getting Started Locally](#getting-started-locally)
 - [Available Scripts](#available-scripts)
+- [Testing](#testing)
 - [Project Scope](#project-scope)
 - [Project Status](#project-status)
 - [License](#license)
@@ -53,6 +54,7 @@ To get a local copy up and running, follow these simple steps.
 ### Installation & Setup
 
 #### Repository
+
 ```sh
 git clone https://github.com/bigboyTaysh/trivare.git
 ```
@@ -77,9 +79,11 @@ git clone https://github.com/bigboyTaysh/trivare.git
 1.  **Setup Environment Variables**
 
     Copy the environment template and configure your local settings:
+
     ```sh
     cp .env.template .env
     ```
+
     Edit `.env` to set a secure `SA_PASSWORD` for the database.
 
 2.  **Start SQL Server with Docker**
@@ -87,19 +91,23 @@ git clone https://github.com/bigboyTaysh/trivare.git
     This project uses Docker to run a local SQL Server instance. Make sure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 
     From the root of the repository, run:
+
     ```sh
     docker-compose up -d
     ```
+
         This will start a SQL Server container. The database password is configured via the `SA_PASSWORD` environment variable in the `.env` file.
 
 3.  **Configure Connection String and Launch Settings**
 
     a. Copy the appsettings template and configure your local settings:
+
     ```sh
     cp Server/Api/appsettings.Development.json.template Server/Api/appsettings.Development.json
     ```
 
     b. Copy the launch settings template:
+
     ```sh
     cp Server/Api/Properties/launchSettings.json.template Server/Api/Properties/launchSettings.json
     ```
@@ -111,11 +119,13 @@ git clone https://github.com/bigboyTaysh/trivare.git
     To set up the database schema, you'll need the .NET Entity Framework Core tools.
 
     a. Install `dotnet-ef` as a global tool (if you haven't already):
+
     ```sh
     dotnet tool install --global dotnet-ef
     ```
 
     b. Navigate to the `Server/Api` directory and apply the migrations:
+
     ```sh
     cd Server/Api
     dotnet ef database update
@@ -124,6 +134,7 @@ git clone https://github.com/bigboyTaysh/trivare.git
 5.  **Run the API**
 
     Once the database is set up, you can run the backend.
+
     ```sh
     dotnet run
     ```
@@ -137,6 +148,117 @@ In the `Client` directory, you can run the following scripts:
 - `npm run preview`: Previews the production build locally.
 - `npm run lint`: Lints the codebase for errors.
 - `npm run format`: Formats the code using Prettier.
+
+## Testing
+
+Trivare uses a comprehensive multi-layered testing strategy to ensure code quality and reliability.
+
+### Project Structure
+
+```
+Server/
+├── Application.Tests/        # Unit tests for application services
+├── Domain.Tests/            # Unit tests for domain entities
+└── Infrastructure.Tests/    # Unit tests for repositories and infrastructure
+
+Client/
+├── src/
+│   └── **/*.test.tsx        # Unit tests for components and hooks
+└── e2e/                     # End-to-end tests
+```
+
+### Tech Stack
+
+#### Backend (.NET 9)
+
+- **Unit Tests**: xUnit + FluentAssertions + Moq
+
+#### Frontend (Astro + React + TypeScript)
+
+- **Unit Tests**: Vitest + React Testing Library + jsdom
+- **E2E Tests**: Playwright (Chromium)
+
+### Running Tests
+
+The easiest way to run tests is using the provided test script with specific arguments:
+
+```bash
+# Run all tests (default behavior)
+./test.sh
+
+# Run unit tests only
+./test.sh unit
+
+# Run E2E tests only
+./test.sh e2e
+
+# Run E2E tests in debug mode (with browser visibility)
+./test.sh e2e:debug
+```
+
+When running all tests, the script will:
+
+1. Start the backend API service locally
+2. Start the frontend dev server locally
+3. Run backend unit tests
+4. Run frontend unit tests
+5. Run E2E tests
+6. Stop the local services
+
+#### Backend Tests Only
+
+```bash
+# All backend tests
+cd Server && dotnet test
+
+# Specific test project
+dotnet test Domain.Tests/Domain.Tests.csproj
+dotnet test Application.Tests/Application.Tests.csproj
+dotnet test Infrastructure.Tests/Infrastructure.Tests.csproj
+
+# With coverage
+dotnet test --collect:"XPlat Code Coverage"
+```
+
+#### Frontend Tests Only
+
+```bash
+cd Client
+
+# Unit tests
+npm run test          # Watch mode
+npm run test:run      # Run once
+npm run test:ui       # With UI
+npm run test:coverage # With coverage
+
+# E2E tests
+npm run test:e2e          # Headless
+npm run test:e2e:headed   # With browser
+npm run test:e2e:debug    # Debug mode
+npm run test:e2e:ui       # With UI
+```
+
+### Test Database
+
+- **Unit Tests**: Use in-memory database for isolation
+- **Integration Tests**: Use in-memory database (EF Core InMemory)
+- **E2E Tests**: Use dedicated SQL Server test instance
+
+To start the test database manually:
+
+```bash
+docker-compose --profile test up -d sqlserver-test
+```
+
+**Note**: The test script automatically starts and stops the test database when running E2E tests. No manual setup required.
+
+### Troubleshooting
+
+#### Debugging
+
+- Use `dotnet test --logger "console;verbosity=detailed"` for verbose output
+- Use `npm run test:ui` to debug frontend tests
+- Use `npm run test:e2e:debug` for E2E debugging
 
 ## Project Scope
 

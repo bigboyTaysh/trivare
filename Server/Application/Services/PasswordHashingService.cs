@@ -18,20 +18,26 @@ public class PasswordHashingService : IPasswordHashingService
     /// </summary>
     /// <param name="password">The plaintext password to hash</param>
     /// <returns>A tuple containing the hash and salt as byte arrays</returns>
+    /// <exception cref="ArgumentNullException">Thrown when password is null</exception>
     public (byte[] Hash, byte[] Salt) HashPassword(string password)
     {
+        if (password == null)
+        {
+            throw new ArgumentNullException(nameof(password));
+        }
+
         // Generate cryptographically strong random salt
         byte[] salt = new byte[SaltSize];
         using (var rng = RandomNumberGenerator.Create())
         {
             rng.GetBytes(salt);
         }
-        
+
         // Generate hash using PBKDF2
         using (var pbkdf2 = new Rfc2898DeriveBytes(
-            password, 
-            salt, 
-            Iterations, 
+            password,
+            salt,
+            Iterations,
             HashAlgorithmName.SHA256))
         {
             byte[] hash = pbkdf2.GetBytes(HashSize);
@@ -47,12 +53,26 @@ public class PasswordHashingService : IPasswordHashingService
     /// <param name="hash">The stored hash to compare against</param>
     /// <param name="salt">The salt used to generate the stored hash</param>
     /// <returns>True if the password matches, false otherwise</returns>
+    /// <exception cref="ArgumentNullException">Thrown when password, hash, or salt is null</exception>
     public bool VerifyPassword(string password, byte[] hash, byte[] salt)
     {
+        if (password == null)
+        {
+            throw new ArgumentNullException(nameof(password));
+        }
+        if (hash == null)
+        {
+            throw new ArgumentNullException(nameof(hash));
+        }
+        if (salt == null)
+        {
+            throw new ArgumentNullException(nameof(salt));
+        }
+
         using (var pbkdf2 = new Rfc2898DeriveBytes(
-            password, 
-            salt, 
-            Iterations, 
+            password,
+            salt,
+            Iterations,
             HashAlgorithmName.SHA256))
         {
             byte[] computedHash = pbkdf2.GetBytes(HashSize);

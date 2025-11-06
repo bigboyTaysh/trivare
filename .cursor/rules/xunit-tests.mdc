@@ -1,0 +1,27 @@
+---
+alwaysApply: true
+---
+
+# AI Rules for Trivare
+
+## TESTING
+
+### Guidelines for UNIT
+
+#### .NET 9 (xUnit)
+
+- Use `[Fact]` for simple tests and `[Theory]` for parameterized tests - Leverage `[InlineData]` for straightforward parameter sets and `[MemberData]`/`[ClassData]` for complex test data. Theory-based tests reduce duplication and ensure comprehensive scenario coverage with minimal code.
+- Structure tests with the Arrange-Act-Assert pattern - Clearly separate test phases with blank lines to improve readability. Keep each test focused on a single behavior and use descriptive method names that explain the scenario and expected outcome following the pattern `MethodName_Scenario_ExpectedBehavior`.
+- Leverage constructor injection for test setup - Place common initialization code in the test class constructor, which xUnit runs before each test. Implement `IDisposable` for cleanup logic that should run after each test, ensuring proper resource management and test isolation.
+- Use FluentAssertions for expressive validation - Replace basic assertions with readable fluent syntax like `result.Should().BeEquivalentTo(expected)`, `collection.Should().HaveCount(3)`, and `action.Should().Throw<InvalidOperationException>().WithMessage("*expected text*")` for maintainable and descriptive tests.
+- Leverage Moq for creating test doubles - Use `Mock<T>` to create interface mocks, configure behavior with `Setup().Returns()`, and verify interactions with `Verify()`. Prefer loose mocks (default) unless strict verification is required, and use `MockBehavior.Strict` only when necessary.
+- Implement class fixtures for expensive shared setup - Use `IClassFixture<T>` to share costly initialization like database connections across all tests in a class. The fixture constructor runs once per test class, improving performance while maintaining test independence through proper isolation.
+- Apply collection fixtures for cross-class sharing - Group related test classes with `[Collection("CollectionName")]` to share context across multiple test classes. Define collections with `[CollectionDefinition]` and inject `ICollectionFixture<T>` for scenarios requiring shared state beyond a single test class.
+- Configure test output with `ITestOutputHelper` - Inject `ITestOutputHelper` in constructors to write diagnostic information that appears only when tests fail. Use `output.WriteLine()` for debugging without cluttering successful test results, especially useful for async operations and complex scenarios.
+- Create reusable theory data sources - Implement `IEnumerable<object[]>` properties for `[MemberData]` or inherit from `TheoryData<T>` for type-safe test data. Use `[ClassData]` with classes implementing `IEnumerable<object[]>` for complex initialization or data generation logic.
+- Mock async operations with `ReturnsAsync` - Use `Setup().ReturnsAsync()` for async method mocks and `ThrowsAsync()` for exception scenarios. Test cancellation with `CancellationToken` parameters and verify async method calls with `VerifyAsync()` for proper async/await testing.
+- Handle time-dependent code with `TimeProvider` - Inject `TimeProvider` (.NET 8+) abstraction to control time in tests using `FakeTimeProvider` from `Microsoft.Extensions.TimeProvider.Testing`. Call `Advance()` to simulate time passage for deterministic testing without Thread.Sleep.
+- Configure parallel execution with collections - xUnit runs tests in parallel by default. Use `[Collection]` to group tests sharing state, preventing parallel execution within the collection. Disable all parallelism only when absolutely necessary with `[assembly: CollectionBehavior(DisableTestParallelization = true)]`.
+- Leverage AutoFixture for test data generation - Use AutoFixture with `fixture.Create<T>()` to generate realistic test objects, reducing boilerplate. Combine with AutoMoq using `fixture.Customize(new AutoMoqCustomization())` for automatic constructor dependency mocking.
+- Test exceptions with specific assertions - Use `Should().Throw<TException>()` to verify exception types, messages, and properties. Chain assertions like `.WithMessage("expected")` and `.WithInnerException<TInner>()` for thorough exception scenario validation.
+- Skip tests conditionally with attributes - Use `[Fact(Skip = "reason")]` to temporarily disable tests or `[SkippableFact]` from xUnit.SkippableFact package with `Skip.If()` for runtime conditional skipping based on environment or configuration.

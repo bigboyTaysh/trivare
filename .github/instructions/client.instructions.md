@@ -1,7 +1,3 @@
----
-applyTo: "Client/**"
----
-
 ## CODING_PRACTICES
 
 ### Guidelines for STATIC_ANALYSIS

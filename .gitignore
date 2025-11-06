@@ -117,3 +117,5 @@ logs
 
 # Local development settings
 Server/Api/appsettings.Development.json
+Client/playwright-report/
+Client/test-results/
