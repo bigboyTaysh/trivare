@@ -26,6 +26,13 @@ if (environment == "Development" || environment == "Testing")
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Set URLs based on environment
+if (builder.Environment.IsProduction())
+{
+    var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}   
+
 builder.Services.AddHttpContextAccessor();
 
 // Register the RLS interceptor
@@ -126,21 +133,26 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// Configure CORS for local development
-builder.Services.AddCors(options =>
+var allowedOriginsStr = Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS");
+var allowedOrigins = allowedOriginsStr?.Split(',', StringSplitOptions.RemoveEmptyEntries)
+        .Select(o => o.Trim())
+        .Where(o => !string.IsNullOrEmpty(o))
+        .ToArray();
+
+if(allowedOrigins != null)
 {
-    options.AddPolicy("AllowFrontend",
-        policy =>
-        {
-            policy.WithOrigins(
-                "http://localhost:4321", // Astro default dev port
-                "http://localhost:3000"  // Alternative port
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-        });
-});
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowFrontend",
+            policy =>
+            {
+                policy.WithOrigins(allowedOrigins)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
+    });
+}
 
 // Configure JWT Authentication
 builder.Services.AddAuthentication(options =>
@@ -170,7 +182,7 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Helper method to determine if SQL error is transient and worth retrying
+//Helper method to determine if SQL error is transient and worth retrying
 static bool IsTransientSqlError(SqlException ex)
 {
     // Common transient SQL Server error numbers that indicate temporary connectivity issues
@@ -247,7 +259,12 @@ app.UseGlobalExceptionHandler();
 
 // CORS must come before HttpsRedirection and Authorization
 app.UseCors("AllowFrontend");
-app.UseHttpsRedirection();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
