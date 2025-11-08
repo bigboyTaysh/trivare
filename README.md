@@ -13,6 +13,7 @@ Trivare is an MVP trip planning web application that helps users organize travel
 - [Getting Started Locally](#getting-started-locally)
 - [Available Scripts](#available-scripts)
 - [Testing](#testing)
+- [Deployment](#deployment)
 - [Project Scope](#project-scope)
 - [Project Status](#project-status)
 - [License](#license)
@@ -37,10 +38,12 @@ Trivare is designed to streamline the trip planning process. It allows users to 
 - **[Azure SQL](https://azure.microsoft.com/en-us/products/azure-sql/database/)**: Managed relational database service.
 - **[Cloudflare R2](https://www.cloudflare.com/products/r2/)**: S3-compatible object storage with no egress fees.
 
-### DevOps
+### DevOps & Hosting
 
 - **[GitHub Actions](https://github.com/features/actions)**: CI/CD automation for building, testing, and deploying.
-- **[Azure](https://azure.microsoft.com/)**: Cloud platform for hosting the frontend, backend, and database.
+- **[Cloudflare Pages](https://pages.cloudflare.com/)**: Frontend hosting with global CDN.
+- **[Render](https://render.com/)**: Backend hosting with automatic deployments.
+- **[Azure SQL](https://azure.microsoft.com/en-us/products/azure-sql/database/)**: Managed database hosting.
 
 ## Getting Started Locally
 
@@ -259,6 +262,97 @@ docker-compose --profile test up -d sqlserver-test
 - Use `dotnet test --logger "console;verbosity=detailed"` for verbose output
 - Use `npm run test:ui` to debug frontend tests
 - Use `npm run test:e2e:debug` for E2E debugging
+
+## Deployment
+
+The project uses GitHub Actions for automated CI/CD with deployments to Cloudflare Pages (frontend) and Render (backend).
+
+### Workflows
+
+**Pull Request Workflow** (`.github/workflows/pull-request.yml`)
+- Triggers on PRs to `master`
+- Runs linting (ESLint) and unit tests (.NET + Frontend)
+- Posts status comment on PR
+
+**Production Deployment Workflow** (`.github/workflows/master.yml`)
+- Triggers on push to `master` or manual dispatch
+- Runs linting and unit tests
+- Builds frontend and deploys to Cloudflare Pages
+- Deploys backend to Render (both deployments run in parallel)
+- Verifies deployment status
+
+### Quick Setup
+
+1. **Create Cloudflare Pages project**
+   - Generate API token with Pages edit permissions
+   - Note your Account ID and Project Name
+
+2. **Create Render web service**
+   - Choose "Docker" as the environment
+   - Render will use `Server/Dockerfile` (configured in `render.yaml`)
+   - Generate API key from Account Settings
+   - Note your Service ID
+
+3. **Configure GitHub Secrets** (Settings > Secrets and variables > Actions)
+   ```
+   CLOUDFLARE_API_TOKEN
+   CLOUDFLARE_ACCOUNT_ID
+   CLOUDFLARE_PROJECT_NAME
+   RENDER_API_KEY
+   RENDER_SERVICE_ID
+   ```
+
+4. **Configure Render Environment Variables** (in Render Dashboard > Environment tab)
+   
+   **Required (Secrets):**
+   ```
+   CONNECTION_STRING              # Azure SQL connection string
+   Jwt__SecretKey                # Min 32 characters
+   CloudflareR2__AccountId
+   CloudflareR2__AccessKeyId
+   CloudflareR2__SecretAccessKey
+   CloudflareR2__BucketName
+   SmtpSettings__Server
+   SmtpSettings__SenderEmail
+   SmtpSettings__Username
+   SmtpSettings__Password
+   GooglePlaces__ApiKey
+   OpenRouter__ApiKey
+   CORS_ALLOWED_ORIGINS          # e.g., https://your-app.pages.dev
+   ```
+   
+   **Configuration (Non-secrets):**
+   ```
+   ASPNETCORE_ENVIRONMENT=Production
+   Jwt__Issuer=Trivare
+   Jwt__Audience=Trivare
+   Jwt__AccessTokenExpirationMinutes=15
+   Jwt__RefreshTokenExpirationDays=7
+   CloudflareR2__PresignedUrlExpirationMinutes=60
+   SmtpSettings__Port=587
+   SmtpSettings__SenderName=Trivare
+   GooglePlaces__MaxResults=20
+   GooglePlaces__SearchRadiusMeters=5000
+   OpenRouter__Model=anthropic/claude-3.5-sonnet
+   OpenRouter__BaseUrl=https://openrouter.ai/api/v1
+   OpenRouter__ResultCount=8
+   ```
+
+5. **Deploy**
+   - Push to `master` branch, or
+   - Go to Actions tab > "Deploy to Production" > "Run workflow"
+
+### Health Check
+
+The backend includes a health check endpoint:
+- **URL**: `https://your-service.onrender.com/health`
+- **Response**: `{"status": "healthy", "timestamp": "2025-11-08T12:00:00Z"}`
+
+### Monitoring
+
+- **Frontend**: [Cloudflare Pages Dashboard](https://dash.cloudflare.com/)
+- **Backend**: [Render Dashboard](https://dashboard.render.com/)
+- **CI/CD**: [GitHub Actions](../../actions)
 
 ## Project Scope
 

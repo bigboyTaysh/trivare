@@ -1,0 +1,37 @@
+name: 'Deploy to Cloudflare Pages'
+description: 'Deploy the built application to Cloudflare Pages'
+
+inputs:
+  cloudflare-api-token:
+    description: 'Cloudflare API token'
+    required: true
+  cloudflare-account-id:
+    description: 'Cloudflare account ID'
+    required: true
+  project-name:
+    description: 'Cloudflare Pages project name'
+    required: true
+  directory:
+    description: 'Directory to deploy'
+    required: true
+    default: 'Client/dist'
+  branch:
+    description: 'Git branch name'
+    required: true
+
+outputs:
+  deployment-url:
+    description: 'URL of the deployed application'
+    value: ${{ steps.deploy.outputs.deployment-url }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Deploy to Cloudflare Pages
+      id: deploy
+      uses: cloudflare/wrangler-action@v3
+      with:
+        apiToken: ${{ inputs.cloudflare-api-token }}
+        accountId: ${{ inputs.cloudflare-account-id }}
+        command: pages deploy ${{ inputs.directory }} --project-name=${{ inputs.project-name }} --branch=${{ inputs.branch }}
+
