@@ -28,5 +28,41 @@ Below is a summary of the technologies selected for the Trivare project, based o
 
 ## CI/CD and Hosting
 
--   **GitHub Actions:** A tool for automating CI/CD (Continuous Integration/Continuous Deployment) processes. Used for automatically building, testing, and deploying the application after every code change.
--   **Azure:** A cloud platform from Microsoft. It is used to host both the frontend and backend of the application, as well as the database, ensuring scalability, reliability, and security.
+-   **GitHub Actions:** Automates the CI/CD pipeline with two workflows:
+    -   **Pull Request Workflow:** Runs linting and unit tests on every PR to `master`
+    -   **Production Workflow:** Deploys to production on push to `master` - runs tests, builds frontend, and deploys to both Cloudflare Pages and Render in parallel
+-   **Cloudflare Pages:** Hosts the Astro frontend with global CDN distribution. Deployment triggered via GitHub Actions using Wrangler CLI.
+-   **Render:** Hosts the .NET 9 backend API with automatic deployments using Docker. Configured via `render.yaml` (uses `Server/Dockerfile`) with health check endpoint at `/health`.
+-   **Azure SQL:** Cloud-hosted managed database service providing high availability and scalability.
+
+### Deployment Configuration
+
+**Required GitHub Secrets:**
+-   `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_PROJECT_NAME`
+-   `RENDER_API_KEY`, `RENDER_SERVICE_ID`
+
+**Required Render Environment Variables:**
+All variables must be configured in Render Dashboard (Environment tab):
+-   `ASPNETCORE_ENVIRONMENT` = `Production`
+-   `CONNECTION_STRING` (Azure SQL connection string)
+-   `Jwt__SecretKey` (min 32 chars)
+-   `Jwt__Issuer` = `Trivare`
+-   `Jwt__Audience` = `Trivare`
+-   `Jwt__AccessTokenExpirationMinutes` = `15`
+-   `Jwt__RefreshTokenExpirationDays` = `7`
+-   `CloudflareR2__AccountId`, `CloudflareR2__AccessKeyId`, `CloudflareR2__SecretAccessKey`, `CloudflareR2__BucketName`
+-   `CloudflareR2__PresignedUrlExpirationMinutes` = `60`
+-   `SmtpSettings__Server`, `SmtpSettings__SenderEmail`, `SmtpSettings__Username`, `SmtpSettings__Password`
+-   `SmtpSettings__Port` = `587`
+-   `SmtpSettings__SenderName` = `Trivare`
+-   `GooglePlaces__ApiKey`, `GooglePlaces__MaxResults` = `20`, `GooglePlaces__SearchRadiusMeters` = `5000`
+-   `OpenRouter__ApiKey`, `OpenRouter__Model` = `anthropic/claude-3.5-sonnet`, `OpenRouter__BaseUrl` = `https://openrouter.ai/api/v1`, `OpenRouter__ResultCount` = `8`
+-   `CORS_ALLOWED_ORIGINS` (comma-separated, e.g., `https://your-app.pages.dev`)
+
+**Deployment Flow:**
+1. Push to `master` → GitHub Actions triggered
+2. Lint & test code (frontend + backend)
+3. Build frontend (Astro) → Upload artifacts
+4. Deploy frontend to Cloudflare Pages (parallel)
+5. Deploy backend to Render via API (parallel)
+6. Verify deployment status

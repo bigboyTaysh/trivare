@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: trivare-api
+    runtime: docker
+    dockerfilePath: ./Server/Dockerfile
+    dockerContext: ./Server
+    healthCheckPath: /health
+    autoDeploy: false
+

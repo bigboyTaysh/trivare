@@ -1,0 +1,35 @@
+name: 'Build Frontend'
+description: 'Build the Astro frontend application'
+
+inputs:
+  working-directory:
+    description: 'Working directory for the frontend'
+    required: true
+    default: 'Client'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version-file: '${{ inputs.working-directory }}/.nvmrc'
+
+    - name: Cache npm dependencies
+      uses: actions/cache@v4
+      with:
+        path: ${{ inputs.working-directory }}/node_modules
+        key: ${{ runner.os }}-npm-${{ hashFiles(format('{0}/package-lock.json', inputs.working-directory)) }}
+        restore-keys: |
+          ${{ runner.os }}-npm-
+
+    - name: Install dependencies
+      run: npm ci
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+
+    - name: Build application
+      run: npm run build
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+
