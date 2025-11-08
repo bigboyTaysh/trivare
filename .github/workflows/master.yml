@@ -62,6 +62,8 @@ jobs:
     needs: [lint, unit-tests]
     outputs:
       status: ${{ job.status }}
+    env:
+      PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
 
     steps:
       - name: Checkout code
