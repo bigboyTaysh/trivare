@@ -26,6 +26,13 @@ if (environment == "Development" || environment == "Testing")
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Set URLs based on environment
+if (builder.Environment.IsProduction())
+{
+    var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}   
+
 builder.Services.AddHttpContextAccessor();
 
 // Register the RLS interceptor
@@ -170,7 +177,7 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Helper method to determine if SQL error is transient and worth retrying
+//Helper method to determine if SQL error is transient and worth retrying
 static bool IsTransientSqlError(SqlException ex)
 {
     // Common transient SQL Server error numbers that indicate temporary connectivity issues
@@ -247,7 +254,12 @@ app.UseGlobalExceptionHandler();
 
 // CORS must come before HttpsRedirection and Authorization
 app.UseCors("AllowFrontend");
-app.UseHttpsRedirection();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

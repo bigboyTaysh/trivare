@@ -1,0 +1,32 @@
+# .NET Core build outputs
+**/bin
+**/obj
+**/.vs
+**/.vscode
+**/*.user
+**/*.suo
+**/*.sln.docstates
+**/*.cache
+
+# Environment files
+**/.env
+
+# Docker
+**/.dockerignore
+**/Dockerfile*
+**/*.dockerfile
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Dependencies
+**/packages
+**/node_modules
+
+# Git
+**/.git
+**/.gitignore
+
+# Logs
+**/*.log
