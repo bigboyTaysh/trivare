@@ -6,6 +6,11 @@ on:
       - master
     types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 jobs:
   lint:
     name: Lint Code
