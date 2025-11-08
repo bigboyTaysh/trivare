@@ -1,0 +1,27 @@
+name: 'Deploy to Render'
+description: 'Trigger deployment to Render'
+
+inputs:
+  render-api-key:
+    description: 'Render API key'
+    required: true
+  render-service-id:
+    description: 'Render service ID'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Trigger Render deployment
+      run: |
+        curl -X POST "https://api.render.com/v1/services/${{ inputs.render-service-id }}/deploys" \
+          -H "Authorization: Bearer ${{ inputs.render-api-key }}" \
+          -H "Content-Type: application/json" \
+          -d '{"clearCache": false}'
+      shell: bash
+
+    - name: Wait for deployment
+      run: |
+        echo "Deployment triggered successfully. Monitor progress at https://dashboard.render.com"
+      shell: bash
+
