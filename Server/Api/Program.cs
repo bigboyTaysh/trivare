@@ -19,7 +19,7 @@ var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 if (environment == "Development" || environment == "Testing")
 {
     // Load .env file from the root directory (parent of Server directory)
-    var rootPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..");
+    var rootPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..");
     var envFilePath = Path.Combine(rootPath, ".env");
     Env.Load(envFilePath);
 }
