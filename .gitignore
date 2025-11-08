@@ -63,8 +63,9 @@ yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
 
-# Package manager files (optional - some teams commit these)
-package-lock.json
+# Package manager files
+# Note: package-lock.json should be committed for consistent CI/CD builds
+# package-lock.json
 yarn.lock
 pnpm-lock.yaml
 

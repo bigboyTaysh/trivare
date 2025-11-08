@@ -1,0 +1,75 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ job.status }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Run linting
+        uses: ./.github/actions/lint
+        with:
+          working-directory: Client
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ job.status }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Run .NET tests
+        uses: ./.github/actions/dotnet-test
+        with:
+          test-results-path: TestResults
+
+      - name: Run frontend tests
+        uses: ./.github/actions/frontend-test
+        with:
+          working-directory: Client
+          coverage-path: coverage
+
+      - name: Upload test results
+        uses: dorny/test-reporter@v2
+        if: success() || failure()
+        with:
+          name: .NET Tests Results
+          path: 'TestResults/**/*.trx'
+          reporter: dotnet-trx
+          fail-on-error: false
+
+  status-comment:
+    name: Status Comment
+    runs-on: ubuntu-latest
+    needs: [lint, unit-tests]
+    if: always() && (needs.lint.result == 'success' || needs.lint.result == 'failure') && (needs.unit-tests.result == 'success' || needs.unit-tests.result == 'failure')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Create status comment
+        uses: ./.github/actions/status-comment
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          lint-status: ${{ needs.lint.result }}
+          test-status: ${{ needs.unit-tests.result }}

@@ -1,0 +1,36 @@
+name: 'Run .NET Tests'
+description: 'Run unit tests for .NET projects'
+
+inputs:
+  test-results-path:
+    description: 'Path to store test results'
+    required: true
+    default: 'TestResults'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '9.x'
+
+    - name: Restore dependencies
+      run: dotnet restore Server/Trivare.sln
+      shell: bash
+
+    - name: Build solution
+      run: dotnet build Server/Trivare.sln --configuration Release --no-restore
+      shell: bash
+
+    - name: Run Domain Tests
+      run: dotnet test Server/Domain.Tests/Domain.Tests.csproj --configuration Release --no-build --logger trx --results-directory ${{ inputs.test-results-path }}/Domain
+      shell: bash
+
+    - name: Run Application Tests
+      run: dotnet test Server/Application.Tests/Application.Tests.csproj --configuration Release --no-build --logger trx --results-directory ${{ inputs.test-results-path }}/Application
+      shell: bash
+
+    - name: Run Infrastructure Tests
+      run: dotnet test Server/Infrastructure.Tests/Infrastructure.Tests.csproj --configuration Release --no-build --logger trx --results-directory ${{ inputs.test-results-path }}/Infrastructure
+      shell: bash
