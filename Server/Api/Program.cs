@@ -177,71 +177,71 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Helper method to determine if SQL error is transient and worth retrying
-// static bool IsTransientSqlError(SqlException ex)
-// {
-//     // Common transient SQL Server error numbers that indicate temporary connectivity issues
-//     var transientErrorNumbers = new[]
-//     {
-//         -2,     // Timeout expired
-//         2,      // Connection timeout
-//         53,     // Server is not found or not accessible
-//         64,     // Named Pipes Provider: Could not open a connection to SQL Server
-//         233,    // Connection refused - usually due to server not ready
-//         258,    // TCP Provider: Timeout error
-//         4060,   // Cannot open database requested by the login
-//         10053,  // Connection aborted
-//         10054,  // Connection reset
-//         10060,  // Connection timeout
-//         10061,  // Connection refused
-//         11001,  // Host not found
-//         18452,  // Login failed for user - can happen during database startup
-//         18456   // Login failed for user
-//     };
+//Helper method to determine if SQL error is transient and worth retrying
+static bool IsTransientSqlError(SqlException ex)
+{
+    // Common transient SQL Server error numbers that indicate temporary connectivity issues
+    var transientErrorNumbers = new[]
+    {
+        -2,     // Timeout expired
+        2,      // Connection timeout
+        53,     // Server is not found or not accessible
+        64,     // Named Pipes Provider: Could not open a connection to SQL Server
+        233,    // Connection refused - usually due to server not ready
+        258,    // TCP Provider: Timeout error
+        4060,   // Cannot open database requested by the login
+        10053,  // Connection aborted
+        10054,  // Connection reset
+        10060,  // Connection timeout
+        10061,  // Connection refused
+        11001,  // Host not found
+        18452,  // Login failed for user - can happen during database startup
+        18456   // Login failed for user
+    };
 
-//     return transientErrorNumbers.Contains(ex.Number);
-// }
+    return transientErrorNumbers.Contains(ex.Number);
+}
 
-// // Seed database with initial data
-// using (var scope = app.Services.CreateScope())
-// {
-//     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-//     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+// Seed database with initial data
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-//     // Retry seeding up to 10 times with exponential backoff for database availability
-//     const int maxRetries = 10;
-//     var retryDelay = TimeSpan.FromSeconds(2);
+    // Retry seeding up to 10 times with exponential backoff for database availability
+    const int maxRetries = 10;
+    var retryDelay = TimeSpan.FromSeconds(2);
 
-//     for (int attempt = 1; attempt <= maxRetries; attempt++)
-//     {
-//         try
-//         {
-//             logger.LogInformation("Attempting to seed database (attempt {Attempt}/{MaxRetries})", attempt, maxRetries);
-//             await DbInitializer.SeedAsync(context);
-//             logger.LogInformation("Database seeding completed successfully");
-//             break;
-//         }
-//         catch (SqlException sqlEx) when (IsTransientSqlError(sqlEx))
-//         {
-//             if (attempt == maxRetries)
-//             {
-//                 logger.LogError(sqlEx, "Failed to seed database after {MaxRetries} attempts due to transient SQL errors. This may be expected if the database is not yet ready. Application will continue without seeding.", maxRetries);
-//                 // Don't fail startup if seeding fails - the app should still be able to start
-//                 break;
-//             }
+    for (int attempt = 1; attempt <= maxRetries; attempt++)
+    {
+        try
+        {
+            logger.LogInformation("Attempting to seed database (attempt {Attempt}/{MaxRetries})", attempt, maxRetries);
+            await DbInitializer.SeedAsync(context);
+            logger.LogInformation("Database seeding completed successfully");
+            break;
+        }
+        catch (SqlException sqlEx) when (IsTransientSqlError(sqlEx))
+        {
+            if (attempt == maxRetries)
+            {
+                logger.LogError(sqlEx, "Failed to seed database after {MaxRetries} attempts due to transient SQL errors. This may be expected if the database is not yet ready. Application will continue without seeding.", maxRetries);
+                // Don't fail startup if seeding fails - the app should still be able to start
+                break;
+            }
 
-//             logger.LogWarning(sqlEx, "Database seeding failed on attempt {Attempt}/{MaxRetries} due to transient SQL error. Retrying in {Delay} seconds...", attempt, maxRetries, retryDelay.TotalSeconds);
-//             await Task.Delay(retryDelay);
-//             retryDelay = TimeSpan.FromSeconds(Math.Min(retryDelay.TotalSeconds * 1.5, 30)); // Exponential backoff, max 30 seconds
-//         }
-//         catch (Exception ex)
-//         {
-//             // For non-SQL exceptions, don't retry
-//             logger.LogError(ex, "Failed to seed database due to non-transient error. Application will continue without seeding.");
-//             break;
-//         }
-//     }
-// }
+            logger.LogWarning(sqlEx, "Database seeding failed on attempt {Attempt}/{MaxRetries} due to transient SQL error. Retrying in {Delay} seconds...", attempt, maxRetries, retryDelay.TotalSeconds);
+            await Task.Delay(retryDelay);
+            retryDelay = TimeSpan.FromSeconds(Math.Min(retryDelay.TotalSeconds * 1.5, 30)); // Exponential backoff, max 30 seconds
+        }
+        catch (Exception ex)
+        {
+            // For non-SQL exceptions, don't retry
+            logger.LogError(ex, "Failed to seed database due to non-transient error. Application will continue without seeding.");
+            break;
+        }
+    }
+}
 
 // Configure pipeline
 if (app.Environment.IsDevelopment())
