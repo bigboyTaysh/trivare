@@ -133,21 +133,26 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// Configure CORS for local development
-builder.Services.AddCors(options =>
+var allowedOriginsStr = Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS");
+var allowedOrigins = allowedOriginsStr?.Split(',', StringSplitOptions.RemoveEmptyEntries)
+        .Select(o => o.Trim())
+        .Where(o => !string.IsNullOrEmpty(o))
+        .ToArray();
+
+if(allowedOrigins != null)
 {
-    options.AddPolicy("AllowFrontend",
-        policy =>
-        {
-            policy.WithOrigins(
-                "http://localhost:4321", // Astro default dev port
-                "http://localhost:3000"  // Alternative port
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-        });
-});
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowFrontend",
+            policy =>
+            {
+                policy.WithOrigins(allowedOrigins)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
+    });
+}
 
 // Configure JWT Authentication
 builder.Services.AddAuthentication(options =>
