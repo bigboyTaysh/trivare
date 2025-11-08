@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { isAuthenticated } from "@/lib/auth";
 import { DashboardSkeleton } from "./dashboard/DashboardSkeleton";
 import { DashboardHeader } from "./dashboard/DashboardHeader";
 import { TripTabs } from "./dashboard/TripTabs";
@@ -9,10 +11,19 @@ import { ErrorDisplay } from "@/components/common/ErrorDisplay";
  * Displays user's trips categorized into Ongoing and Past
  */
 export function DashboardView() {
+  // Check authentication immediately during render
+  const authenticated = isAuthenticated();
   const { ongoingTrips, pastTrips, totalTripCount, tripLimit, isLoading, error } = useDashboardData();
 
-  // Show loading skeleton during initial data fetch
-  if (isLoading) {
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authenticated) {
+      window.location.href = "/login";
+    }
+  }, [authenticated]);
+
+  // Show loading skeleton while checking auth or during initial data fetch
+  if (!authenticated || isLoading) {
     return <DashboardSkeleton />;
   }
 

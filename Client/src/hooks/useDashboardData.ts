@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { isAuthenticated } from "@/lib/auth";
 import {
   getTrips,
   getTrip,
@@ -110,6 +111,15 @@ export function useDashboardData(): DashboardViewModel {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
+      // Don't fetch data if user is not authenticated
+      if (!isAuthenticated()) {
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+        }));
+        return;
+      }
+
       try {
         const response = await getTrips();
         const trips = response.data;
