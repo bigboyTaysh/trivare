@@ -62,17 +62,28 @@ jobs:
     needs: [lint, unit-tests]
     outputs:
       status: ${{ job.status }}
-    env:
-      PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Debug Environment Variable
+        run: |
+          echo "PUBLIC_API_URL value: $PUBLIC_API_URL"
+          if [ -z "$PUBLIC_API_URL" ]; then
+            echo "Warning: PUBLIC_API_URL is empty!"
+          else
+            echo "Success: PUBLIC_API_URL is set."
+          fi
+        env:
+          PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
+        working-directory: Client
+
       - name: Build frontend
         uses: ./.github/actions/build-frontend
         with:
           working-directory: Client
+          public-api-url: ${{ vars.PUBLIC_API_URL }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v5

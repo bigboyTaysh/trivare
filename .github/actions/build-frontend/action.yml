@@ -6,6 +6,9 @@ inputs:
     description: 'Working directory for the frontend'
     required: true
     default: 'Client'
+  public-api-url:
+    description: 'Public API URL for build-time replacement'
+    required: true
 
 runs:
   using: 'composite'
@@ -32,4 +35,5 @@ runs:
       run: npm run build
       working-directory: ${{ inputs.working-directory }}
       shell: bash
-
+      env:
+        PUBLIC_API_URL: ${{ inputs.public-api-url }}
